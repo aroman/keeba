@@ -1,0 +1,63 @@
+.container
+  #setup
+  p
+    .page-header 
+      h1 Success! I'm in.
+      small I'll need a few moments to do some 
+        b one-time-only 
+        | setting up.
+  #status
+  form.well(method="POST", target="_self")
+    fieldset
+      legend While we wait, you can set up your account below.
+        br
+        h4.control-label Nickname
+        input#nickname.input-large(type="text", size=30, name="nickname", placeholder="Dr. Rabeeya?")
+        p.help-block
+          | anything you want &mdash; it's how i'll address you from now on
+        h4.control-label Terms of Service
+        p Okay I'm going to make this as simple as possible:
+          br
+          br
+          b 1. 
+          | There is absolutely no warranty, implied or otherwise, that Keeba will actually work.
+          br
+          | In other words, you can't use it as an excuse to not do your homework.
+          br
+          br
+          b 2. 
+          | You're using Keeba at your own risk.
+          br
+          | Any harm/broken limbs that may be caused by Keeba are entirely not my responsibility.
+          br
+          br
+          b 3. 
+          | Keeba may malfunction/break/explode. Deal with it.
+          br
+          | Please let me know, and I'll do everything I can to help, but no guarantees.
+        p.help-block
+          | just covering my bases, you know?
+        input#gobutton.btn.btn-success(type="submit", value="I agree to the terms. Let's go!", disabled)
+
+script(src='/socket.io/socket.io.js')
+script(src='/js/lib/underscore.js')
+script(src='/js/lib/backbone.js')
+script(src='/js/lib/backbone-relational.js')
+script(src='/js/lib/backbone-iobind.js')
+script(src='/js/lib/backbone-iosync.js')
+script(src='/js/lib/backbone-query.js')
+script(src='/js/lib/handlebars.js')
+script(src='/js/lib/moment.js')
+
+// App
+include templates.html
+script(src='/js/helpers.js')
+script(src='/js/models.js')
+script(src='/js/views.js')
+
+script
+  window.socket = io.connect('', {reconnect: false});
+  // Create models & collections.
+  window.settings = new Settings;
+  window.settings.set(!{settings});
+  window.app = new SetupView({model: window.settings});

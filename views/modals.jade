@@ -1,0 +1,59 @@
+#settings-modal.modal.hide.fade
+  .modal-header
+    a.close.close-button(data-dismiss="modal") &times;
+    h3
+      | Settings
+  .modal-body
+  .modal-footer
+    button.btn.btn-primary(href="#", id="save") Save
+
+#add-assignment-modal.modal.hide.fade
+  .modal-header
+    a.close.close-button(data-dismiss="modal") &times;
+    h3
+      | Add assignment
+  .modal-body
+  .modal-footer
+    button.btn.btn-primary(href="#") Add
+
+#add-course-modal.modal.hide.fade
+  .modal-header
+    a.close.close-button(data-dismiss="modal") &times;
+    h3
+      | Add course
+  .modal-body
+  .modal-footer
+    button.btn.btn-primary(href="#", id="add") Add course
+
+#edit-course-modal.modal.hide.fade
+  .modal-header
+    a.close.close-button(data-dismiss="modal") &times;
+    h3
+      | Edit course
+  .modal-body
+  .modal-footer
+    button.btn.btn-danger(href="#", id="delete", style="float:left", rel="tooltip", data-original-title="There is no undo!") Delete course
+    button.btn.btn-primary(href="#", id="save") Save
+
+#edit-assignment-modal.modal.hide.fade
+  .modal-header
+    a.close.close-button(data-dismiss="modal") &times;
+    h3
+      | Edit assignment
+  .modal-body
+  .modal-footer
+    button.btn.btn-danger(href="#", id="delete", style="float:left", rel="tooltip", data-original-title="There is no undo!") Delete assignment
+    button.btn.btn-primary(href="#", id="save") Save
+
+#failure-modal.modal.hide.fade
+  .modal-header
+    h3 Aw snap!
+  .modal-body
+    p
+      | I lost the connection to the server. (English: I'm broken.)
+      br
+      b Refresh the page 
+      | and try again. If I break again,
+      a(href='mailto:avi.romanoff@jbha.org') send Avi an email.
+  .modal-footer
+    a.btn.btn-danger(href='/logout', target='_self', data-bypass) We can still be friends, right?

@@ -1,0 +1,28 @@
+.container
+  #status
+    if !failed
+      .alert.alert-info
+        h4.alert-heading Hey there!
+        p
+        | Log in with your normal school email account and I'll show you your homework.
+    else 
+      .alert.alert-error
+        h4.alert-heading Whoa!
+        p 
+        | Your email/password were wrong. You're welcome to try again.
+  .hero-unit.hero-unit-custom
+    form#login(method='POST')
+      fieldset
+        .control-group
+          label.control-label(for='email') E-mail: 
+          .controls
+            .input-append
+              input#email.input-medium(name='email', size='16', type='text', value=email || null)
+              span.add-on @jbha.org
+        .control-group
+          label.control-label(for='password') Password: 
+          .controls
+            input#password.input-medium(name='password', size='16', type='password')
+            span.help-inline (No, I won&#39;t store it.)
+        .control-actions
+          button#authenticate-button.btn.btn-primary Get my homework, please.

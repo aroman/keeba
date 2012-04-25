@@ -1,0 +1,84 @@
+/* Copyright (C) 2012 Avi Romanoff <aviromanoff at gmail.com> */
+
+/* Make the background slightly off-white */
+html, body {
+  background-color: #FAFAFA;
+}
+
+/* Make the body not overlap with the topbar */
+body {
+  padding-top: 60px;
+  padding-bottom: 40px;
+}
+
+.sidebar-nav {
+  margin-top: 30px;
+  padding: 9px 0;
+}
+
+td.done-toggle {
+  text-align: center;
+}
+
+.overdue {
+  color: red;
+  font-weight: bold;
+}
+
+.done {
+  text-decoration: line-through;
+  color: #777777;
+  font-weight: normal;
+}
+
+.course-title {
+  margin-right: 2px;
+}
+
+.side-button {
+  float: right;
+}
+
+/* Make the text color of text box extension's darker */
+.input-append .add-on {
+  color: #666;
+  margin-bottom: 8px;
+}
+
+/* Make the text color of inline form help darker */
+.help-inline {
+  color: #8C8C8C;
+}
+
+h4.control-label {
+  margin-bottom: 10px;
+  margin-top: 10px;
+}
+
+/* Add nice bordering, padding, and background coloring to the call-to-action */
+.hero-unit-custom {
+  padding: 50px;
+  padding-top: 40px;
+  padding-bottom: 20px;
+  background-color: #fff;
+  -webkit-box-shadow: 0 0px 3px rgba(0,0,0,.25);
+     -moz-box-shadow: 0 0px 3px rgba(0,0,0,.25);
+          box-shadow: 0 0px 3px rgba(0,0,0,.25);
+}
+
+.archive-button, .edit-button {
+  margin-left: 5px;
+}
+
+.about-image {
+  margin-bottom: 10px;
+  border-radius: 5px;
+}
+
+h1#welcome-message {
+  font-size: 50px;
+}
+
+article.post {
+  margin-bottom: 25px;
+}

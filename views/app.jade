@@ -1,0 +1,43 @@
+.container-fluid
+  #status
+  .row-fluid
+    .span3
+      .well.sidebar-nav
+        ul#sidebar-upcoming.nav.nav-list
+      .well.sidebar-nav
+        ul#sidebar-courses.nav.nav-list
+    .span9
+      #content
+        .hero-unit.well(style="margin-top:30px; text-align:center;")
+          if firstrun
+            h1#welcome-message Your turn, #{nickname}.
+            br
+            p To get started, just click on a link to the left.
+          else
+            h1#welcome-message Miss me?
+            br
+            p You know the drill #{nickname}, just click on a link to the left.
+          h1 &larr;
+
+// App
+script(src='/js/helpers.js')
+script(src='/js/routes.js')
+script(src='/js/models.js')
+script(src='/js/views.js')
+script(type="text/javascript")
+  window.router = new KeebaRouter ();
+  window.courses = new CourseCollection;
+
+  window.socket = io.connect('', {reconnect: false});
+
+  window.app = new AppView();
+
+  window.settings.set(!{settings});
+  window.courses.reset(!{courses});
+
+  window.courses.ioBind('create', window.courses.addCourse);
+
+  window.app.updateUpcoming();
+  window.app.updateCourses();
+
+  Backbone.history.start({pushState: true, root: "/app/"});

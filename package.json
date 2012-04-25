@@ -1,0 +1,34 @@
+{
+  "name": "keeba",
+  "description": "Barrack homework: Sexified",
+  "author": "Avi Romanoff <aviromanoff@gmail.com>",
+  "main": "server.js",
+  "version": "2.4.1",
+  "scripts": {
+    "start": "app/server.js"
+  },
+  "engines": {
+    "node": "0.6.x"
+  },
+  "subdomain": "keeba",
+  "dependencies": {
+    "express": "*",
+    "connect": "*",
+    "qs": "*",
+    "jade": "*",
+    "formidable": "*",
+    "mime": "*",
+    "socket.io": "*",
+    "socket.io-client": "*",
+    "uglify-js": "*",
+    "active-x-obfuscator": "*",
+    "zeparser": "*",
+    "mongoose": "*",
+    "mongodb": "*",
+    "hooks": "*",
+    "cheerio": "*",
+    "cheerio-soupselect": "*",
+    "htmlparser2": "*",
+    "underscore": "*"
+  }
+}

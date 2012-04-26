@@ -33,9 +33,15 @@ app.configure ->
   app.set 'view options', pretty: true
   return
 
+# TODO: Better staging mode support/detection
+staging = process.cwd().indexOf("staging") isnt -1
+
 fs.readFile "#{__dirname}/package.json", "utf-8", (err, data) ->
   package_info = JSON.parse data
-  app.listen 80
+  if staging
+    app.listen 8888
+  else
+    app.listen 80
 
 io = socketio.listen app
 

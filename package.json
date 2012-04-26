@@ -3,7 +3,7 @@
   "description": "Barrack homework: Sexified",
   "author": "Avi Romanoff <aviromanoff@gmail.com>",
   "main": "server.js",
-  "version": "2.4.1",
+  "version": "2.4.4",
   "scripts": {
     "start": "app/server.js"
   },

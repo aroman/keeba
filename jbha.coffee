@@ -45,7 +45,7 @@ CourseSchema = new mongoose.Schema
   jbha_id:
     type: String
     index:
-      unique: true
+      unique: false
       sparse: true
   teacher: String
   assignments: [{ type: mongoose.Schema.ObjectId, ref: 'assignment' }]
@@ -243,7 +243,6 @@ Jbha.Client =
               .populate('assignments', ['jbha_id'])
               .run (err, course) ->
                 if not course[0]
-                  # Match basically everything that's in a toggle-tab.
                   course = new Course()
                   course.owner = token.username
                   course.title = course_data.title
@@ -298,7 +297,7 @@ Jbha.Client =
                               cb
                                 success: true
                                 new_assignments: new_assignments
-                        console.log "[#{token.username}] [Special] Parsed course [#{parsed_courses}/#{courses.length}]"
+                        console.log "[#{token.username}] [#{parsed_courses}/#{courses.length}] Parsed empty course [#{course.title}]"
                     return
 
                   assignment = new Assignment()
@@ -321,7 +320,7 @@ Jbha.Client =
                   assignment.save ->
                     # Last assignment of current course
                     if ++parsed_assignments is assignments_to_parse.length
-                      course.save ->
+                      course.save (err) ->
                         # Last course of current account
                         if ++parsed_courses is courses.length
                           Account.update _id: token.username,
@@ -332,7 +331,7 @@ Jbha.Client =
                               cb
                                 success: true
                                 new_assignments: new_assignments
-                        console.log "[#{token.username}] Parsed course [#{parsed_courses}/#{courses.length}]"
+                        console.log "[#{token.username}] [#{parsed_courses}/#{courses.length}] Parsed course [#{course.title}]"
 
   _authenticated_request: (cookie, resource, callback) ->
     err = null

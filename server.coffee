@@ -1,6 +1,6 @@
 # Copyright (C) 2012 Avi Romanoff <aviromanoff at gmail.com>
 
-fs = require('fs')
+fs = require "fs"
 express = require "express"
 socketio = require "socket.io"
 connect = require "connect"
@@ -33,7 +33,7 @@ app.configure ->
   app.set 'view options', pretty: true
   return
 
-fs.readFile "#{__dirname}/../package.json", "utf-8", (err, data) ->
+fs.readFile "#{__dirname}/package.json", "utf-8", (err, data) ->
   package_info = JSON.parse data
   app.listen 80
 

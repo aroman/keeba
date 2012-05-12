@@ -22,7 +22,23 @@ tomorrow = moment(today).add('days', 1);
 in_a_week = moment(today).add('weeks', 1);
 in_two_weeks = moment(today).add('weeks', 2);
 
+function getEndOfWeek () {
+  for (var i = 1; i < 7; i++) {
+    var new_date = moment(today).add('days', i);
+    // The day is actually friday.
+    if (new_date.day() === 5) {
+      return new_date;
+    }
+  }
+}
+
 UPCOMING_DATES = [
+  {
+    name: "Overdue",
+    link: "overdue",
+    start: 0,
+    end: yesterday.valueOf()
+  },
   {
     name: "Today",
     link: "today",
@@ -39,7 +55,7 @@ UPCOMING_DATES = [
     name: "This Week",
     link: "week",
     start: today.valueOf(),
-    end: in_a_week.valueOf()
+    end: getEndOfWeek()
   },
   {
     name: "Next 2 Weeks",

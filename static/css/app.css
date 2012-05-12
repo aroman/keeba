@@ -82,3 +82,7 @@ h1#welcome-message {
 article.post {
   margin-bottom: 25px;
 }
+
+h3 small {
+  color: #777;
+}

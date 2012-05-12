@@ -232,6 +232,10 @@ Jbha.Client =
       .where('_id', course._id)
       .remove cb
 
+  keep_alive: (token, cb) ->
+    @_authenticated_request token.cookie, "homework.php", ($) ->
+      cb courses
+
   refresh: (token, options, cb) ->
 
     @._parse_courses token.cookie, (courses) =>

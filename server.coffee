@@ -180,12 +180,22 @@ io.sockets.on "connection", (socket) ->
     event_name = "#{model}/#{data._id}:#{method}"
     socket.broadcast.to(token.username).emit(event_name, data)
 
+  keepAlive = () ->
+    jbha.Client.keep_alive token, () ->
+      L "Kept remote session alive"
+
+  # Poll the school server every 30 minutes so
+  # they don't drop our session due to inactivity.
+  keep_alive_id = setInterval(keepAlive, 1800000)
+
+  # Stop polling after the socket disconnects.
+  # This does not happen automatically.
+  socket.on "disconnect", () ->
+    clearInterval(keep_alive_id)
+
   # Spawn a new node instance to handle a refresh
   # request. It's CPU-bound, so it blocks this thread.
-  # This probably won't scale well past ~10 concurrent
-  # workers. The parsing engine should probably be
-  # written in a more performant language, but this'll
-  # do for now.
+  # Only allow one worker per global username presence.
   socket.on "refresh", (options, cb) ->
     # If they omitted the options param, then expect
     # the callback as the first arg.

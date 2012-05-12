@@ -42,7 +42,6 @@ td.done-toggle {
 /* Make the text color of text box extension's darker */
 .input-append .add-on {
   color: #666;
-  margin-bottom: 8px;
 }
 
 /* Make the text color of inline form help darker */

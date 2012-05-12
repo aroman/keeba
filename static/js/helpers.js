@@ -26,34 +26,39 @@ UPCOMING_DATES = [
   {
     name: "Today",
     link: "today",
-    epoch: today.valueOf()
+    start: today.valueOf(),
+    end: today.valueOf()
   },
   {
     name: "Tomorrow",
     link: "tomorrow",
-    epoch: tomorrow.valueOf()
+    start: today.valueOf(),
+    end: tomorrow.valueOf()
   },
   {
     name: "This Week",
     link: "week",
-    epoch: in_a_week.valueOf()
+    start: today.valueOf(),
+    end: in_a_week.valueOf()
   },
   {
     name: "Next 2 Weeks",
-    link: "two-week",
-    epoch: in_two_weeks.valueOf()
+    link: "fortnight",
+    start: today.valueOf(),
+    end: in_two_weeks.valueOf()
   },
   {
     name: "All Assignments",
     link: "all",
-    epoch: 9999999999999 // Year 2286 lol
+    start: today.valueOf(),
+    end: 9999999999999 // Year 2286 lol
   }
 ];
 
 DATE_MAP = {}
 
 _.map(UPCOMING_DATES, function (date) {
-  DATE_MAP[date.link] = _.pick(date, ['name', 'epoch']);
+  DATE_MAP[date.link] = _.pick(date, ['name', 'start', 'end']);
 });
 
 // Cache TTL in ms
@@ -78,8 +83,8 @@ Handlebars.registerHelper('keyword', function (title) {
   }
 });
 
-Handlebars.registerHelper('remaining', function (end) {
-  var num = courses.get_assignments(today.valueOf(), end, "only undone").length;
+Handlebars.registerHelper('remaining', function (start, end) {
+  var num = courses.get_assignments(start, end, "only undone").length;
   var badge = '';
   if (num >= 1) {
     badge = 'badge-error';
@@ -120,9 +125,24 @@ Handlebars.registerHelper('editable_date', function (epoch) {
 });
 
 Handlebars.registerHelper('range_date', function (ranges) {
-  if (ranges.end === 9999999999999) {
-    return "Every assignment ever"
+  var start = ranges.start;
+  var end = ranges.end;
+  var str = "";
+
+  if (start === end) {
+    // Only one day
+    str += moment(start).format(DATE_RANGE_FORMAT);
   } else {
-    return " Up to " + moment(ranges.end).format(DATE_RANGE_FORMAT);
+    // More than one day
+    str += moment(start).format(DATE_RANGE_FORMAT) + " to ";
+    if (end === 9999999999999) {
+      // No (real) end date
+      str += "Doomsday";
+    } else {
+      // Specific end date
+      str += moment(end).format(DATE_RANGE_FORMAT);
+    }
   }
+
+  return str;
 });

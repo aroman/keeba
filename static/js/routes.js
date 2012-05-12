@@ -41,12 +41,12 @@ var KeebaRouter = Backbone.Router.extend({
       this.current_view.remove();
     }
 
-    var assignments = courses.get_assignments(0, date.epoch, "any");
+    var assignments = courses.get_assignments(date.start, date.end, "any");
     this.current_view = new DatesView({
       models: assignments,
       template: dates_template,
       title: date.name,
-      range: {start: 0, end: date.epoch}
+      range: {start: date.start, end: date.end}
     });
 
     $("#content").html(this.current_view.render().el);

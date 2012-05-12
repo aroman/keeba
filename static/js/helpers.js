@@ -103,7 +103,7 @@ Handlebars.registerHelper('remaining', function (start, end) {
   var num = courses.get_assignments(start, end, "only undone").length;
   var badge = '';
   if (num >= 1) {
-    badge = 'badge-error';
+    badge = 'badge-important';
   }
   return new Handlebars.SafeString('<span class="badge ' + badge + '">' + num + '</span>');
 });

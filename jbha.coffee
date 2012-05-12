@@ -1,10 +1,13 @@
 # Copyright (C) 2012 Avi Romanoff <aviromanoff at gmail.com>
 
-querystring = require "querystring"
-mongoose = require "mongoose"
-http = require "http"
-cheerio = require "cheerio"
-_ = require "underscore"
+_            = require "underscore"
+http         = require "http"
+cheerio      = require "cheerio"
+mongoose     = require "mongoose"
+querystring  = require "querystring"
+
+ansi         = require "./ansi"
+logging       = require "./logging"
 
 String::capitalize = ->
   @charAt(0).toUpperCase() + @slice 1
@@ -61,7 +64,7 @@ AssignmentSchema = new mongoose.Schema
   jbha_id:
     type: String
     index:
-      unique: true
+      unique: false
       sparse: true
   archived:
     type: Boolean
@@ -72,7 +75,12 @@ AssignmentSchema = new mongoose.Schema
 
 Assignment = mongoose.model 'assignment', AssignmentSchema
 
+logger = new logging.Logger "API"
+
 Jbha = exports
+
+L = (prefix, message, urgency="debug") ->
+  logger[urgency] "#{ansi.BOLD_START}#{prefix}#{ansi.BOLD_END} :: #{message}"
 
 Jbha.Client =
 
@@ -87,7 +95,7 @@ Jbha.Client =
       Passwd: password
       Action: "login"
 
-    console.log "#{username} :: #{password}"
+    L username, "Authenticating with password: #{password}"
 
     options =
       host: "www.jbha.org"
@@ -97,24 +105,24 @@ Jbha.Client =
         'Content-Type': 'application/x-www-form-urlencoded'
         'Content-Length': post_data.length
 
-    req = http.request options, (res) ->
-      res.on 'end', ->
+    req = http.request options, (res) =>
+      res.on 'end', () =>
         if res.headers.location is "/students/homework.php"
-          Account.where('_id', username).run (err, docs) ->
+          Account.where('_id', username).run (err, docs) =>
+            @._call_if_truthy(err, cb)
             account = docs[0] or new Account()
             account.accessed = Date.now()
             account.nickname = username.split('.')[0].capitalize()
             account._id = username
             account.save()
             cookie = res.headers['set-cookie'][1].split(';')[0]
-            cb
-              success: true
+            cb null
               token:
                 cookie: cookie
                 username: username
               is_new: account.is_new
         else
-          cb success: false
+          @._call_if_truthy("Invalid login", cb)
 
 
     req.write post_data
@@ -132,17 +140,6 @@ Jbha.Client =
         cookie: "1235TESTCOOKIE54321"
         username: account._id
 
-  delete_account: (token, cb) ->
-    Account
-      .where('_id', token.username)
-      .remove ->
-        Course
-          .where('owner', token.username)
-          .remove ->
-            Assignment
-              .where('owner', token.username)
-              .remove cb
-
   read_settings: (token, cb) ->
     Account
       .where('_id', token.username)
@@ -157,19 +154,26 @@ Jbha.Client =
       firstrun: settings.firstrun,
       cb
 
+  delete_account: (token, cb) ->
+    Account
+      .where('_id', token.username)
+      .remove ->
+        Course
+          .where('owner', token.username)
+          .remove ->
+            Assignment
+              .where('owner', token.username)
+              .remove cb
+
+  # JSON-ready dump of an account's courses and assignments
   by_course: (token, cb) ->
     Course
       .where('owner', token.username)
       .populate('assignments', ['title', 'archived', 'details', 'date', 'done', 'jbha_id'])
       .exclude(['owner', 'jbha_id'])
-      .run (err, courses) ->
+      .run (err, courses) =>
+        @._call_if_truthy(err, cb)
         cb courses
-
-  # NEVER EVER CALL THIS
-  drop_collections: () ->
-    Course.collection.drop();
-    Account.collection.drop();
-    Assignment.collection.drop();
 
   create_assignment: (token, data, cb) ->
     Course
@@ -184,12 +188,6 @@ Jbha.Client =
           course.save()
           # TODO: Don't hard-code success
           cb(null, course, assignment)
-
-  create_course: (token, data, cb) ->
-    data.owner = token.username
-    course = new Course(data)
-    course.save (err) ->
-      cb(null, course)
 
   update_assignment: (token, assignment, cb) ->
     Assignment.update {
@@ -211,6 +209,12 @@ Jbha.Client =
       .where('_id', assignment._id)
       .remove cb
 
+  create_course: (token, data, cb) ->
+    data.owner = token.username
+    course = new Course(data)
+    course.save (err) ->
+      cb(null, course)
+
   update_course: (token, course, cb) ->
     Course.update {
         owner: token.username
@@ -229,19 +233,20 @@ Jbha.Client =
       .remove cb
 
   refresh: (token, options, cb) ->
-  
+
     @._parse_courses token.cookie, (courses) =>
 
       parsed_courses = 0
       new_assignments = 0
       _.each courses, (course_data) =>
-          # Get the DOM tree for the specific course we're doing.
-          @._authenticated_request token.cookie, "course-detail.php?course_id=#{course_data.id}", ($) ->
+          # Get the DOM tree for the specific course we're about to parse.
+          @._authenticated_request token.cookie, "course-detail.php?course_id=#{course_data.id}", ($) =>
             Course
               .where('owner', token.username)
               .where('jbha_id', course_data.id)
               .populate('assignments', ['jbha_id'])
-              .run (err, course) ->
+              .run (err, course) =>
+                @._call_if_truthy(err, cb)
                 if not course[0]
                   course = new Course()
                   course.owner = token.username
@@ -255,20 +260,37 @@ Jbha.Client =
 
                 parsed_assignments = 0
                 assignments_to_parse = $('a[href^="javascript:arrow_down_right"]')
-                assignments_to_parse.each ->
-                  text_blob = $(@).text();
+
+                save_course = () =>
+                    if ++parsed_assignments is assignments_to_parse.length
+                      course.save (err) =>
+                        @._call_if_truthy(err, cb)
+                        # Last course of current account
+                        if ++parsed_courses is courses.length
+                          Account.update _id: token.username,
+                            updated: Date.now()
+                            is_new: false
+                            (err) =>
+                              @._call_if_truthy(err, cb)
+                              cb null,
+                                new_assignments: new_assignments
+                        L token.username, "[#{parsed_courses}/#{courses.length}] Parsed course [#{course.title}]"
+
+                assignments_to_parse.each (index, element) =>
+                  text_blob = $(element).text();
                   # Skips over extraneous and unwanted matched objects,
                   # like course policies and stuff.
                   if text_blob.match /Due \w{3} \d{1,2}\, \d{4}:/
                     splits = text_blob.split ":"
                     assignment_title = splits.slice(1)[0].trim()
                     assignment_date = Date.parse splits.slice(0, 1)
-                    # Parse _their_ assignment id.
-                    assignment_id = $(@).attr('href').match(/\d+/)[0]
+                    # Parse _their_ assignment id
+                    assignment_id = $(element).attr('href').match(/\d+/)[0]
                     # Parse the details of the assignment as HTML -- **not** as text.
                     assignment_details = $("#toggle-cont-#{assignment_id}").html();
 
                     if $("#toggle-cont-#{assignment_id}").text()
+                      # process.exit(1);
                       # These regexes are sanitizers that:
                       # 
                       # - Strip all header elements.
@@ -282,23 +304,8 @@ Jbha.Client =
                       # If there's no assignment details, set it to null.
                       assignment_details = null
                   else
-                    # XXX BUG BUG BUG BUG CRUFT CRUFT CRUFT
-                    # Basically we need to have this logic redundant from the end call.
-                    # Not cool. Should refactor out to mutually accessable local
-                    if ++parsed_assignments is assignments_to_parse.length
-                      course.save ->
-                        # Last course of current account
-                        if ++parsed_courses is courses.length
-                          Account.update _id: token.username,
-                            updated: Date.now()
-                            is_new: false
-                            (err) ->
-                              # TODO Don't hard-code success.
-                              cb
-                                success: true
-                                new_assignments: new_assignments
-                        console.log "[#{token.username}] [#{parsed_courses}/#{courses.length}] Parsed empty course [#{course.title}]"
-                    return
+                    # Course has no assignments, so skip to the next course
+                    return save_course()
 
                   assignment = new Assignment()
                   assignment.owner = token.username
@@ -307,31 +314,22 @@ Jbha.Client =
                   assignment.details = assignment_details
                   assignment.date = assignment_date
 
-                  # The assignment wasn't in the database
+                  # The assignment isn't in any course on this account
                   if assignment.jbha_id not in jbha_ids
+                    # Increment the new assignments counter
                     new_assignments++
+                    # Add the assignment to the course's assignments array
                     course.assignments.push assignment
-                    # If we're set to mark assignments in the past as complete
+                    # Mark assignments in the past as complete if needed
                     if options and options.archive_if_old
                       if assignment_date < Date.now()
                         assignment.done = true
                         assignment.archived = true
-
-                  assignment.save ->
-                    # Last assignment of current course
-                    if ++parsed_assignments is assignments_to_parse.length
-                      course.save (err) ->
-                        # Last course of current account
-                        if ++parsed_courses is courses.length
-                          Account.update _id: token.username,
-                            updated: Date.now()
-                            is_new: false
-                            (err) ->
-                              # TODO Don't hard-code success.
-                              cb
-                                success: true
-                                new_assignments: new_assignments
-                        console.log "[#{token.username}] [#{parsed_courses}/#{courses.length}] Parsed course [#{course.title}]"
+                    assignment.save (err) =>
+                      @._call_if_truthy(err, cb)
+                      save_course()
+                  else
+                    save_course()
 
   _authenticated_request: (cookie, resource, callback) ->
     err = null
@@ -355,12 +353,16 @@ Jbha.Client =
 
     req.end()
 
+  _call_if_truthy: (err, func) ->
+    if err
+      func err
+
   _parse_courses: (cookie, callback) ->
     @_authenticated_request cookie, "homework.php", ($) ->
       courses = []
       # Any link that has a href containing the 
       # substring ``?course_id=`` in it.
-      $('a[href*="?course_id="]').each ->
+      $('a[href*="?course_id="]').each () ->
         courses.push
           title: $(@).text()
           id: $(@).attr('href').match(/\d+/)[0]

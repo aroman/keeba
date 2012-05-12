@@ -1,21 +1,21 @@
 # Copyright (C) 2012 Avi Romanoff <aviromanoff at gmail.com>
 
-fs = require "fs"
-express = require "express"
-socketio = require "socket.io"
-connect = require "connect"
-cp = require "child_process"
-_ = require "underscore"
-parseCookie = connect.utils.parseCookie 
-Session = connect.middleware.session.Session
-MemoryStore = express.session.MemoryStore
+fs        = require "fs"
+cp        = require "child_process"
+_         = require "underscore"
+connect   = require "connect"
+express   = require "express"
+socketio  = require "socket.io"
 
-jbha = require "./jbha"
+jbha      = require "./jbha"
+ansi      = require "./ansi"
+logging   = require "./logging"
 
 package_info = null
+logger = new logging.Logger "SRV"
 
 app = express.createServer()
-sessionStore = new MemoryStore()
+sessionStore = new express.session.MemoryStore()
 
 app.configure ->
   app.use express.cookieParser()
@@ -39,11 +39,15 @@ staging = process.cwd().indexOf("staging") isnt -1
 fs.readFile "#{__dirname}/package.json", "utf-8", (err, data) ->
   package_info = JSON.parse data
   if staging
+    logger.info "Keeba #{package_info.version} serving in 
+#{ansi.PURPLE}staging#{ansi.END} mode on port #{ansi.BOLD}8888#{ansi.END}."
     app.listen 8888
   else
+    logger.info "Keeba #{package_info.version} serving in 
+#{ansi.PRODUCTION}production#{ansi.END} mode on port #{ansi.BOLD}80#{ansi.END}."
     app.listen 80
 
-io = socketio.listen app
+io = socketio.listen app, log: false
 
 app.dynamicHelpers
   version: (req, res) ->
@@ -63,8 +67,8 @@ app.get "/", (req, res) ->
 app.post "/", (req, res) ->
   email = req.body.email
   password = req.body.password
-  jbha.Client.authenticate email, password, (response) ->
-    if not response.success
+  jbha.Client.authenticate email, password, (err, response) ->
+    if err
       res.render "index"
         failed: true
         appmode: false
@@ -86,7 +90,6 @@ app.get "/blog", (req, res) ->
       appmode: false
       blog: JSON.parse data
 
-# TODO: Logout page
 app.get "/logout", (req, res) ->
   req.session.destroy()
   res.redirect "/"
@@ -135,32 +138,37 @@ app.get "/app*", ensureSession, hydrateSettings, (req, res) ->
         settings: JSON.stringify req.settings
         info: package_info
 
-io.set "log level", 2
+io.set "log level", 3
+io.set "logger", new logging.Logger "SIO"
 io.set "transports", [
   'websocket'
   'xhr-polling'
   'jsonp-polling'
 ]
 
-workers = {}
-
 io.set "authorization", (data, accept) ->
   if data.headers.cookie
-    data.cookie = parseCookie data.headers.cookie
+    data.cookie = connect.utils.parseCookie data.headers.cookie
     data.sessionID = data.cookie['express.sid']
     data.sessionStore = sessionStore
     sessionStore.get data.sessionID, (err, session) ->
       if err
         accept err.message.toString(), false
       else
-        data.session = new Session data, session
+        data.session = new connect.middleware.session.Session data, session
         accept null, true
   else
     accept "No cookie transmitted.", false
 
+workers = {}
+
 io.sockets.on "connection", (socket) ->
   token = socket.handshake.session.token
   socket.join token.username
+
+  L = (message, urgency="debug") ->
+    console.log ("Pass") 
+    # logger[urgency] "#{ansi.BOLD_START}#{token.username}#{ansi.BOLD_END} :: #{message}"
 
   sync = (model, method, data) ->
     event_name = "#{model}/#{data._id}:#{method}"
@@ -181,12 +189,35 @@ io.sockets.on "connection", (socket) ->
     if worker
       worker.kill()
     worker = workers[token.username] = cp.fork "#{__dirname}/worker.js"
+
+    logger.debug "herp herp herp"
+
+    L "Worker with pid #{worker.pid} spawned", 'debug'
+
     worker.send
       action: "refresh"
       token: token
       options: options
-    worker.on "message", (res) ->
-      cb res
+
+    setTimeout () ->
+      worker.kill('SIGKILL')
+    , 30000
+
+    worker.on "exit", (code, signal) ->
+      if code isnt 0
+        if signal is 'SIGKILL'
+          L "Worker with pid #{worker.pid} timed out and was killed", 'error'
+          cb "Worker timed out"
+        else
+          L "Worker with pid #{worker.pid} crashed", 'error'
+          cb "Worker crashed"
+      else
+        L "Worker with pid #{worker.pid} exited successfully", 'debug'
+
+    worker.on "message", (message) ->
+      err = message[0]
+      res = message[1]
+      cb err, res
 
   socket.on "settings:read", (data, cb) ->
     jbha.Client.read_settings token, (settings) ->

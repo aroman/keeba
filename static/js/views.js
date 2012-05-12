@@ -3,6 +3,11 @@ StatusView = Backbone.View.extend({
   el: "#status",
   children: null, // Optimization to use a cache for animating.
 
+  events: {
+    "a.link-action": "handleLink"
+  },
+
+
   initialize: function (options) {
     this.render();
     this.model.bind('change', this.render, this);
@@ -16,7 +21,12 @@ StatusView = Backbone.View.extend({
 
   alert: function () {
     this.children.effect("bounce", {times: 2}, 300);
-  }
+  },
+
+  handleLink: function () {
+    courses.fetch({add: true});
+    this.model.set({addable: false});
+  },
 
 });
 
@@ -720,22 +730,30 @@ AppView = Backbone.View.extend({
   refresh: function () {
     var that = this;
     clearInterval(that.update_timer);
-    socket.emit('refresh', function (res) {
-      var num_new = res.new_assignments;
-      if (num_new === 1) {
-        var message = "There was <b>1</b> new assignment synced from the school website.";
+    socket.emit('refresh', function (err, res) {
+      if (err) {
+        app_status.set({
+          heading: "Refresh failed!",
+          message: "Shoot, something went wrong. Try again or nag Avi.",
+          kind: "error"
+        });
+        status_view.alert();
       } else {
-        var message = "There were <b>" + num_new + "</b> new assignments synced from the school website.";
+        var num_new = res.new_assignments;
+        if (num_new === 1) {
+          var message = "There was <b>1</b> new assignment synced from the school website.";
+        } else {
+          var message = "There were <b>" + num_new + "</b> new assignments synced from the school website.";
+        }
+        app_status.set({
+          heading: "Refresh complete!",
+          message: message,
+          kind: "success",
+          addable: true
+        });
+        status_view.alert();
+        // that.update_timer = setInterval(that.updateUpdatedAt, 20000);
       }
-      app_status.set({
-        heading: "Refresh complete!",
-        message: message,
-        kind: "success"
-      });
-      status_view.alert();
-      courses.fetch({add: true});
-      settings.fetch();
-      that.update_timer = setInterval(that.updateUpdatedAt, 20000);
     });
   },
 
@@ -882,15 +900,24 @@ SetupView = Backbone.View.extend({
     var that = this;
     socket.on('connect', function () {
       $("#nickname").focus();
-      socket.emit('refresh', {archive_if_old: true},function () {
-        app_status.set({
-          heading: "Done!",
-          message: "Ready when you are.",
-          kind: "success",
-          closable: false
-        });
-        status_view.alert();
-        $("#gobutton").prop('disabled', false)
+      socket.emit('refresh', {archive_if_old: true}, function (err, res) {
+        if (err) {
+          app_status.set({
+            heading: "Uh oh",
+            message: "Something went wrong setting up your account. Refresh to try again.",
+            kind: "error"
+          });
+          status_view.alert();
+        } else {
+          app_status.set({
+            heading: "Done!",
+            message: "Ready when you are.",
+            kind: "success",
+            closable: false
+          });
+          status_view.alert();
+          $("#gobutton").prop('disabled', false);
+        }
       });
 
       app_status.set({

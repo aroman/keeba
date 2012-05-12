@@ -57,7 +57,7 @@ _.map(UPCOMING_DATES, function (date) {
 });
 
 // Cache TTL in ms
-// 3600000 ms = 24 hr
+// 3600000 ms = 1 hour
 CACHE_TTL = 2 * 3600000;
 
 // = formatting

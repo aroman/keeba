@@ -36,18 +36,22 @@ app.configure ->
 # TODO: Better staging mode support/detection
 staging = process.cwd().indexOf("staging") isnt -1
 
+if staging
+  app.listen 8888
+else
+  app.listen 80
+
+io = socketio.listen app, log: false
+
 fs.readFile "#{__dirname}/package.json", "utf-8", (err, data) ->
   package_info = JSON.parse data
+
   if staging
     logger.info "Keeba #{package_info.version} serving in 
 #{ansi.PURPLE}staging#{ansi.END} mode on port #{ansi.BOLD}8888#{ansi.END}."
-    app.listen 8888
   else
     logger.info "Keeba #{package_info.version} serving in 
 #{ansi.PRODUCTION}production#{ansi.END} mode on port #{ansi.BOLD}80#{ansi.END}."
-    app.listen 80
-
-io = socketio.listen app, log: false
 
 app.dynamicHelpers
   version: (req, res) ->

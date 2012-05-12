@@ -40,6 +40,6 @@ class Logger
     index = @_levels.indexOf(type)
     console.log.apply(
       console,
-       ["   " + @_colors[index] + @._pad(type) + " - " + ansi.END + ansi.BOLD + @prefix + ansi.END].concat(_.toArray(arguments)[1..]))
+       ["  " + @_colors[index] + @._pad(type) + " - " + ansi.END + ansi.BOLD + @prefix + ansi.END].concat(_.toArray(arguments)[1..]))
 
 module.exports = {Logger: Logger}

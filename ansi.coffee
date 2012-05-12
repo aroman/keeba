@@ -1,3 +1,4 @@
+# Copyright (C) 2012 Avi Romanoff <aviromanoff at gmail.com>
 # CoffeeScript you bitch.
 module.exports =
   RED:        `"\033[31m"`

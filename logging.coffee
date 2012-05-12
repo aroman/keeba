@@ -1,5 +1,5 @@
-# Based on socket.io-node's MIT licensed logger.
 # (C) 2012 Avi Romanoff <aviromanoff at gmail.com> 
+# Based on socket.io-node's MIT licensed logger.
 
 _ = require 'underscore'
 

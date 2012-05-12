@@ -174,8 +174,7 @@ io.sockets.on "connection", (socket) ->
   socket.join token.username
 
   L = (message, urgency="debug") ->
-    console.log ("Pass") 
-    # logger[urgency] "#{ansi.BOLD_START}#{token.username}#{ansi.BOLD_END} :: #{message}"
+    logger[urgency] "#{ansi.UNDERLINE}#{token.username}#{ansi.END} :: #{message}"
 
   sync = (model, method, data) ->
     event_name = "#{model}/#{data._id}:#{method}"
@@ -194,10 +193,9 @@ io.sockets.on "connection", (socket) ->
       cb = options
     worker = workers[token.username]
     if worker
-      worker.kill()
+      L "Worker with pid #{worker.pid} replaced", 'warn'
+      worker.kill('SIGHUP')
     worker = workers[token.username] = cp.fork "#{__dirname}/worker.js"
-
-    logger.debug "herp herp herp"
 
     L "Worker with pid #{worker.pid} spawned", 'debug'
 
@@ -211,6 +209,8 @@ io.sockets.on "connection", (socket) ->
     , 30000
 
     worker.on "exit", (code, signal) ->
+      # Obsoleted by new process
+      return if signal is 'SIGHUP'
       if code isnt 0
         if signal is 'SIGKILL'
           L "Worker with pid #{worker.pid} timed out and was killed", 'error'

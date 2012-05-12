@@ -80,7 +80,7 @@ logger = new logging.Logger "API"
 Jbha = exports
 
 L = (prefix, message, urgency="debug") ->
-  logger[urgency] "#{ansi.BOLD_START}#{prefix}#{ansi.BOLD_END} :: #{message}"
+  logger[urgency] "#{ansi.UNDERLINE}#{prefix}#{ansi.END} :: #{message}"
 
 Jbha.Client =
 

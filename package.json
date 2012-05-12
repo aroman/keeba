@@ -24,7 +24,6 @@
     "active-x-obfuscator": "*",
     "zeparser": "*",
     "mongoose": "*",
-    "mongodb": "*",
     "hooks": "*",
     "cheerio": "*",
     "cheerio-soupselect": "*",

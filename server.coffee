@@ -54,7 +54,7 @@ fs.readFile "#{__dirname}/package.json", "utf-8", (err, data) ->
 #{ansi.PURPLE}staging#{ansi.END} mode on port #{ansi.BOLD}8888#{ansi.END}."
   else
     logger.info "Keeba #{package_info.version} serving in 
-#{ansi.PRODUCTION}production#{ansi.END} mode on port #{ansi.BOLD}80#{ansi.END}."
+#{ansi.GREEN}production#{ansi.END} mode on port #{ansi.BOLD}80#{ansi.END}."
 
 app.dynamicHelpers
   version: (req, res) ->

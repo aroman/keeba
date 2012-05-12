@@ -149,8 +149,14 @@ Handlebars.registerHelper('range_date', function (ranges) {
     // Only one day
     str += moment(start).format(DATE_RANGE_FORMAT);
   } else {
-    // More than one day
-    str += moment(start).format(DATE_RANGE_FORMAT) + " to ";
+    if (start === 0) {
+      // No (real) start date
+      str += "The Big Bang"
+    } else {
+      // Specific start date
+      str += moment(start).format(DATE_RANGE_FORMAT);
+    }
+    str += " to "
     if (end === 9999999999999) {
       // No (real) end date
       str += "Doomsday";

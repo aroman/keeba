@@ -219,8 +219,11 @@ io.sockets.on "connection", (socket) ->
     , 30000
 
     worker.on "exit", (code, signal) ->
+      delete workers[token.username]
+
       # Obsoleted by new process
       return if signal is 'SIGHUP'
+
       if code isnt 0
         if signal is 'SIGKILL'
           L "Worker with pid #{worker.pid} timed out and was killed", 'error'
@@ -234,52 +237,52 @@ io.sockets.on "connection", (socket) ->
     worker.on "message", (message) ->
       err = message[0]
       res = message[1]
-      cb err, res
+      cb err, res if _.isFunction cb
 
   socket.on "settings:read", (data, cb) ->
     jbha.Client.read_settings token, (settings) ->
-      cb null, settings
+      cb null, settings if _.isFunction cb
 
   socket.on "settings:update", (data, cb) ->
     jbha.Client.update_settings token, data, ->
       # Hardcode the 0 for a singleton pattern. (See client model)
       socket.broadcast.to(token.username).emit("settings/0:update", data)
-      cb null
+      cb null if _.isFunction cb
 
   socket.on "course:create", (data, cb) ->
     jbha.Client.create_course token, data, (err, course) ->
       socket.broadcast.to(token.username).emit("courses:create", course)
-      cb null, course
+      cb null, course if _.isFunction cb
 
   socket.on "courses:read", (data, cb) ->
     jbha.Client.by_course token, (courses) ->
-      cb null, courses
+      cb null, courses if _.isFunction cb
 
   socket.on "course:update", (data, cb) ->
     jbha.Client.update_course token, data, (err) ->
       sync "course", "update", data
-      cb null
+      cb null if _.isFunction cb
 
   socket.on "course:delete", (data, cb) ->
     jbha.Client.delete_course token, data, (err) ->
       sync "course", "delete", data
-      cb null
+      cb null if _.isFunction cb
       
   socket.on "assignments:create", (data, cb) ->
     jbha.Client.create_assignment token, data, (err, course, assignment) ->
       socket.broadcast.to(token.username).emit("course/#{course._id}:create", assignment)
-      cb null, assignment
+      cb null, assignment if _.isFunction cb
 
   socket.on "assignments:update", (data, cb) ->
     jbha.Client.update_assignment token, data, (err) ->
       sync "assignments", "update", data
-      cb null
+      cb null if _.isFunction cb
 
   socket.on "assignments:delete", (data, cb) ->
     jbha.Client.delete_assignment token, data, (err) ->
       sync "assignments", "delete", data
-      cb null
+      cb null if _.isFunction cb
 
   socket.on "delete account", (cb) ->
     jbha.Client.delete_account token, (err) ->
-      cb null
+      cb null if _.isFunction cb

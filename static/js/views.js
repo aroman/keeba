@@ -4,7 +4,7 @@ StatusView = Backbone.View.extend({
   children: null, // Optimization to use a cache for animating.
 
   events: {
-    "a.link-action": "handleLink"
+    "click a.link-action": "handleLink"
   },
 
 
@@ -24,7 +24,8 @@ StatusView = Backbone.View.extend({
   },
 
   handleLink: function () {
-    courses.fetch({add: true});
+    console.log ("handeLink in StatusView");
+    courses.fetch();
     this.model.set({addable: false});
   },
 
@@ -347,7 +348,8 @@ AssignmentView = Backbone.View.extend({
     this.template = options.template;
     this.model.view = this;
     this.model.on('change', this.render, this);
-    this.model.collection.on('change', this.render, this);
+    // XXX: Why is this here? It causes problems. (Lots of rendering on mark done)
+    // this.model.collection.on('change', this.render, this);
     this.model.on('change:done change:date', window.app.updateUpcoming, app);
     this.model.on('destroy', this.remove, this);
     app.on('details:show details:hide', this.render, this);
@@ -358,6 +360,7 @@ AssignmentView = Backbone.View.extend({
     this.model.off('change:done change:date', window.app.updateUpcoming, app);
     this.model.off('destroy', this.remove, this);
     app.off('details:show details:hide', this.render, this);
+    window.app.updateUpcoming();
     this.$el.remove();
   },
 
@@ -725,6 +728,7 @@ AppView = Backbone.View.extend({
 
     window.router.on('highlight', this.highlightSidebar, this);
     courses.on('change remove reset add', this.updateCourses, this);
+    courses.on('reset', this.updateUpcoming, this);
   },
 
   refresh: function () {

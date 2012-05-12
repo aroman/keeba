@@ -95,7 +95,7 @@ Jbha.Client =
       Passwd: password
       Action: "login"
 
-    L username, "Authenticating with password: #{password}"
+    # L username, "Authenticating with password: #{password}"
 
     options =
       host: "www.jbha.org"
@@ -108,8 +108,9 @@ Jbha.Client =
     req = http.request options, (res) =>
       res.on 'end', () =>
         if res.headers.location is "/students/homework.php"
+          L username, "Remote authentication succeeded", "info"
           Account.where('_id', username).run (err, docs) =>
-            @._call_if_truthy(err, cb)
+            @_call_if_truthy(err, cb)
             account = docs[0] or new Account()
             account.accessed = Date.now()
             account.nickname = username.split('.')[0].capitalize()
@@ -122,7 +123,8 @@ Jbha.Client =
                 username: username
               is_new: account.is_new
         else
-          @._call_if_truthy("Invalid login", cb)
+          L username, "Remote authentication failed", "warn"
+          @_call_if_truthy("Invalid login", cb)
 
 
     req.write post_data

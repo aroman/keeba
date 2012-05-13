@@ -694,7 +694,10 @@ AppView = Backbone.View.extend({
           backdrop: 'static',
           keyboard: false
         });
-        socket.on('reconnect', socket.disconnect);
+        // If you try to reconnect, don't. For whatever reason
+        // the socket will still try even after the attempt_num
+        // is at it's max.
+        socket.on('reconnecting', socket.disconnect);
       }
     });
 

@@ -24,7 +24,6 @@ StatusView = Backbone.View.extend({
   },
 
   handleLink: function () {
-    console.log ("handeLink in StatusView");
     courses.fetch();
     this.model.set({addable: false});
   },
@@ -753,7 +752,7 @@ AppView = Backbone.View.extend({
           heading: "Refresh complete!",
           message: message,
           kind: "success",
-          addable: true
+          addable: Boolean(num_new)
         });
         status_view.alert();
         // that.update_timer = setInterval(that.updateUpdatedAt, 20000);

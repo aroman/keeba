@@ -25,7 +25,6 @@ var KeebaRouter = Backbone.Router.extend({
 
     this.current_view = new SectionView({model: course});
 
-
     $("#content").html(this.current_view.render().el);
     this.trigger("highlight");
   },

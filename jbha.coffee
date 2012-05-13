@@ -7,7 +7,7 @@ mongoose     = require "mongoose"
 querystring  = require "querystring"
 
 ansi         = require "./ansi"
-logging       = require "./logging"
+logging      = require "./logging"
 
 String::capitalize = ->
   @charAt(0).toUpperCase() + @slice 1
@@ -240,19 +240,19 @@ Jbha.Client =
 
   refresh: (token, options, cb) ->
 
-    @._parse_courses token.cookie, (courses) =>
+    @_parse_courses token.cookie, (courses) =>
 
       parsed_courses = 0
       new_assignments = 0
       _.each courses, (course_data) =>
           # Get the DOM tree for the specific course we're about to parse.
-          @._authenticated_request token.cookie, "course-detail.php?course_id=#{course_data.id}", ($) =>
+          @_authenticated_request token.cookie, "course-detail.php?course_id=#{course_data.id}", ($) =>
             Course
               .where('owner', token.username)
               .where('jbha_id', course_data.id)
               .populate('assignments', ['jbha_id'])
               .run (err, course) =>
-                @._call_if_truthy(err, cb)
+                @_call_if_truthy(err, cb)
                 if not course[0]
                   course = new Course()
                   course.owner = token.username
@@ -270,14 +270,14 @@ Jbha.Client =
                 save_course = () =>
                     if ++parsed_assignments is assignments_to_parse.length
                       course.save (err) =>
-                        @._call_if_truthy(err, cb)
+                        @_call_if_truthy(err, cb)
                         # Last course of current account
                         if ++parsed_courses is courses.length
                           Account.update _id: token.username,
                             updated: Date.now()
                             is_new: false
                             (err) =>
-                              @._call_if_truthy(err, cb)
+                              @_call_if_truthy(err, cb)
                               cb null,
                                 new_assignments: new_assignments
                         L token.username, "[#{parsed_courses}/#{courses.length}] Parsed course [#{course.title}]"
@@ -332,7 +332,7 @@ Jbha.Client =
                         assignment.done = true
                         assignment.archived = true
                     assignment.save (err) =>
-                      @._call_if_truthy(err, cb)
+                      @_call_if_truthy(err, cb)
                       save_course()
                   else
                     save_course()

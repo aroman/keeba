@@ -28,7 +28,11 @@ script(type="text/javascript")
   window.router = new KeebaRouter ();
   window.courses = new CourseCollection;
 
-  window.socket = io.connect('');
+  window.socket = io.connect('', {
+    'max reconnection attempts': 5,
+    'reconnection delay': 200, 
+    'connect timeout': 5000
+  });
 
   window.app = new AppView();
 

@@ -686,24 +686,17 @@ AppView = Backbone.View.extend({
       that.update_timer = setInterval(that.updateUpdatedAt, 20000);
     });
 
-    // TODO: Disconnect logic?
-    // socket.on('disconnect', function () {
-    //   setTimeout(function () {
-    //     // Close any and all open modals.
-    //     $(".modal").each(function() {
-    //       $(this).modal({
-    //         backdrop: 'static',
-    //         keyboard: false,
-    //         show: false
-    //       });
-    //     });
-    //     $("#failure-modal").modal({
-    //       backdrop: 'static',
-    //       keyboard: false,
-    //       show: true
-    //     });
-    //   }, 1000); // Slight delay to ignore normal page reloads.
-    // });
+    socket.on('reconnecting', function (timeout, attempt_num) {
+      if (attempt_num === 5) {
+        // Close any and all open modals.
+        $(".modal, .modal-backdrop").not("#failure-modal").remove();
+        $("#failure-modal").modal({
+          backdrop: 'static',
+          keyboard: false
+        });
+        socket.on('reconnect', socket.disconnect);
+      }
+    });
 
     // Hotkey: Add course
     key('c', function () {

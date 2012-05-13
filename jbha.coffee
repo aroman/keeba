@@ -193,41 +193,19 @@ Jbha.Client =
           cb(null, course, assignment)
 
   update_assignment: (token, assignment, cb) ->
-    if assignment.course
-      Assignment
-        .where('owner', token.username)
-        .where('_id', assignment._id)
-        .run (err, ass) ->
-          ass = ass[0]
-          Course
-            .where('owner', token.username)
-            .where('_id', assignment.course)
-            .populate('assignments', ['jbha_id'])
-            .run (err, course) ->
-              course = course[0]
-              course.assignments.remove assignment._id
-              course.save()
-              Course
-                .where('owner', token.username)
-                .where('_id', assignment.course)
-                .populate('assignments', ['jbha_id'])
-                .run (err, course) ->
-                  course = course[0]
-                  course.assignments.push assignment._id
-                  course.save()
+    L token.username, assignment._id
     Assignment.update {
         owner: token.username
         _id: assignment._id
       },
       {
         title: assignment.title
-        course: assignment.course
         date: assignment.date
         details: assignment.details
         done: assignment.done
         archived: assignment.archived
       },
-      cb(null)
+      cb null
 
   delete_assignment: (token, assignment, cb) ->
     Assignment
@@ -260,7 +238,7 @@ Jbha.Client =
 
   keep_alive: (token, cb) ->
     @_authenticated_request token.cookie, "homework.php", ($) ->
-      cb courses
+      cb null
 
   refresh: (token, options, cb) ->
 

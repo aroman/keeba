@@ -6,7 +6,7 @@ _          = require "underscore"
 connect    = require "connect"
 express    = require "express"
 socketio   = require "socket.io"
-MongoStore = require("connect-mongo")(express)
+MongoStore = require('connect-mongo')(express);
 
 jbha       = require "./jbha"
 ansi       = require "./ansi"

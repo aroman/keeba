@@ -58,6 +58,7 @@ Course = mongoose.model 'course', CourseSchema
 
 AssignmentSchema = new mongoose.Schema
   owner: String
+  course: { type: mongoose.Schema.ObjectId, ref: 'course' }
   date: Number
   title: String
   details: String
@@ -192,18 +193,41 @@ Jbha.Client =
           cb(null, course, assignment)
 
   update_assignment: (token, assignment, cb) ->
+    if assignment.course
+      Assignment
+        .where('owner', token.username)
+        .where('_id', assignment._id)
+        .run (err, ass) ->
+          ass = ass[0]
+          Course
+            .where('owner', token.username)
+            .where('_id', assignment.course)
+            .populate('assignments', ['jbha_id'])
+            .run (err, course) ->
+              course = course[0]
+              course.assignments.remove assignment._id
+              course.save()
+              Course
+                .where('owner', token.username)
+                .where('_id', assignment.course)
+                .populate('assignments', ['jbha_id'])
+                .run (err, course) ->
+                  course = course[0]
+                  course.assignments.push assignment._id
+                  course.save()
     Assignment.update {
         owner: token.username
         _id: assignment._id
       },
       {
         title: assignment.title
+        course: assignment.course
         date: assignment.date
         details: assignment.details
         done: assignment.done
         archived: assignment.archived
       },
-      cb
+      cb(null)
 
   delete_assignment: (token, assignment, cb) ->
     Assignment
@@ -319,6 +343,7 @@ Jbha.Client =
                   assignment.jbha_id = assignment_id
                   assignment.details = assignment_details
                   assignment.date = assignment_date
+                  assignment.course = course._id
 
                   # The assignment isn't in any course on this account
                   if assignment.jbha_id not in jbha_ids

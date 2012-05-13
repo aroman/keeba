@@ -90,3 +90,7 @@ h3 small {
 .navbar-fixed-top .brand {
   color: #fff;
 }
+
+select.input-xlarge {
+  width: 280px;
+}

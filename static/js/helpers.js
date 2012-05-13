@@ -168,3 +168,21 @@ Handlebars.registerHelper('range_date', function (ranges) {
 
   return str;
 });
+
+Handlebars.registerHelper('course_options', function (course_id) {
+  str = "";
+
+  _.each(courses.pluck("_id"), function (current_id) {
+    str += "<option";
+    if (current_id === course_id) {
+      str += " selected";
+    }
+    str += ' value="' +
+    current_id +
+    '">' +
+    courses.get(current_id).get('title') +
+    "</option>\n";
+  });
+
+  return str;
+});

@@ -177,6 +177,7 @@ EditAssignmentView = Backbone.View.extend({
     this.model.save({
       title: this.$("#title").val(),
       details: this.$("#details").val(),
+      course: this.$("#course").val(),
       date: date
     },
     {
@@ -200,7 +201,7 @@ EditAssignmentView = Backbone.View.extend({
       success: function () {
         that.$el.modal('hide');
         // XXX: The tooltip gets left behind for whatever reason.
-        $(".tooltip").remove();
+        // $(".tooltip").remove();
       }
     });
   },
@@ -350,6 +351,7 @@ AssignmentView = Backbone.View.extend({
     // XXX: Why is this here? It causes problems. (Lots of rendering on mark done)
     // this.model.collection.on('change', this.render, this);
     this.model.on('change:done change:date', window.app.updateUpcoming, app);
+    this.model.on('change:course', this.remove, this);
     this.model.on('destroy', this.remove, this);
     app.on('details:show details:hide', this.render, this);
   },
@@ -357,6 +359,7 @@ AssignmentView = Backbone.View.extend({
   remove: function () {
     this.model.off('change', this.render, this);
     this.model.off('change:done change:date', window.app.updateUpcoming, app);
+    this.model.off('change:course', this.remove, this);
     this.model.off('destroy', this.remove, this);
     app.off('details:show details:hide', this.render, this);
     window.app.updateUpcoming();

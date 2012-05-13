@@ -175,7 +175,7 @@ Jbha.Client =
       .populate('assignments', ['title', 'archived', 'details', 'date', 'done', 'jbha_id'])
       .exclude(['owner', 'jbha_id'])
       .run (err, courses) =>
-        @._call_if_truthy(err, cb)
+        @_call_if_truthy(err, cb)
         cb courses
 
   create_assignment: (token, data, cb) ->
@@ -194,18 +194,45 @@ Jbha.Client =
 
   update_assignment: (token, assignment, cb) ->
     L token.username, assignment._id
-    Assignment.update {
-        owner: token.username
-        _id: assignment._id
-      },
-      {
-        title: assignment.title
-        date: assignment.date
-        details: assignment.details
-        done: assignment.done
-        archived: assignment.archived
-      },
-      cb null
+
+    # Get original assignment
+    Assignment
+      .findOne({'owner': token.username, '_id': assignment._id})
+      .select('course')
+      .run (err, original_assignment) =>
+        console.log err
+        # Remove assignment from old course
+        Course
+          .findOne({'owner': token.username, '_id': original_assignment.course})
+          .populate('assignments')
+          .run (err, original_course) =>
+            console.log err
+            original_course.assignments.remove assignment._id
+            original_course.save()
+            # Push assignment to new course
+            Course
+              .findOne({'owner': token.username, '_id': assignment.course})
+              .populate('assignments')
+              .run (err, course) =>
+                console.log err
+                course.assignments.push assignment._id
+                course.save()
+                Assignment.update {
+                    owner: token.username
+                    _id: assignment._id
+                  },
+                  {
+                    title: assignment.title
+                    date: assignment.date
+                    details: assignment.details
+                    course: assignment.course
+                    done: assignment.done
+                    archived: assignment.archived
+                  },
+                  {},
+                  (err, num_affected) =>
+                    console.log err
+                    cb null
 
   delete_assignment: (token, assignment, cb) ->
     Assignment

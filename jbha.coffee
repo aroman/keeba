@@ -18,6 +18,12 @@ if process.env.SUBDOMAIN
 else
   mongoose.connect "mongodb://localhost/keeba"
 
+# [18:46] <timoxley> UserSchema.namedScope('forAccount', function (account) {
+# [18:46] <timoxley>   return this.find({accountId: account})
+# [18:46] <timoxley> })
+# [18:47] <timoxley> then I say User.forAccount(currentAccount._id).find(…)
+# [18:47] <timoxley> which scopes the find() query to the current "Account"
+
 AccountSchema = new mongoose.Schema
   _id: String
   accessed: Date
@@ -58,7 +64,6 @@ Course = mongoose.model 'course', CourseSchema
 
 AssignmentSchema = new mongoose.Schema
   owner: String
-  course: { type: mongoose.Schema.ObjectId, ref: 'course' }
   date: Number
   title: String
   details: String
@@ -190,49 +195,39 @@ Jbha.Client =
           course.assignments.push assignment
           course.save()
           # TODO: Don't hard-code success
-          cb(null, course, assignment)
+          cb(null, course, assignment)(assignment._id)
 
   update_assignment: (token, assignment, cb) ->
-    L token.username, assignment._id
-
-    # Get original assignment
-    Assignment
-      .findOne({'owner': token.username, '_id': assignment._id})
-      .select('course')
-      .run (err, original_assignment) =>
-        console.log err
-        # Remove assignment from old course
-        Course
-          .findOne({'owner': token.username, '_id': original_assignment.course})
-          .populate('assignments')
-          .run (err, original_course) =>
-            console.log err
-            original_course.assignments.remove assignment._id
-            original_course.save()
-            # Push assignment to new course
-            Course
-              .findOne({'owner': token.username, '_id': assignment.course})
-              .populate('assignments')
-              .run (err, course) =>
-                console.log err
-                course.assignments.push assignment._id
-                course.save()
-                Assignment.update {
-                    owner: token.username
-                    _id: assignment._id
-                  },
-                  {
-                    title: assignment.title
-                    date: assignment.date
-                    details: assignment.details
-                    course: assignment.course
-                    done: assignment.done
-                    archived: assignment.archived
-                  },
-                  {},
-                  (err, num_affected) =>
-                    console.log err
-                    cb null
+    # Pull the assignment from the current course,
+    # push it onto the new one, save it,
+    # and finally update the assignment fields. 
+    Course.update {
+      owner: token.username
+      assignments: assignment._id
+    },
+    {
+      $pull: {assignments: assignment._id}
+    },
+    {},
+    (err, num_affected) =>
+      Course
+        .findOne({'owner': token.username, '_id': assignment.course})
+        .run (err, course) =>
+          course.assignments.push assignment._id
+          course.save (err) =>
+            Assignment.update {
+                owner: token.username
+                _id: assignment._id
+              },
+              {
+                title: assignment.title
+                date: assignment.date
+                details: assignment.details
+                done: assignment.done
+                archived: assignment.archived
+              },
+              {},
+              cb
 
   delete_assignment: (token, assignment, cb) ->
     Assignment
@@ -348,7 +343,6 @@ Jbha.Client =
                   assignment.jbha_id = assignment_id
                   assignment.details = assignment_details
                   assignment.date = assignment_date
-                  assignment.course = course._id
 
                   # The assignment isn't in any course on this account
                   if assignment.jbha_id not in jbha_ids

@@ -351,7 +351,7 @@ AssignmentView = Backbone.View.extend({
     // XXX: Why is this here? It causes problems. (Lots of rendering on mark done)
     // this.model.collection.on('change', this.render, this);
     this.model.on('change:done change:date', window.app.updateUpcoming, app);
-    this.model.on('change:course', this.remove, this);
+    // this.model.on('change:course', this.remove, this);
     this.model.on('destroy', this.remove, this);
     app.on('details:show details:hide', this.render, this);
   },
@@ -359,7 +359,7 @@ AssignmentView = Backbone.View.extend({
   remove: function () {
     this.model.off('change', this.render, this);
     this.model.off('change:done change:date', window.app.updateUpcoming, app);
-    this.model.off('change:course', this.remove, this);
+    // this.model.off('change:course', this.remove, this);
     this.model.off('destroy', this.remove, this);
     app.off('details:show details:hide', this.render, this);
     window.app.updateUpcoming();
@@ -605,6 +605,7 @@ SectionView = Backbone.View.extend({
         template: course_assignment_template
       });
       assignment.on('change:done', this.updateArchivable, this);
+      assignment.on('change:course', this.render, this);
       this.$("tbody").prepend(view.render().el);
     }
   },
@@ -685,23 +686,24 @@ AppView = Backbone.View.extend({
       that.update_timer = setInterval(that.updateUpdatedAt, 20000);
     });
 
-    socket.on('disconnect', function () {
-      setTimeout(function () {
-        // Close any and all open modals.
-        $(".modal").each(function() {
-          $(this).modal({
-            backdrop: 'static',
-            keyboard: false,
-            show: false
-          });
-        });
-        $("#failure-modal").modal({
-          backdrop: 'static',
-          keyboard: false,
-          show: true
-        });
-      }, 1000); // Slight delay to ignore normal page reloads.
-    });
+    // TODO: Disconnect logic?
+    // socket.on('disconnect', function () {
+    //   setTimeout(function () {
+    //     // Close any and all open modals.
+    //     $(".modal").each(function() {
+    //       $(this).modal({
+    //         backdrop: 'static',
+    //         keyboard: false,
+    //         show: false
+    //       });
+    //     });
+    //     $("#failure-modal").modal({
+    //       backdrop: 'static',
+    //       keyboard: false,
+    //       show: true
+    //     });
+    //   }, 1000); // Slight delay to ignore normal page reloads.
+    // });
 
     // Hotkey: Add course
     key('c', function () {

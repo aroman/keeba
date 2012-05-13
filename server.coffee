@@ -1,21 +1,23 @@
 # Copyright (C) 2012 Avi Romanoff <aviromanoff at gmail.com>
 
-fs        = require "fs"
-cp        = require "child_process"
-_         = require "underscore"
-connect   = require "connect"
-express   = require "express"
-socketio  = require "socket.io"
+fs         = require "fs"
+cp         = require "child_process"
+_          = require "underscore"
+connect    = require "connect"
+express    = require "express"
+socketio   = require "socket.io"
+MongoStore = require("connect-mongo")(express)
 
-jbha      = require "./jbha"
-ansi      = require "./ansi"
-logging   = require "./logging"
+jbha       = require "./jbha"
+ansi       = require "./ansi"
+logging    = require "./logging"
 
 package_info = null
 logger = new logging.Logger "SRV"
 
 app = express.createServer()
-sessionStore = new express.session.MemoryStore()
+sessionStore = new MongoStore
+  db: 'keeba'
 
 app.configure ->
   app.use express.cookieParser()

@@ -3,17 +3,17 @@ sidebar_courses_template = Handlebars.compile($("#sidebar-courses-template").htm
 sidebar_dates_template = Handlebars.compile($("#sidebar-dates-template").html());
 
 course_template = Handlebars.compile($("#course-template").html());
+edit_course_template = Handlebars.compile($("#edit-course-template").html());
 course_assignment_template = Handlebars.compile($("#course-assignment-template").html());
 
 dates_template = Handlebars.compile($("#dates-template").html());
 date_assignment_template = Handlebars.compile($("#date-assignment-template").html());
 
+edit_assignment_template = Handlebars.compile($("#edit-assignment-template").html());
+
 status_template = Handlebars.compile($("#status-template").html());
 settings_template = Handlebars.compile($("#settings-template").html());
 home_template = Handlebars.compile($("#home-template").html());
-
-edit_course_assignment_template = Handlebars.compile($("#edit-course-assignment-template").html());
-edit_course_template = Handlebars.compile($("#edit-course-template").html());
 
 _now = moment();
 today = moment([_now.year(), _now.month(), _now.date()]);
@@ -170,7 +170,7 @@ Handlebars.registerHelper('range_date', function (ranges) {
 });
 
 Handlebars.registerHelper('course_options', function (course_id) {
-  str = "";
+  str = "<option>Choose course</option>";
 
   _.each(courses.pluck("_id"), function (current_id) {
     str += "<option";

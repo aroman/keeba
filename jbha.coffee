@@ -195,7 +195,7 @@ Jbha.Client =
           course.assignments.push assignment
           course.save()
           # TODO: Don't hard-code success
-          cb(null, course, assignment)(assignment._id)
+          cb(null, course, assignment)
 
   update_assignment: (token, assignment, cb) ->
     # Pull the assignment from the current course,

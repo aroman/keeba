@@ -196,7 +196,7 @@
   </form>
 </script>
 
-<script id="edit-course-assignment-template" type="text/x-handlebars-template">
+<script id="edit-assignment-template" type="text/x-handlebars-template">
   <form class="form-horizontal">
     <fieldset>
       <div class="control-group">
@@ -221,21 +221,25 @@
           {{/if}}
         </div>
       </div>
-      <div class="control-group">
-        <label class="control-label">Course</label>
-        <div class="controls">
-          <select id="course" class="input-xlarge">
-            {{{course_options course}}}
-          </select>
+      {{#unless hard_course}}
+        <div class="control-group">
+          <label class="control-label">Course</label>
+          <div class="controls">
+            <select id="course" class="input-xlarge">
+              {{{course_options course}}}
+            </select>
+          </div>
         </div>
-      </div>
-      <div class="control-group">
-        <label class="control-label">Date</label>
-        <div class="controls">
-          <input type="text" data-date-format="mm/dd/yy" id="date" class="input-xlarge" placeholder="e.g 4/23/12" value="{{editable_date date}}">
-          <span class="help-inline"></span>
+      {{/unless}}
+      {{#unless hard_date}}
+        <div class="control-group">
+          <label class="control-label">Date</label>
+          <div class="controls">
+            <input type="text" data-date-format="mm/dd/yy" id="date" class="input-xlarge" placeholder="e.g 4/23/12" value="{{editable_date date}}">
+            <span class="help-inline"></span>
+          </div>
         </div>
-      </div>
+      {{/unless}}
     </fieldset>
   </form>
 </script>

@@ -83,6 +83,8 @@ AddAssignmentView = Backbone.View.extend({
 
   el: $("#add-assignment-modal"),
   template: undefined,
+  parent_date: undefined,
+  parent_course: undefined,
 
   events: {
     "click button":  "add",
@@ -91,7 +93,8 @@ AddAssignmentView = Backbone.View.extend({
 
   initialize: function (options) {
     this.template = options.template;
-    // this.model.on('change', this.render, this);
+    this.parent_date = options.date;
+    this.parent_course = options.course;
     this.render();
   },
 
@@ -110,7 +113,10 @@ AddAssignmentView = Backbone.View.extend({
     if (date) {
       date = Date.parse(date).valueOf();
     }
-    this.model.get('assignments').create({
+    var course_id = this.parent_course || this.$("#course").val();
+
+    console.log (course_id)
+    window.courses.get(course_id).get('assignments').create({
       title: this.$("#title").val(),
       details: this.$("#details").val(),
       date: date
@@ -130,10 +136,13 @@ AddAssignmentView = Backbone.View.extend({
   },
 
   render: function () {
+    console.log (this.parent_date)
+    console.log (this.parent_course)
     this.$(".modal-body").html(this.template({
       title: '',
       details: '',
-      date: ''
+      hard_date: this.parent_date,
+      hard_course: this.parent_course
     }));
     this.$("#date").datepicker();
     return this;
@@ -200,8 +209,6 @@ EditAssignmentView = Backbone.View.extend({
       wait: true,
       success: function () {
         that.$el.modal('hide');
-        // XXX: The tooltip gets left behind for whatever reason.
-        // $(".tooltip").remove();
       }
     });
   },
@@ -390,7 +397,7 @@ AssignmentView = Backbone.View.extend({
 
   edit: function () {
     var edit_dialog = new EditAssignmentView({
-      template: edit_course_assignment_template,
+      template: edit_assignment_template,
       model: this.model
     });
     edit_dialog.show();
@@ -581,8 +588,9 @@ SectionView = Backbone.View.extend({
 
   createAssignment: function () {
     var add_dialog = new AddAssignmentView({
-      template: edit_course_assignment_template,
-      model: this.model
+      template: edit_assignment_template,
+      model: this.model,
+      course: this.model.id
     });
     add_dialog.show();
   },

@@ -7,6 +7,7 @@ CourseAssignment = Backbone.RelationalModel.extend({
     this.ioBind('update', this.set);
     this.ioBind('delete', this.destroy);
     this.bind('destroy', this.ioUnbindAll);
+    console.log ("I am alive.")
   },
 
   defaults: function () {

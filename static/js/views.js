@@ -448,9 +448,9 @@ DatesView = Backbone.View.extend({
     }));
 
     if (app.showing_archived) {
-      to_render = this.models, "date";
+      to_render = this.models;
     } else {
-      to_render = unarchived, "date";
+      to_render = unarchived;
     }
     
     to_render = _.sortBy(to_render, function(assignment) {

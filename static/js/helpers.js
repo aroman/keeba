@@ -190,7 +190,7 @@ Handlebars.registerHelper('range_date', function (ranges) {
 });
 
 Handlebars.registerHelper('course_options', function (course_id) {
-  str = "<option>Choose course</option>";
+  str = "";
 
   _.each(courses.pluck("_id"), function (current_id) {
     str += "<option";

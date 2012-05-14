@@ -137,12 +137,10 @@ AddAssignmentView = Backbone.View.extend({
   },
 
   render: function () {
-    console.log (this.parent_date)
-    console.log (this.parent_course)
     this.$(".modal-body").html(this.template({
       title: '',
       details: '',
-      hard_date: this.parent_date,
+      date: this.parent_date,
       hard_course: this.parent_course
     }));
     this.$("#date").datepicker();
@@ -419,6 +417,7 @@ DatesView = Backbone.View.extend({
   template: undefined,
 
   events: {
+    "click button.add-button": "createAssignment",
     "click button.archive-button": "archiveDone"
   },
 
@@ -471,6 +470,26 @@ DatesView = Backbone.View.extend({
     return this;
   },
 
+  createAssignment: function () {
+    // Intelligent defaults for date ranges,
+    // based on the range itself.
+    if (this.range.end === tomorrow.valueOf()) {
+      var date = tomorrow.valueOf();
+    }
+    else if (this.range.start === big_bang.valueOf()) {
+      var date = today.valueOf();
+    }
+    else {
+      var date = this.range.start;
+    }
+    var add_dialog = new AddAssignmentView({
+      template: edit_assignment_template,
+      model: this.model,
+      date: date
+    });
+    add_dialog.show();
+  },
+
   dateChanged: function (assignment) {
     if (this.range.start > assignment.get('date') || assignment.get('date') > this.range.end) {
       for (var i in this.models) {
@@ -511,9 +530,9 @@ SectionView = Backbone.View.extend({
   template: course_template,
 
   events: {
-      "click button.archive-button": "archiveDone",
-      "click button.add-button": "createAssignment",
-      "click button.edit-button": "edit"
+    "click button.add-button": "createAssignment",
+    "click button.edit-button": "edit",
+    "click button.archive-button": "archiveDone"
   },
 
   initialize: function (options) {

@@ -21,12 +21,32 @@ yesterday = moment(today).subtract('days', 1);
 tomorrow = moment(today).add('days', 1);
 in_a_week = moment(today).add('weeks', 1);
 in_two_weeks = moment(today).add('weeks', 2);
+big_bang = moment(0); // Actually 1970
+doomsday = moment(9999999999999); // Year 2286 lol
 
 function getEndOfWeek () {
+  var wanted = _.indexOf(moment.weekdays, "Friday");
   for (var i = 1; i < 7; i++) {
     var new_date = moment(today).add('days', i);
-    // The day is actually friday.
-    if (new_date.day() === 5) {
+    if (new_date.day() === wanted) {
+      return new_date;
+    }
+  }
+}
+
+function getStartOfWeek () {
+  var wanted = _.indexOf(moment.weekdays, "Monday");
+  // It's a weekend (Friday, Saturday, Sunday)
+  if (_.indexOf([5,6,0], today.day()) !== -1) {
+    var start = 1;
+    var end = 4;
+  } else {
+    var start = -3;
+    var end = 1;
+  }
+  for (var i = start; i < end; i++) {
+    var new_date = moment(today).add('days', i);
+    if (new_date.day() === wanted) {
       return new_date;
     }
   }
@@ -36,7 +56,7 @@ UPCOMING_DATES = [
   {
     name: "Overdue",
     link: "overdue",
-    start: 0,
+    start: big_bang.valueOf(),
     end: yesterday.valueOf()
   },
   {
@@ -48,26 +68,26 @@ UPCOMING_DATES = [
   {
     name: "Tomorrow",
     link: "tomorrow",
-    start: today.valueOf(),
+    start: tomorrow.valueOf(),
     end: tomorrow.valueOf()
   },
   {
     name: "This Week",
     link: "week",
-    start: today.valueOf(),
-    end: getEndOfWeek()
+    start: getStartOfWeek().valueOf(),
+    end: getEndOfWeek().valueOf()
   },
   {
     name: "Next 2 Weeks",
     link: "fortnight",
-    start: today.valueOf(),
-    end: in_two_weeks.valueOf()
+    start: getStartOfWeek().valueOf(),
+    end: moment(getEndOfWeek()).add('weeks', 1).valueOf()
   },
   {
     name: "All Assignments",
     link: "all",
     start: today.valueOf(),
-    end: 9999999999999 // Year 2286 lol
+    end: doomsday.valueOf()
   }
 ];
 
@@ -149,7 +169,7 @@ Handlebars.registerHelper('range_date', function (ranges) {
     // Only one day
     str += moment(start).format(DATE_RANGE_FORMAT);
   } else {
-    if (start === 0) {
+    if (start === big_bang.valueOf()) {
       // No (real) start date
       str += "The Big Bang"
     } else {
@@ -157,7 +177,7 @@ Handlebars.registerHelper('range_date', function (ranges) {
       str += moment(start).format(DATE_RANGE_FORMAT);
     }
     str += " to "
-    if (end === 9999999999999) {
+    if (end === doomsday.valueOf()) {
       // No (real) end date
       str += "Doomsday";
     } else {

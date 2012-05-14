@@ -113,9 +113,10 @@ AddAssignmentView = Backbone.View.extend({
     if (date) {
       date = Date.parse(date).valueOf();
     }
-    var course_id = this.parent_course || this.$("#course").val();
 
+    var course_id = this.parent_course || this.$("#course").val();
     console.log (course_id)
+
     window.courses.get(course_id).get('assignments').create({
       title: this.$("#title").val(),
       details: this.$("#details").val(),

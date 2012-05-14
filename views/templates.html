@@ -86,8 +86,15 @@
     <span class="course-title">{{title}}</span><small> {{range_date range}}</small>
     {{#unless empty}}
       {{#if show_archive_button}}
-        <button class="btn btn-mini btn-inverse side-button archive-button" {{#if archivable}}disabled{{/if}}> Archive Done</button>
-        {{/if}}
+        <button class="btn btn-mini btn-inverse side-button archive-button" {{#if archivable}}disabled{{/if}}>
+          <i class="icon-inbox icon-white"></i>
+          <span> Archive Done </span>
+        </button>
+        <button class="btn btn-mini btn-success side-button add-button">
+          <i class="icon-plus icon-white"></i>
+          <span> Add Assignment </span>
+        </button>
+      {{/if}}
     {{/unless}}
   </h3>
     {{#if empty}}

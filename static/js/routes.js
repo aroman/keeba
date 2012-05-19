@@ -40,9 +40,7 @@ var KeebaRouter = Backbone.Router.extend({
       this.current_view.remove();
     }
 
-    var assignments = courses.get_assignments(date.start, date.end, "any");
     this.current_view = new DatesView({
-      models: assignments,
       template: dates_template,
       title: date.name,
       range: {start: date.start, end: date.end}

@@ -132,6 +132,13 @@ AddAssignmentView = Backbone.View.extend({
       success: function (model) {
         model.bindToServer();
         that.$el.modal('hide');
+        // XXX: Hack to get the date view to re-render
+        // once the assignment is added.
+        // Otherwise, there's no way for it to be notified
+        // of the change.
+        if (parent_date) {
+          app.trigger('archived:show');
+        }
       }
     });
   },
@@ -417,6 +424,8 @@ AssignmentView = Backbone.View.extend({
 DatesView = Backbone.View.extend({
 
   template: undefined,
+  title: "Untitled",
+  range: {start: undefined, end: undefined},
 
   events: {
     "click button.add-button": "createAssignment",
@@ -427,7 +436,6 @@ DatesView = Backbone.View.extend({
     this.template = options.template;
     this.title = options.title;
     this.range = options.range;
-    this.models = options.models;
     app.on('archived:show archived:hide', this.render, this);
   },
 
@@ -437,6 +445,7 @@ DatesView = Backbone.View.extend({
   },
 
   render: function () {
+    this.models = courses.get_assignments(this.range.start, this.range.end, "any");
     var unarchived = _.reject(this.models, function (assignment) {
       return assignment.get('archived');
     });
@@ -473,7 +482,8 @@ DatesView = Backbone.View.extend({
   },
 
   createAssignment: function () {
-    // Intelligent defaults for date ranges,
+    // Intelligent defaults for date ranges
+    // when adding assignments to a specific range,
     // based on the range itself.
     if (this.range.end === tomorrow.valueOf()) {
       var date = tomorrow.valueOf();
@@ -484,6 +494,7 @@ DatesView = Backbone.View.extend({
     else {
       var date = this.range.start;
     }
+    var that = this;
     var add_dialog = new AddAssignmentView({
       template: edit_assignment_template,
       model: this.model,

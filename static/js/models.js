@@ -67,7 +67,7 @@ CourseAssignment = Backbone.RelationalModel.extend({
 AssignmentCollection = Backbone.QueryCollection.extend({
 
   comparator: function (assignment) {
-    return assignment.get('title');
+    return assignment.get('date');
   }
 
 });

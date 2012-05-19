@@ -346,6 +346,7 @@ EditCourseView = Backbone.View.extend({
 AssignmentView = Backbone.View.extend({
 
   tagName: 'tr',
+  className: 'assignment',
   template: undefined,
 
   events: {
@@ -616,7 +617,11 @@ SectionView = Backbone.View.extend({
     add_dialog.show();
   },
 
-  addAssignment: function (assignment) {
+  addAssignment: function (assignment, course, options) {
+    if (_.isUndefined(options)) {
+      return;
+    }
+    var index = options.index;
     // XXX: https://github.com/PaulUithol/Backbone-relational/issues/48
     var assignment_with_id = this.$("div[data-id='" + assignment.get('_id') + "']");
     if (assignment_with_id.length === 0) {
@@ -634,11 +639,21 @@ SectionView = Backbone.View.extend({
         template: course_assignment_template
       });
       assignment.on('change:done', this.updateArchivable, this);
-      this.$("tbody").prepend(view.render().el);
+      if (_.isNumber(index)) {
+        if (index === 0 ) {
+          return this.$("tbody").prepend(view.render().el);
+        }
+        var rows = this.$("tr.assignment");
+        var parent_at_index = $("td", rows[index-1]).parent();
+        parent_at_index.after(view.render().el)
+      } else {
+        this.$("tbody").append(view.render().el);
+      }
     }
   },
 
   addAssignments: function (assignments) {
+    console.log("addAssignments")
     _.each(assignments, this.addAssignment, this);
   },
 

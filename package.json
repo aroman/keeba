@@ -5,8 +5,8 @@
   "main": "server.js",
   "version": "2.6.3",
   "scripts": {
-    "start": "app/server.js",
-    "prestart": "coffee -c *.coffee"
+    "prestart": "coffee -c *.coffee",
+    "start": "server.js"
   },
   "engines": {
     "node": "0.6.x"

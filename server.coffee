@@ -18,6 +18,7 @@ logger = new logging.Logger "SRV"
 app = express.createServer()
 sessionStore = new MongoStore
   db: 'keeba'
+  url: "mongodb://keeba:twistedfork@staff.mongohq.com:10074/keeba"
 
 app.configure ->
   app.use express.cookieParser()
@@ -147,7 +148,7 @@ app.get "/app*", ensureSession, hydrateSettings, (req, res) ->
         settings: JSON.stringify req.settings
         info: package_info
 
-io.set "log level", 3
+io.set "log level", 2
 io.set "logger", new logging.Logger "SIO"
 io.set "transports", [
   'websocket'
@@ -272,6 +273,7 @@ io.sockets.on "connection", (socket) ->
       
   socket.on "assignments:create", (data, cb) ->
     jbha.Client.create_assignment token, data, (err, course, assignment) ->
+      delete assignment['owner']
       socket.broadcast.to(token.username).emit("course/#{course._id}:create", assignment)
       cb null, assignment if _.isFunction cb
 

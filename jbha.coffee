@@ -12,11 +12,7 @@ logging      = require "./logging"
 String::capitalize = ->
   @charAt(0).toUpperCase() + @slice 1
 
-# We're on Jitsu
-if process.env.SUBDOMAIN
-  mongoose.connect "mongodb://nodejitsu:378b5f1b3674ee7f5d2b40b42fda0464@staff.mongohq.com:10095/nodejitsudb762603282243"
-else
-  mongoose.connect "mongodb://localhost/keeba"
+mongoose.connect "mongodb://keeba:twistedfork@staff.mongohq.com:10074/keeba"
 
 # [18:46] <timoxley> UserSchema.namedScope('forAccount', function (account) {
 # [18:46] <timoxley>   return this.find({accountId: account})
@@ -195,6 +191,9 @@ Jbha.Client =
           course.assignments.push assignment
           course.save()
           # TODO: Don't hard-code success
+          delete assignment["owner"];
+          console.log assignment
+          console.log assignment.owner
           cb(null, course, assignment)
 
   update_assignment: (token, assignment, cb) ->

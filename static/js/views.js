@@ -130,7 +130,8 @@ AddAssignmentView = Backbone.View.extend({
           control_group.find('.help-inline').text(error.message);
         });
       },
-      success: function () {
+      success: function (model) {
+        model.bindToServer();
         that.$el.modal('hide');
       }
     });

@@ -26,7 +26,6 @@ script(src='/js/models.js')
 script(src='/js/views.js')
 script(type="text/javascript")
   window.router = new KeebaRouter ();
-  window.courses = new CourseCollection;
 
   window.socket = io.connect('', {
     'max reconnection attempts': 5,
@@ -34,12 +33,19 @@ script(type="text/javascript")
     'connect timeout': 5000
   });
 
+  window.courses = new CourseCollection;
   window.app = new AppView();
 
   window.settings.set(!{settings});
   window.courses.reset(!{courses});
 
-  window.courses.ioBind('create', window.courses.addCourse);
+  // Needs to happen our here because 
+  // Socket.IO isn't bootstrapped when the CourseCollection
+  // gets initalize()'d.
+  //- window.courses.ioBind('create', window.courses.addCourse);
+  //- window.socket.on('courses:create', function(data) {
+  //-   console.log("Derp")
+  //- });
 
   window.app.updateUpcoming();
   window.app.updateCourses();

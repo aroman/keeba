@@ -4,10 +4,15 @@ CourseAssignment = Backbone.RelationalModel.extend({
   urlRoot: 'assignments',
 
   initialize: function () {
-    this.ioBind('update', this.set);
-    this.ioBind('delete', this.destroy);
-    this.bind('destroy', this.ioUnbindAll);
-    console.log ("I am alive.")
+    // If we had an id at initialization
+    // (meaning a page-bootstrapped-model), then
+    // we can bind immediately. Otherwise
+    // we don't have an id to listen for on the server
+    // and bindToServer will have to be called manually
+    // after we're sure there is one.
+    if (this.id) {
+      this.bindToServer();
+    }
   },
 
   defaults: function () {
@@ -18,6 +23,12 @@ CourseAssignment = Backbone.RelationalModel.extend({
       done: false,
       archived: false
     };
+  },
+
+  bindToServer: function () {
+    this.ioBind('update', this.set);
+    this.ioBind('delete', this.destroy);
+    this.on('destroy', this.ioUnbindAll);
   },
 
   validate: function (attrs) {
@@ -73,6 +84,7 @@ CourseModel = Backbone.RelationalModel.extend({
   },
 
   addAssignment: function (assignment) {
+    console.log ("[CourseModel] AddAssignment mothafucka");
     var to_add = new CourseAssignment (assignment);
     this.get('assignments').add(to_add);
     this.trigger('add:assignments', to_add)
@@ -139,9 +151,15 @@ CourseCollection = Backbone.QueryCollection.extend({
   model: CourseModel,
   url: 'courses',
 
-  addCourse: function (course) {
-    var added = this.add(course)
-    this.trigger('add', added)
+  initialize: function () {
+
+    var that = this;
+    window.socket.on('courses:create', function (course) {
+      console.log ("[CourseCollection] Whoa mothafucka, black ICE!");
+      var added = that.add(course);
+      console.log (added);
+      that.trigger('add', added);
+    });
   },
 
   comparator: function (course) {

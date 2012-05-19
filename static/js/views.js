@@ -207,6 +207,8 @@ EditAssignmentView = Backbone.View.extend({
     this.model.destroy({
       wait: true,
       success: function () {
+        // XXX: The tooltip gets left behind for whatever reason.
+        this.$(".tooltip").remove();
         that.$el.modal('hide');
       }
     });
@@ -215,7 +217,7 @@ EditAssignmentView = Backbone.View.extend({
   render: function () {
     this.$(".modal-body").html(this.template(this.model.toJSON()));
     this.$("#date").datepicker();
-    $('[rel=tooltip]').tooltip();
+    this.$('[rel=tooltip]').tooltip();
     return this;
   },
 
@@ -320,9 +322,9 @@ EditCourseView = Backbone.View.extend({
     this.model.destroy({
       wait: true,
       success: function () {
+        this.$(".tooltip").remove();
         that.$el.modal('hide');
         // XXX: The tooltip gets left behind for whatever reason.
-        $(".tooltip").remove();
         router.navigate('', true);
       }
     });
@@ -335,7 +337,7 @@ EditCourseView = Backbone.View.extend({
       date: ''
     }));
     this.$(".modal-body").html(this.template(this.model.toJSON()));
-    $('[rel=tooltip]').tooltip();
+    this.$('[rel=tooltip]').tooltip();
     return this;
   },
 

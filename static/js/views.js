@@ -115,7 +115,6 @@ AddAssignmentView = Backbone.View.extend({
     }
 
     var course_id = this.parent_course || this.$("#course").val();
-    console.log (course_id)
 
     window.courses.get(course_id).get('assignments').create({
       title: this.$("#title").val(),
@@ -257,6 +256,7 @@ AddCourseView = Backbone.View.extend({
       },
       success: function (model) {
         router.navigate("courses/" + model.id, true);
+        model.bindToServer();
         that.$el.modal('hide');
       }
     });

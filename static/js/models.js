@@ -77,6 +77,13 @@ CourseModel = Backbone.RelationalModel.extend({
   },
 
   initialize: function () {
+    // See parallel comment on CourseAssignment
+    if (this.id) {
+      this.bindToServer();
+    }
+  },
+
+  bindToServer: function () {
     this.ioBind('create', this.addAssignment);
     this.ioBind('update', this.set);
     this.ioBind('delete', this.destroy);
@@ -84,7 +91,6 @@ CourseModel = Backbone.RelationalModel.extend({
   },
 
   addAssignment: function (assignment) {
-    console.log ("[CourseModel] AddAssignment mothafucka");
     var to_add = new CourseAssignment (assignment);
     this.get('assignments').add(to_add);
     this.trigger('add:assignments', to_add)
@@ -152,12 +158,9 @@ CourseCollection = Backbone.QueryCollection.extend({
   url: 'courses',
 
   initialize: function () {
-
     var that = this;
     window.socket.on('courses:create', function (course) {
-      console.log ("[CourseCollection] Whoa mothafucka, black ICE!");
       var added = that.add(course);
-      console.log (added);
       that.trigger('add', added);
     });
   },

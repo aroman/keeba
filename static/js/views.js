@@ -136,7 +136,7 @@ AddAssignmentView = Backbone.View.extend({
         // once the assignment is added.
         // Otherwise, there's no way for it to be notified
         // of the change.
-        if (parent_date) {
+        if (that.parent_date) {
           app.trigger('archived:show');
         }
       }

@@ -39,14 +39,6 @@ script(type="text/javascript")
   window.settings.set(!{settings});
   window.courses.reset(!{courses});
 
-  // Needs to happen our here because 
-  // Socket.IO isn't bootstrapped when the CourseCollection
-  // gets initalize()'d.
-  //- window.courses.ioBind('create', window.courses.addCourse);
-  //- window.socket.on('courses:create', function(data) {
-  //-   console.log("Derp")
-  //- });
-
   window.app.updateUpcoming();
   window.app.updateCourses();
 

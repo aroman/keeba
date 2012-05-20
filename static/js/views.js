@@ -146,13 +146,6 @@ AddAssignmentView = Backbone.View.extend({
       success: function (model) {
         model.bindToServer();
         that.$el.modal('hide');
-        // XXX: Hack to get the date view to re-render
-        // once the assignment is added.
-        // Otherwise, there's no way for it to be notified
-        // of the change.
-        if (that.parent_date) {
-          app.trigger('archived:show');
-        }
         that.$(":input").prop('disabled', false);
       }
     });
@@ -198,12 +191,18 @@ EditAssignmentView = Backbone.View.extend({
   save: function () {
     var that = this;
     var date = this.$("#date").val();
+
+    // Disable all form elements to prevent
+    // double-submissions.
+    this.$(":input").prop('disabled', true);
+
     // If the date isn't blank, try to parse it.
     // If it is, just leave it false-y and let
     // validation mark it as missing.
     if (date) {
       date = Date.parse(date).valueOf();
     }
+
     this.model.save({
       title: this.$("#title").val(),
       details: this.$("#details").val(),
@@ -217,9 +216,11 @@ EditAssignmentView = Backbone.View.extend({
           control_group.addClass('error');
           control_group.find('.help-inline').text(error.message);
         });
+        that.$(":input").prop('disabled', false);
       },
       success: function () {
         that.$el.modal('hide');
+        that.$(":input").prop('disabled', false);
       }
     });
   },
@@ -229,7 +230,6 @@ EditAssignmentView = Backbone.View.extend({
     this.model.destroy({
       wait: true,
       success: function () {
-        // XXX: The tooltip gets left behind for whatever reason.
         this.$(".tooltip").remove();
         that.$el.modal('hide');
       }
@@ -266,6 +266,11 @@ AddCourseView = Backbone.View.extend({
 
   add: function () {
     var that = this;
+
+    // Disable all form elements to prevent
+    // double-submissions.
+    this.$(":input").prop('disabled', true);
+
     window.courses.create({
       title: this.$("#title").val(),
       teacher: this.$("#teacher").val()
@@ -277,11 +282,12 @@ AddCourseView = Backbone.View.extend({
           control_group.addClass('error');
           control_group.find('.help-inline').text(error.message);
         });
+        that.$(":input").prop('disabled', false);
       },
       success: function (model) {
-        router.navigate("courses/" + model.id, true);
         model.bindToServer();
         that.$el.modal('hide');
+        that.$(":input").prop('disabled', false);
       }
     });
   },
@@ -321,6 +327,11 @@ EditCourseView = Backbone.View.extend({
 
   save: function () {
     var that = this;
+
+    // Disable all form elements to prevent
+    // double-submissions.
+    this.$(":input").prop('disabled', true);
+
     this.model.save({
       title: this.$("#title").val(),
       teacher: this.$("#teacher").val()
@@ -332,9 +343,11 @@ EditCourseView = Backbone.View.extend({
           control_group.addClass('error');
           control_group.find('.help-inline').text(error.message);
         });
+        that.$(":input").prop('disabled', false);
       },
       success: function () {
         that.$el.modal('hide');
+        that.$(":input").prop('disabled', false);
       }
     });
   },
@@ -558,9 +571,9 @@ DatesView = Backbone.View.extend({
         return assignment.get('done');
     });
     _.each(done, function (assignment) {
-      assignment.set({archived: true});
-      assignment.save();
+      assignment.save({archived: true});
     });
+    this.render();
   },
 
   removeChildren: function () {
@@ -691,6 +704,7 @@ SectionView = Backbone.View.extend({
       });
       assignment.on('change:archived', this.updateArchivable, this);
       assignment.on('change:done', this.updateArchivable, this);
+      assignment.on('destroy', this.render, this);
       this._children.push(view);
       this.$("tbody").append(view.render().el);
     }
@@ -715,9 +729,9 @@ SectionView = Backbone.View.extend({
         return assignment.get('done');
     });
     _.each(done, function (assignment) {
-      assignment.set({archived: true});
-      assignment.save();
+      assignment.save({archived: true});
     });
+    this.render();
   },
 
   removeChildren: function () {
@@ -1079,5 +1093,5 @@ function benchmarkCurrentView (n) {
   var end = moment();
   var ms = moment().diff(start);
   console.log("Total time (ms): " + ms);
-  console.log("Avg time (ms): " + ms/n);
+  og("Avg time (ms): " + ms/n);
 }

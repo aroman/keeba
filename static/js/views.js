@@ -561,11 +561,13 @@ DatesView = Backbone.View.extend({
   // If there is at least one assignment that is done and unarchived, enable
   // the archive button.
   updateArchivable: function () {
-    console.log("updateArchivable")
-    var any_done = _.any(_.filter(this.models, function (assignment) {
-      return assignment.get('done') && !assignment.get('archived');
-    }));
-    this.$("button.archive-button").attr('disabled', !any_done);
+    if (!app.showing_archived) {
+      console.log("updateArchivable")
+      var any_done = _.any(_.filter(this.models, function (assignment) {
+        return assignment.get('done') && !assignment.get('archived');
+      }));
+      this.$("button.archive-button").attr('disabled', !any_done);
+    }
   },
 
   archiveDone: function () {
@@ -582,7 +584,7 @@ DatesView = Backbone.View.extend({
     var that = this;
     _.each(this._children, function (child) {
       child.view.remove();
-      child.model.off('change:done', that.updateArchivable);
+      child.model.off('change:done', _.throttle(that.updateArchivable, 100));
       child.model.off('change:archived update:course', that.render);
       child.model.off('change:date', that.dateChanged);
     });
@@ -708,8 +710,7 @@ SectionView = Backbone.View.extend({
         model: assignment,
         template: course_assignment_template
       });
-      assignment.on('change:archived', this.updateArchivable, this);
-      assignment.on('change:done', this.updateArchivable, this);
+      assignment.on('change:archived change:done', _.throttle(this.updateArchivable, 100), this);
       assignment.on('destroy', this.render, this);
       this._children.push({view: view, model: assignment});
       this.$("tbody").append(view.render().el);
@@ -723,11 +724,14 @@ SectionView = Backbone.View.extend({
   // If there is at least one assignment that is done
   // and unarchived, enable the archive button.
   updateArchivable: function () {
-    var done_and_unarchived = this.model.get('assignments').where({
-      done: true,
-      archived: false
-    }).length;
-    this.$("button.archive-button").attr('disabled', !done_and_unarchived);
+    if (!app.showing_archived) {
+      console.log('updateArchivable')
+      var done_and_unarchived = this.model.get('assignments').where({
+        done: true,
+        archived: false
+      }).length;
+      this.$("button.archive-button").attr('disabled', !done_and_unarchived);
+    } 
   },
 
   archiveDone: function () {

@@ -359,7 +359,6 @@ EditCourseView = Backbone.View.extend({
       success: function () {
         this.$(".tooltip").remove();
         that.$el.modal('hide');
-        // XXX: The tooltip gets left behind for whatever reason.
         router.navigate('', true);
       }
     });
@@ -1014,8 +1013,6 @@ AppView = Backbone.View.extend({
 
 });
 
-// TODO: This should probably share a common
-// mixin with AppView.
 SetupView = Backbone.View.extend({
 
   el: $("body"),

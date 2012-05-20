@@ -130,7 +130,7 @@ CourseModel = Backbone.RelationalModel.extend({
     else if (done_selector === "any") {
       // Do nothing. Simply omit the criterion.
     } else {
-      // TODO: Proper error.
+      // Invalid parameter; panic.
       alert("Avi dun goofed!");
     }
     return this.get('assignments').query(query);

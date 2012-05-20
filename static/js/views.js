@@ -453,7 +453,6 @@ DatesView = Backbone.View.extend({
     app.off('global:add:assignments', this.render);
     app.off('archived:show archived:hide', this.render);
     this.removeChildren();
-    this.$el.remove();
   },
 
   render: function () {
@@ -487,6 +486,7 @@ DatesView = Backbone.View.extend({
     _.each(to_render, function (assignment) {
       var view = new AssignmentView({model: assignment, template: date_assignment_template});
       assignment.on('change:done', that.updateArchivable, that);
+      assignment.on('change:archived', that.render, that);
       assignment.on('change:date', that.dateChanged, that);
       that._children.push(view);
       that.$("tbody").prepend(view.render().el);
@@ -555,7 +555,6 @@ DatesView = Backbone.View.extend({
       assignment.set({archived: true});
       assignment.save();
     });
-    this.render();
   },
 
   removeChildren: function () {
@@ -598,7 +597,6 @@ SectionView = Backbone.View.extend({
     app.off('archived:show archived:hide', this.render);
     app.off('archived:show archived:hide', this.render);
     this.removeChildren();
-    this.$el.remove();
   },
 
   render: function () {
@@ -686,6 +684,7 @@ SectionView = Backbone.View.extend({
         model: assignment,
         template: course_assignment_template
       });
+      assignment.on('change:archived', this.updateArchivable, this);
       assignment.on('change:done', this.updateArchivable, this);
       this._children.push(view);
       this.$("tbody").append(view.render().el);
@@ -714,7 +713,6 @@ SectionView = Backbone.View.extend({
       assignment.set({archived: true});
       assignment.save();
     });
-    this.render();
   },
 
   removeChildren: function () {

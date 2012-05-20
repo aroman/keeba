@@ -145,6 +145,7 @@ AddAssignmentView = Backbone.View.extend({
       },
       success: function (model) {
         model.bindToServer();
+        window.app.updateUpcoming();
         that.$el.modal('hide');
         that.$(":input").prop('disabled', false);
       }
@@ -531,7 +532,7 @@ DatesView = Backbone.View.extend({
       var date = tomorrow.valueOf();
     }
     else if (this.range.start === big_bang.valueOf()) {
-      var date = today.valueOf();
+      var date = yesterday.valueOf();
     }
     else {
       var date = this.range.start;

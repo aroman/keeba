@@ -15,6 +15,9 @@ StatusView = Backbone.View.extend({
   },
 
   render: function () {
+    if (this.model.get('addable')) {
+      app.setFavicon('zap-highlight');
+    }
     this.children = this.$el.html(status_template(this.model.toJSON())).children();
     return this;
   },
@@ -32,6 +35,7 @@ StatusView = Backbone.View.extend({
       // when fetch()ing the CourseCollection).
       router.current_view.render();
       that.model.set({addable: false});
+      app.setFavicon('zap');
       app.update_timer = setInterval(app.updateUpdatedAt, 20000);
     }});
   }
@@ -1035,6 +1039,14 @@ AppView = Backbone.View.extend({
     $("#toggle-archived").html("Show archived");
     this.showing_archived = false;
     this.trigger("archived:hide");
+  },
+
+  setFavicon: function (favicon) {
+    var link = document.createElement('link');
+    link.type = 'image/x-icon';
+    link.rel = 'shortcut icon';
+    link.href = '/img/glyph/' + favicon + ".png";
+    document.getElementsByTagName('head')[0].appendChild(link);
   }
 
 });

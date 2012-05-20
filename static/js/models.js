@@ -13,6 +13,7 @@ CourseAssignment = Backbone.RelationalModel.extend({
     if (this.id) {
       this.bindToServer();
     }
+    this.on('change:done change:date', window.app.updateUpcoming, app);
   },
 
   defaults: function () {

@@ -380,7 +380,6 @@ AssignmentView = Backbone.View.extend({
     this.template = options.template;
     this.model.view = this;
     this.model.on('change', this.render, this);
-    this.model.on('change:done change:date', window.app.updateUpcoming, app);
     this.model.on('update:course', this.remove, this);
     this.model.on('destroy', this.remove, this);
     app.on('details:show details:hide', this.render, this);
@@ -388,7 +387,6 @@ AssignmentView = Backbone.View.extend({
 
   remove: function () {
     this.model.off('change', this.render);
-    this.model.off('change:done change:date', window.app.updateUpcoming);
     this.model.off('update:course', this.remove);
     this.model.off('destroy', this.remove);
     app.off('details:show details:hide', this.render);
@@ -591,7 +589,6 @@ SectionView = Backbone.View.extend({
     this.model.on('destroy', this.remove, this);
     this.model.on('change', this.render, this);
     this.model.on('add:assignments', this.render, this);
-    this.model.on('add:assignments', window.app.updateUpcoming, app);
     this.model.on('reset:assignments', this.render, this);
     app.on('archived:show archived:hide', this.render, this);
   },
@@ -600,9 +597,7 @@ SectionView = Backbone.View.extend({
     this.model.off('destroy', this.remove);
     this.model.off('change', this.render);
     this.model.off('add:assignments', this.render);
-    this.model.off('add:assignments', window.app.updateUpcoming);
     this.model.off('reset:assignments', this.render);
-    app.off('archived:show archived:hide', this.render);
     app.off('archived:show archived:hide', this.render);
     this.removeChildren();
   },
@@ -610,6 +605,8 @@ SectionView = Backbone.View.extend({
   render: function () {
     // Remove child views previously added
     this.removeChildren();
+
+    console.log('render SectionView')
 
     var num_archived = this.model.get('assignments').filter(function (assignment) {
       return assignment.get('archived');
@@ -749,13 +746,13 @@ AppView = Backbone.View.extend({
   },
 
   initialize: function () {
+    var that = this;
     // Create models & collections.
     window.settings = new Settings;
     window.settings_view = new SettingsView({model: settings});
     window.app_status = new Status;
     window.status_view = new StatusView({model: app_status});
 
-    var that = this;
     socket.on('connect', function () {
       // First log in
       if (settings.get('firstrun')) {
@@ -802,7 +799,6 @@ AppView = Backbone.View.extend({
 
     window.router.on('highlight', this.highlightSidebar, this);
     courses.on('change remove reset add', this.updateCourses, this);
-    courses.on('reset', this.updateUpcoming, this);
 
     this.bindHotkeys();
   },

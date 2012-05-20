@@ -272,6 +272,7 @@ io.sockets.on "connection", (socket) ->
 
   socket.on "course:update", (data, cb) ->
     jbha.Client.update_course token, data, (err) ->
+      delete data["assignments"]
       sync "course", "update", data
       cb null if _.isFunction cb
 

@@ -42,9 +42,6 @@ staging = process.cwd().indexOf("staging") isnt -1
 if staging
   app.listen 8888
 else
-  if process.getuid() isnt 0
-    logger.error "Need root to serve on port 80 (production)"
-    process.exit(1)
   app.listen 80
 
 io = socketio.listen app, log: false

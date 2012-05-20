@@ -26,7 +26,7 @@ app.configure ->
   # app.use express.logger()
   app.use express.session
     store: sessionStore
-    secret: "lolerskates"
+    secret: "choomra"
     key: "express.sid"
   app.use app.router
   app.use express.static "#{__dirname}/static"

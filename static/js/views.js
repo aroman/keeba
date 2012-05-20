@@ -836,7 +836,7 @@ AppView = Backbone.View.extend({
   },
 
   refresh: function () {
-    socket.emit('refresh', {previous: app.num_new});
+    socket.emit('refresh');
   },
 
   bindShortcuts: function () {
@@ -964,7 +964,7 @@ AppView = Backbone.View.extend({
       });
       status_view.alert();
     } else {
-      var num_new = res.new_assignments;
+      var num_new = res.new_assignments + app.num_new;
       if (num_new === 1) {
         var message = "There was <b>1</b> new assignment synced from the school website.";
         var link_text = "Click here to add it."

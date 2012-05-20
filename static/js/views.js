@@ -474,7 +474,7 @@ DatesView = Backbone.View.extend({
     this.removeChildren();
   },
 
-  render: function () {
+  render: _.throttle(function () {
     console.log("render DateView");
     this.removeChildren();
 
@@ -521,7 +521,7 @@ DatesView = Backbone.View.extend({
     window.app.updateCourses();
 
     return this;
-  },
+  }, 100),
 
   createAssignment: function () {
     // Intelligent defaults for date ranges
@@ -560,7 +560,7 @@ DatesView = Backbone.View.extend({
 
   // If there is at least one assignment that is done and unarchived, enable
   // the archive button.
-  updateArchivable: function () {
+  updateArchivable: _.throttle(function () {
     if (!app.showing_archived) {
       console.log("updateArchivable")
       var any_done = _.any(_.filter(this.models, function (assignment) {
@@ -568,7 +568,7 @@ DatesView = Backbone.View.extend({
       }));
       this.$("button.archive-button").attr('disabled', !any_done);
     }
-  },
+  }, 100),
 
   archiveDone: function () {
     var done = _.filter(this.models, function (assignment) {
@@ -584,7 +584,7 @@ DatesView = Backbone.View.extend({
     var that = this;
     _.each(this._children, function (child) {
       child.view.remove();
-      child.model.off('change:done', _.throttle(that.updateArchivable, 100));
+      child.model.off('change:done', that.updateArchivable);
       child.model.off('change:archived update:course', that.render);
       child.model.off('change:date', that.dateChanged);
     });
@@ -623,7 +623,7 @@ SectionView = Backbone.View.extend({
     this.removeChildren();
   },
 
-  render: function () {
+  render: _.throttle(function () {
     // Remove child views previously added
     this.removeChildren();
 
@@ -671,7 +671,7 @@ SectionView = Backbone.View.extend({
     window.app.updateCourses();
 
     return this;
-  },
+  }, 100),
 
   edit: function () {
     var edit_dialog = new EditCourseView({
@@ -710,7 +710,7 @@ SectionView = Backbone.View.extend({
         model: assignment,
         template: course_assignment_template
       });
-      assignment.on('change:archived change:done', _.throttle(this.updateArchivable, 100), this);
+      assignment.on('change:archived change:done', this.updateArchivable, this);
       assignment.on('destroy', this.render, this);
       this._children.push({view: view, model: assignment});
       this.$("tbody").append(view.render().el);
@@ -723,7 +723,7 @@ SectionView = Backbone.View.extend({
 
   // If there is at least one assignment that is done
   // and unarchived, enable the archive button.
-  updateArchivable: function () {
+  updateArchivable: _.throttle(function () {
     if (!app.showing_archived) {
       console.log('updateArchivable')
       var done_and_unarchived = this.model.get('assignments').where({
@@ -732,7 +732,7 @@ SectionView = Backbone.View.extend({
       }).length;
       this.$("button.archive-button").attr('disabled', !done_and_unarchived);
     } 
-  },
+  }, 100),
 
   archiveDone: function () {
     var done = this.model.get('assignments').filter(function (assignment) {

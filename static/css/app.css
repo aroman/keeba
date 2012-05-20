@@ -11,6 +11,11 @@ body {
   padding-bottom: 40px;
 }
 
+img.block-icon {
+  float: left;
+  margin: 7px 10px 0 0;
+}
+
 .sidebar-nav {
   margin-top: 30px;
   padding: 9px 0;

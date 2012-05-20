@@ -35,6 +35,7 @@ StatusView = Backbone.View.extend({
       // when fetch()ing the CourseCollection).
       router.current_view.render();
       that.model.set({addable: false});
+      app.num_new = 0;
       app.setFavicon('zap');
       app.update_timer = setInterval(app.updateUpdatedAt, 20000);
     }});
@@ -765,6 +766,7 @@ AppView = Backbone.View.extend({
   el: $("body"),
   showing_archived: false,
   update_timer: null,
+  num_new: 0,
 
   events: {
     "click #toggle-details": "toggleDetails",
@@ -834,7 +836,7 @@ AppView = Backbone.View.extend({
   },
 
   refresh: function () {
-    socket.emit('refresh');
+    socket.emit('refresh', {previous: app.num_new});
   },
 
   bindShortcuts: function () {
@@ -973,6 +975,7 @@ AppView = Backbone.View.extend({
       if (num_new === 0) {
         app.update_timer = setInterval(app.updateUpdatedAt, 20000);
       }
+      app.num_new = num_new;
       app_status.set({
         heading: "Refresh complete!",
         message: message,

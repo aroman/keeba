@@ -266,7 +266,10 @@ Jbha.Client =
     @_parse_courses token.cookie, (courses) =>
 
       parsed_courses = 0
-      new_assignments = 0
+      if options and options.previous
+        new_assignments = options.previous
+      else
+        new_assignments = 0
       _.each courses, (course_data) =>
           # Get the DOM tree for the specific course we're about to parse.
           @_authenticated_request token.cookie, "course-detail.php?course_id=#{course_data.id}", ($) =>

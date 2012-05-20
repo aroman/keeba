@@ -24,8 +24,16 @@ StatusView = Backbone.View.extend({
   },
 
   handleLink: function () {
-    courses.fetch();
-    this.model.set({addable: false});
+    var that = this;
+    // Reset all the data to a clean
+    // pull from the server
+    courses.fetch({success: function () {
+      // Re-render the current view (it will be destroyed
+      // when fetch()ing the CourseCollection).
+      router.current_view.render();
+      that.model.set({addable: false});
+      app.update_timer = setInterval(app.updateUpdatedAt, 20000);
+    }});
   },
 
 });
@@ -789,12 +797,28 @@ AppView = Backbone.View.extend({
       }
     });
 
-    // Hotkey: Add course
+    socket.on('refresh:start', this.handleRemoteRefreshStart);
+    socket.on('refresh:end', this.handleRemoteRefreshEnd);
+
+    window.router.on('highlight', this.highlightSidebar, this);
+    courses.on('change remove reset add', this.updateCourses, this);
+    courses.on('reset', this.updateUpcoming, this);
+
+    this.bindHotkeys();
+  },
+
+  refresh: function () {
+    socket.emit('refresh');
+  },
+
+  bindHotkeys: function () {
+    var that = this;
+    // Add course
     key('c', function () {
       that.addCourse();
     });
 
-    // Hotkey: Add assignment
+    // Add assignment
     key('a', function () {
       // We trigger a DOM element event here rather
       // than call an actual function because the
@@ -804,53 +828,18 @@ AppView = Backbone.View.extend({
       $(".add-button").click();
     });
 
-    // Hotkey: Toggle details
+    // Toggle details
     key('d', function () {
       that.toggleDetails({silent: true});
     });
 
-    // Hotkey: Force refresh
+    // Force refresh
     key('shift + r', function () {
       that.forceRefresh({silent: true});
-    });
-
-    window.router.on('highlight', this.highlightSidebar, this);
-    courses.on('change remove reset add', this.updateCourses, this);
-    courses.on('reset', this.updateUpcoming, this);
-  },
-
-  refresh: function () {
-    var that = this;
-    clearInterval(that.update_timer);
-    socket.emit('refresh', function (err, res) {
-      if (err) {
-        app_status.set({
-          heading: "Refresh failed!",
-          message: "Shoot, something went wrong. Try again or nag Avi.",
-          kind: "error"
-        });
-        status_view.alert();
-      } else {
-        var num_new = res.new_assignments;
-        if (num_new === 1) {
-          var message = "There was <b>1</b> new assignment synced from the school website.";
-        } else {
-          var message = "There were <b>" + num_new + "</b> new assignments synced from the school website.";
-        }
-        app_status.set({
-          heading: "Refresh complete!",
-          message: message,
-          kind: "success",
-          addable: Boolean(num_new)
-        });
-        status_view.alert();
-        // that.update_timer = setInterval(that.updateUpdatedAt, 20000);
-      }
     });
   },
 
   updateUpdatedAt: function () {
-    settings.fetch();
     app_status.set({
       heading: "",
       message: "Last sync with school website: " + settings.getUpdatedAt().from(moment()) + ".",
@@ -918,12 +907,54 @@ AppView = Backbone.View.extend({
     this.$("a[href='" + Backbone.history.fragment + "']").parent().addClass('active');
   },
 
-  forceRefresh: function (options) {
-    app_status.set({
+  handleRemoteRefreshStart: function () {
+    clearInterval(app.update_timer);
+    app.update_timer = null;
+    window.app_status.set({
       heading: "Refreshing...",
       message: "I'm pulling down the latest homework from the school website.",
       kind: "info"
-    });    
+    });
+  },
+
+  handleRemoteRefreshEnd: function (data) {
+    var err = data.err;
+    var res = data.res;
+
+    if (err) {
+      app_status.set({
+        heading: "Refresh failed!",
+        message: "Shoot, something went wrong. Try again or nag Avi.",
+        kind: "error"
+      });
+      status_view.alert();
+    } else {
+      var num_new = res.new_assignments;
+      if (num_new === 1) {
+        var message = "There was <b>1</b> new assignment synced from the school website.";
+        var link_text = "Click here to add it."
+      } else {
+        var message = "There were <b>" + num_new + "</b> new assignments synced from the school website.";
+        var link_text = "Click here to add them."
+      }
+      if (num_new === 0) {
+        app.update_timer = setInterval(app.updateUpdatedAt, 20000);
+      }
+      app_status.set({
+        heading: "Refresh complete!",
+        message: message,
+        link_text: link_text,
+        kind: "success",
+        addable: Boolean(num_new)
+      });
+      status_view.alert();
+    }
+
+    // Fetch the latest status (for the last_updated info)
+    window.settings.fetch();
+  },
+
+  forceRefresh: function (options) {
     this.refresh();
     if (!options.silent) {
       $('.dropdown-toggle').dropdown('toggle');

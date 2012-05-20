@@ -179,9 +179,16 @@ io.sockets.on "connection", (socket) ->
   L = (message, urgency="debug") ->
     logger[urgency] "#{ansi.UNDERLINE}#{token.username}#{ansi.END} :: #{message}"
 
+  # Syncs model state to all connected sessions,
+  # EXCEPT the one that initiated the sync.
   sync = (model, method, data) ->
     event_name = "#{model}/#{data._id}:#{method}"
     socket.broadcast.to(token.username).emit(event_name, data)
+
+  # Broadcasts a message to all connected sessions,
+  # INCLUDING the one that initiated the message.
+  broadcast = (message, data) ->
+    io.sockets.in(token.username).emit(message, data)
 
   keepAlive = () ->
     jbha.Client.keep_alive token, () ->
@@ -199,11 +206,7 @@ io.sockets.on "connection", (socket) ->
   # Spawn a new node instance to handle a refresh
   # request. It's CPU-bound, so it blocks this thread.
   # Only allow one worker per global username presence.
-  socket.on "refresh", (options, cb) ->
-    # If they omitted the options param, then expect
-    # the callback as the first arg.
-    if _.isFunction(options)
-      cb = options
+  socket.on "refresh", (options) ->
     worker = workers[token.username]
     if worker
       L "Worker with pid #{worker.pid} replaced", 'warn'
@@ -217,9 +220,18 @@ io.sockets.on "connection", (socket) ->
       token: token
       options: options
 
+    # Let connected clients know a refresh was started
+    broadcast "refresh:start"
+
     setTimeout () ->
       worker.kill('SIGKILL')
     , 30000
+
+    worker.on "message", (message) ->
+      # Let connected clients know a refresh ended 
+      broadcast "refresh:end", 
+        err: message[0]
+        res: message[1]
 
     worker.on "exit", (code, signal) ->
       delete workers[token.username]
@@ -230,17 +242,14 @@ io.sockets.on "connection", (socket) ->
       if code isnt 0
         if signal is 'SIGKILL'
           L "Worker with pid #{worker.pid} timed out and was killed", 'error'
-          cb "Worker timed out"
+          broadcast "refresh:end",
+            err: "Worker timed out"
         else
           L "Worker with pid #{worker.pid} crashed", 'error'
-          cb "Worker crashed"
+          broadcast "refresh:end",
+            err: "Worker crashed"
       else
         L "Worker with pid #{worker.pid} exited successfully", 'debug'
-
-    worker.on "message", (message) ->
-      err = message[0]
-      res = message[1]
-      cb err, res if _.isFunction cb
 
   socket.on "settings:read", (data, cb) ->
     jbha.Client.read_settings token, (settings) ->
@@ -248,7 +257,7 @@ io.sockets.on "connection", (socket) ->
 
   socket.on "settings:update", (data, cb) ->
     jbha.Client.update_settings token, data, ->
-      # Hardcode the 0 for a singleton pattern. (See client model)
+      # Hardcode the 0 for a singleton pattern. (See client model).
       socket.broadcast.to(token.username).emit("settings/0:update", data)
       cb null if _.isFunction cb
 

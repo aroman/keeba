@@ -372,7 +372,6 @@ AssignmentView = Backbone.View.extend({
     this.template = options.template;
     this.model.view = this;
     this.model.on('change', this.render, this);
-    this.model.on('change:done', this.triggerCurrentDone, this);
     this.model.on('change:done change:date', window.app.updateUpcoming, app);
     this.model.on('update:course', this.remove, this);
     this.model.on('destroy', this.remove, this);
@@ -381,7 +380,6 @@ AssignmentView = Backbone.View.extend({
 
   remove: function () {
     this.model.off('change', this.render);
-    this.model.off('change:done', this.triggerCurrentDone);
     this.model.off('change:done change:date', window.app.updateUpcoming);
     this.model.off('update:course', this.remove);
     this.model.off('destroy', this.remove);
@@ -426,10 +424,6 @@ AssignmentView = Backbone.View.extend({
       archived: false
     });
     this.model.save();
-  },
-
-  triggerCurrentDone: function () {
-    window.app.triggerCurrent('done');
   }
 
 });
@@ -593,9 +587,6 @@ SectionView = Backbone.View.extend({
     this.model.on('add:assignments', window.app.updateUpcoming, app);
     this.model.on('reset:assignments', this.render, this);
     app.on('archived:show archived:hide', this.render, this);
-    // An currently viewed assignment has a change
-    // in whether it's done or not.
-    app.on('current:done', this.updateArchivable, this);
   },
 
   remove: function () {
@@ -606,7 +597,6 @@ SectionView = Backbone.View.extend({
     this.model.off('reset:assignments', this.render);
     app.off('archived:show archived:hide', this.render);
     app.off('archived:show archived:hide', this.render);
-    app.off('current:done', this.updateArchivable);
     this.removeChildren();
     this.$el.remove();
   },
@@ -696,6 +686,7 @@ SectionView = Backbone.View.extend({
         model: assignment,
         template: course_assignment_template
       });
+      assignment.on('change:done', this.updateArchivable, this);
       this._children.push(view);
       this.$("tbody").append(view.render().el);
     }
@@ -922,13 +913,6 @@ AppView = Backbone.View.extend({
   addCourse: function () {
     var add_dialog = new AddCourseView();
     add_dialog.show();
-  },
-
-  // Triggers a 'current' event, meaning
-  // a change in property ``flag``
-  // on any currently viewable assignment.
-  triggerCurrent: function (flag) {
-    this.trigger("current:" + flag);
   },
 
   highlightSidebar: function () {

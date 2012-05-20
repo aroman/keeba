@@ -753,6 +753,7 @@ AppView = Backbone.View.extend({
     "click #toggle-details": "toggleDetails",
     "click #toggle-archived": "toggleArchived",
     "click #settings": "showSettings",
+    "click #shortcuts": "showShortcuts",
     "click #add-course": "addCourse",
     "click #force-refresh": "forceRefresh",
     "click a:not([data-bypass])" : "handleLink"
@@ -812,14 +813,14 @@ AppView = Backbone.View.extend({
     window.router.on('highlight', this.highlightSidebar, this);
     courses.on('change remove reset add', this.updateCourses, this);
 
-    this.bindHotkeys();
+    this.bindShortcuts();
   },
 
   refresh: function () {
     socket.emit('refresh');
   },
 
-  bindHotkeys: function () {
+  bindShortcuts: function () {
     var that = this;
     // Add course
     key('c', function () {
@@ -832,12 +833,17 @@ AppView = Backbone.View.extend({
       // than call an actual function because the
       // addAssignment function changes with the course
       // view, and there's no sense in unbinding and 
-      // rebinding the hotkey each time.
+      // rebinding the shortcut each time.
       $(".add-button").click();
     });
 
+    // Toggle archived
+    key('shift + a', function () {
+      that.toggleArchived({silent: true});
+    });
+
     // Toggle details
-    key('d', function () {
+    key('shift + d', function () {
       that.toggleDetails({silent: true});
     });
 
@@ -867,13 +873,15 @@ AppView = Backbone.View.extend({
     return false;
   },
 
-  toggleArchived: function () {
+  toggleArchived: function (options) {
     if (this.showing_archived) {
       this.hideArchived();
     } else {
       this.showArchived();
     }
-    $('.dropdown-toggle').dropdown('toggle');
+    if (!options.silent) {
+      $('.dropdown-toggle').dropdown('toggle');
+    }
     return false;
   },
 
@@ -972,6 +980,12 @@ AppView = Backbone.View.extend({
 
   showSettings: function () {
     window.settings_view.show();
+    $('.dropdown-toggle').dropdown('toggle');
+    return false;
+  },
+
+  showShortcuts: function () {
+    $("#shortcuts-modal").modal();
     $('.dropdown-toggle').dropdown('toggle');
     return false;
   },

@@ -57,3 +57,52 @@
       a(href='mailto:avi.romanoff@jbha.org') send Avi an email.
   .modal-footer
     a.btn.btn-danger(href='', target='_self', data-bypass) We can still be friends, right?
+
+#shortcuts-modal.modal.hide.fade
+  .modal-header
+    a.close.close-button(data-dismiss="modal") &times;
+    h3 Keyboard Shortcuts
+  .modal-body
+    p
+      | Here are some keyboard shortcuts you can use to be 
+      b even more productive 
+      | with me.
+
+    table.table.table-bordered.table-striped
+      thead
+        tr
+          th Shortcut
+          th Action
+      tbody
+        tr
+          td
+            code c
+          td
+            | Add course
+        tr
+          td
+            code a
+          td
+            | Add assignment to current view
+        tr
+          td
+            code shift + a
+          td
+            | Toggle archived assignments visibility
+        tr
+          td
+            code shift + d
+          td
+            | Toggle assignment details visibility
+        tr
+          td
+            code shift + r
+          td
+            | Force refresh
+
+    p
+      | For obvious reasons, none of these work when
+      | editing text.
+      
+  .modal-footer
+    a.btn.btn-primary(data-dismiss="modal") Cool story, bro.

@@ -98,6 +98,7 @@ CourseModel = Backbone.RelationalModel.extend({
     var to_add = new CourseAssignment (assignment);
     this.get('assignments').add(to_add);
     this.trigger('add:assignments', to_add)
+    app.trigger('global:add:assignments', to_add);
   },
 
   relations: [

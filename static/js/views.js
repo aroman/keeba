@@ -1004,15 +1004,15 @@ AppView = Backbone.View.extend({
     return false;
   },
 
-  updateUpcoming: function () {
+  updateUpcoming: _.throttle(function () {
     $("#sidebar-upcoming").html(sidebar_dates_template({dates: UPCOMING_DATES}));
     this.highlightSidebar();
-  },
+  }, 100),
 
-  updateCourses: function () {
+  updateCourses: _.throttle(function () {
     $("#sidebar-courses").html(sidebar_courses_template({courses: courses.toJSON()}));
     this.highlightSidebar();
-  },
+  }, 100),
 
   showDetails: function () {
     $("#toggle-details").html('<i class="icon-ok"></i> Show details');

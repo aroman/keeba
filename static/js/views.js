@@ -782,8 +782,7 @@ AppView = Backbone.View.extend({
           heading: "Heads up!",
           message: "I haven't checked the school website for new homework " +
           "in a while. I'm doing that now, and I'll load it in below ASAP.",
-          kind: "info",
-          closable: false
+          kind: "info"
         });
         that.refresh();
       } else {
@@ -1027,51 +1026,56 @@ SetupView = Backbone.View.extend({
     window.app_status = new Status;
     window.status_view = new StatusView({model: app_status});
 
-    var that = this;
     socket.on('connect', function () {
       $("#nickname").focus();
-      socket.emit('refresh', {archive_if_old: true}, function (err, res) {
-        if (err) {
-          app_status.set({
-            heading: "Uh oh",
-            message: "Something went wrong setting up your account. Refresh to try again.",
-            kind: "error"
-          });
-          status_view.alert();
-        } else {
-          app_status.set({
-            heading: "Done!",
-            message: "Ready when you are.",
-            kind: "success",
-            closable: false
-          });
-          status_view.alert();
-          $("#gobutton").prop('disabled', false);
-        }
-      });
-
-      app_status.set({
-        heading: "Processing...",
-        message: "I'll tell you when I'm finished.",
-        kind: "info",
-        closable: false
-      });
+      socket.emit('refresh', {archive_if_old: true});
     });
+
+    socket.on('refresh:start', this.handleRemoteRefreshStart);
+    socket.on('refresh:end', this.handleRemoteRefreshEnd);
 
     socket.on('disconnect', function () {
       // Close any and all open modals.
-      setTimeout(function () {
-        $(".modal").each(function() {
-          $(this).modal('hide');
-        });
-
-        $("#failure-modal").modal({
-          backdrop: 'static',
-          keyboard: false,
-          show: true
-        });
-      }, 1000);
+      $(".modal, .modal-backdrop").not("#failure-modal").remove();
+      $("#failure-modal").modal({
+        backdrop: 'static',
+        keyboard: false
+      });
+      // If you try to reconnect, don't. For whatever reason
+      // the socket will still try even after the attempt_num
+      // is at it's max.
+      socket.on('reconnecting', socket.disconnect);
     });
+  },
+
+  handleRemoteRefreshStart: function () {
+    app_status.set({
+      heading: "Processing...",
+      message: "I'll tell you when I'm finished.",
+      kind: "info"
+    });
+  },
+
+  handleRemoteRefreshEnd: function (data) {
+    var err = data.err;
+    var res = data.res;
+
+    if (err) {
+      app_status.set({
+        heading: "Uh oh",
+        message: "Something went wrong setting up your account. Refresh to try again.",
+        kind: "error"
+      });
+    } else {
+      app_status.set({
+        heading: "Done!",
+        message: "Ready when you are.",
+        kind: "success"
+      });
+      $("#gobutton").prop('disabled', false);
+    }
+
+    status_view.alert();
   },
 
   go: function () {

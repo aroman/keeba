@@ -88,18 +88,35 @@ CourseModel = Backbone.RelationalModel.extend({
     }
   },
 
+  defaults: function () {
+    return {
+      title: "",
+      teacher: ""
+    };
+  },
+
   bindToServer: function () {
     this.ioBind('create', this.addAssignment);
     this.ioBind('update', this.set);
     this.ioBind('delete', this.destroy);
     this.bind('delete', this.ioUnbindAll);
+    this.bind('add:assignments', this.triggerGlobalAdd, this);
   },
 
   addAssignment: function (assignment) {
     var to_add = new CourseAssignment (assignment);
     this.get('assignments').add(to_add);
-    this.trigger('add:assignments', to_add)
-    app.trigger('global:add:assignments', to_add);
+    this.trigger('add:assignments', to_add);
+  },
+
+  triggerGlobalAdd: function (derp) {
+    // console.log(derp)
+    // setTimeout(function () {
+    //   console.log("triggerGlobalAdd");
+    //   app.trigger('global:add:assignments');
+    // }, 0);
+    console.log("triggerGlobalAdd");
+    app.trigger('global:add:assignments');
   },
 
   relations: [
@@ -130,17 +147,10 @@ CourseModel = Backbone.RelationalModel.extend({
     else if (done_selector === "any") {
       // Do nothing. Simply omit the criterion.
     } else {
-      // Invalid parameter; panic.
+      // Invalid argument; panic.
       alert("Avi dun goofed!");
     }
     return this.get('assignments').query(query);
-  },
-
-  defaults: function () {
-    return {
-      title: "",
-      teacher: ""
-    };
   },
 
   validate: function (attrs) {

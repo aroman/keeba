@@ -288,6 +288,8 @@ AddCourseView = Backbone.View.extend({
         model.bindToServer();
         that.$el.modal('hide');
         that.$(":input").prop('disabled', false);
+        // Switch to newly navigated course
+        router.navigate("courses/" + model.id, true);
       }
     });
   },
@@ -451,7 +453,6 @@ DatesView = Backbone.View.extend({
   template: undefined,
   title: "Untitled",
   range: {start: undefined, end: undefined},
-  // Child views for removal purposes
   _children: [],
 
   events: {
@@ -474,10 +475,11 @@ DatesView = Backbone.View.extend({
   },
 
   render: function () {
-    // Remove child views previously added
+    console.log("render DateView");
     this.removeChildren();
 
     this.models = courses.get_assignments(this.range.start, this.range.end, "any");
+
     var unarchived = _.reject(this.models, function (assignment) {
       return assignment.get('archived');
     });
@@ -504,9 +506,9 @@ DatesView = Backbone.View.extend({
     _.each(to_render, function (assignment) {
       var view = new AssignmentView({model: assignment, template: date_assignment_template});
       assignment.on('change:done', that.updateArchivable, that);
-      assignment.on('change:archived', that.render, that);
+      assignment.on('change:archived update:course', that.render, that);
       assignment.on('change:date', that.dateChanged, that);
-      that._children.push(view);
+      that._children.push({view: view, model: assignment});
       that.$("tbody").prepend(view.render().el);
     });
     if (!empty) {
@@ -559,6 +561,7 @@ DatesView = Backbone.View.extend({
   // If there is at least one assignment that is done and unarchived, enable
   // the archive button.
   updateArchivable: function () {
+    console.log("updateArchivable")
     var any_done = _.any(_.filter(this.models, function (assignment) {
       return assignment.get('done') && !assignment.get('archived');
     }));
@@ -576,8 +579,12 @@ DatesView = Backbone.View.extend({
   },
 
   removeChildren: function () {
+    var that = this;
     _.each(this._children, function (child) {
-      child.remove();
+      child.view.remove();
+      child.model.off('change:done', that.updateArchivable);
+      child.model.off('change:archived update:course', that.render);
+      child.model.off('change:date', that.dateChanged);
     });
     // And reset the array of child views.
     this._children = [];
@@ -704,7 +711,7 @@ SectionView = Backbone.View.extend({
       assignment.on('change:archived', this.updateArchivable, this);
       assignment.on('change:done', this.updateArchivable, this);
       assignment.on('destroy', this.render, this);
-      this._children.push(view);
+      this._children.push({view: view, model: assignment});
       this.$("tbody").append(view.render().el);
     }
   },
@@ -735,7 +742,10 @@ SectionView = Backbone.View.extend({
 
   removeChildren: function () {
     _.each(this._children, function (child) {
-      child.remove();
+      child.view.remove();
+      child.model.off('change:archived', this.updateArchivable);
+      child.model.off('change:done', this.updateArchivable);
+      child.model.off('destroy', this.render);
     });
     // And reset the array of child views.
     this._children = [];
@@ -1108,5 +1118,5 @@ function benchmarkCurrentView (n) {
   var end = moment();
   var ms = moment().diff(start);
   console.log("Total time (ms): " + ms);
-  og("Avg time (ms): " + ms/n);
+  console.log("Avg time (ms): " + ms/n);
 }

@@ -34,7 +34,7 @@ StatusView = Backbone.View.extend({
       that.model.set({addable: false});
       app.update_timer = setInterval(app.updateUpdatedAt, 20000);
     }});
-  },
+  }
 
 });
 
@@ -160,7 +160,7 @@ AddAssignmentView = Backbone.View.extend({
     }));
     this.$("#date").datepicker();
     return this;
-  },
+  }
 
 });
 
@@ -171,7 +171,7 @@ EditAssignmentView = Backbone.View.extend({
 
   events: {
     "click button#save":      "save",
-    "click button#delete":    "delete",
+    "click button#delete":    "_delete",
     "hidden":                 "remove"
   },
 
@@ -225,7 +225,7 @@ EditAssignmentView = Backbone.View.extend({
     });
   },
 
-  delete: function () {
+  _delete: function () {
     var that = this;
     this.model.destroy({
       wait: true,
@@ -241,7 +241,7 @@ EditAssignmentView = Backbone.View.extend({
     this.$("#date").datepicker();
     this.$('[rel=tooltip]').tooltip();
     return this;
-  },
+  }
 
 });
 
@@ -302,7 +302,7 @@ AddCourseView = Backbone.View.extend({
       teacher: ''
     }));
     return this;
-  },
+  }
 
 });
 
@@ -313,8 +313,8 @@ EditCourseView = Backbone.View.extend({
 
   events: {
     "click button#save":       "save",
-    "click button#delete":    "delete",
-    "hidden":                 "remove"
+    "click button#delete":     "_delete",
+    "hidden":                  "remove"
   },
 
   initialize: function (options) {
@@ -354,7 +354,7 @@ EditCourseView = Backbone.View.extend({
     });
   },
 
-  delete: function () {
+  _delete: function () {
     var that = this;
     this.model.destroy({
       wait: true,
@@ -375,7 +375,7 @@ EditCourseView = Backbone.View.extend({
     this.$(".modal-body").html(this.template(this.model.toJSON()));
     this.$('[rel=tooltip]').tooltip();
     return this;
-  },
+  }
 
 });
 
@@ -387,7 +387,7 @@ AssignmentView = Backbone.View.extend({
 
   events: {
     "click td.done-toggle": "toggleDone",
-    "click button.button-edit": "edit",
+    "click button.button-edit": "edit"
   },
 
   initialize: function (options) {
@@ -1035,7 +1035,7 @@ AppView = Backbone.View.extend({
     $("#toggle-archived").html("Show archived");
     this.showing_archived = false;
     this.trigger("archived:hide");
-  },
+  }
 
 });
 
@@ -1044,7 +1044,7 @@ SetupView = Backbone.View.extend({
   el: $("body"),
 
   events: {
-    "click #gobutton": "go",
+    "click #gobutton": "go"
   },
 
   initialize: function () {
@@ -1107,7 +1107,7 @@ SetupView = Backbone.View.extend({
 
   go: function () {
     this.model.save();
-  },
+  }
 
 });
 

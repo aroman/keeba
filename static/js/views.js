@@ -145,7 +145,6 @@ AddAssignmentView = Backbone.View.extend({
       },
       success: function (model) {
         model.bindToServer();
-        window.app.updateUpcoming();
         that.$el.modal('hide');
         that.$(":input").prop('disabled', false);
       }
@@ -405,7 +404,6 @@ AssignmentView = Backbone.View.extend({
     this.model.off('update:course', this.remove);
     this.model.off('destroy', this.remove);
     app.off('details:show details:hide', this.render);
-    window.app.updateUpcoming();
     this.$el.remove();
   },
 

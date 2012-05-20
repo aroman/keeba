@@ -101,6 +101,7 @@ CourseModel = Backbone.RelationalModel.extend({
     this.ioBind('delete', this.destroy);
     this.bind('delete', this.ioUnbindAll);
     this.bind('add:assignments', this.triggerGlobalAdd, this);
+    this.bind('remove:assignments', window.app.updateUpcoming, this);
   },
 
   addAssignment: function (assignment) {
@@ -110,13 +111,9 @@ CourseModel = Backbone.RelationalModel.extend({
   },
 
   triggerGlobalAdd: function (derp) {
-    // console.log(derp)
-    // setTimeout(function () {
-    //   console.log("triggerGlobalAdd");
-    //   app.trigger('global:add:assignments');
-    // }, 0);
     console.log("triggerGlobalAdd");
     app.trigger('global:add:assignments');
+    window.app.updateUpcoming();
   },
 
   relations: [

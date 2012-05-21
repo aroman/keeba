@@ -16,8 +16,10 @@
           else
             h1#welcome-message Miss me?
             br
-            p You know the drill #{nickname}, just click on a link to the left.
-          h1 &larr;
+            p.hidden-phone You know the drill #{nickname}, just click on a link to the left.
+            p.visible-phone You know the drill #{nickname}, just click on a link above.
+          h1.hidden-phone &larr;
+          h1.visible-phone &uarr;
 
 // App
 script(src='/js/helpers.js')

@@ -350,8 +350,10 @@ Jbha.Client =
                     # Add the assignment to the course's assignments array
                     course.assignments.push assignment
                     # Mark assignments in the past as complete if needed
+                    date = new Date()
+                    date.setDate(date.getDate() - 1);
                     if options and options.archive_if_old
-                      if assignment_date < Date.now()
+                      if assignment_date < date
                         assignment.done = true
                         assignment.archived = true
                     assignment.save (err) =>

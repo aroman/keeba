@@ -4,6 +4,7 @@ _            = require "underscore"
 http         = require "http"
 cheerio      = require "cheerio"
 mongoose     = require "mongoose"
+moment       = require "moment"
 querystring  = require "querystring"
 
 ansi         = require "./ansi"
@@ -312,7 +313,7 @@ Jbha.Client =
                   if text_blob.match /Due \w{3} \d{1,2}\, \d{4}:/
                     splits = text_blob.split ":"
                     assignment_title = splits.slice(1)[0].trim()
-                    assignment_date = Date.parse splits.slice(0, 1)
+                    assignment_date = Date.parse(splits.slice(0, 1) + " EDT")
                     # Parse _their_ assignment id
                     assignment_id = $(element).attr('href').match(/\d+/)[0]
                     # Parse the details of the assignment as HTML -- **not** as text.
@@ -350,10 +351,8 @@ Jbha.Client =
                     # Add the assignment to the course's assignments array
                     course.assignments.push assignment
                     # Mark assignments in the past as complete if needed
-                    date = new Date()
-                    date.setDate(date.getDate() - 1);
                     if options and options.archive_if_old
-                      if assignment_date < date
+                      if assignment_date < Date.now()
                         assignment.done = true
                         assignment.archived = true
                     assignment.save (err) =>

@@ -3,7 +3,7 @@
   "description": "Barrack homework: Sexified",
   "author": "Avi Romanoff <aviromanoff@gmail.com>",
   "main": "server.js",
-  "version": "2.9.6",
+  "version": "2.9.7",
   "scripts": {
     "prestart": "coffee -c *.coffee",
     "start": "server.js"
@@ -20,7 +20,6 @@
     "jade": "*",
     "formidable": "*",
     "mime": "*",
-    "moment": "*",
     "socket.io": "*",
     "socket.io-client": "*",
     "uglify-js": "*",

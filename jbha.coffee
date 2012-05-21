@@ -4,7 +4,6 @@ _            = require "underscore"
 http         = require "http"
 cheerio      = require "cheerio"
 mongoose     = require "mongoose"
-moment       = require "moment"
 querystring  = require "querystring"
 
 ansi         = require "./ansi"

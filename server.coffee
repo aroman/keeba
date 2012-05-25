@@ -148,9 +148,9 @@ app.get "/app*", ensureSession, hydrateSettings, (req, res) ->
 io.set "log level", 2
 io.set "logger", new logging.Logger "SIO"
 io.set "transports", [
-  'websocket'
   'xhr-polling'
   'jsonp-polling'
+  'htmlfile'
 ]
 
 io.set "authorization", (data, accept) ->

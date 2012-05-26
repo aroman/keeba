@@ -26,7 +26,7 @@ doomsday = moment(9999999999999); // Year 2286 lol
 
 function getEndOfWeek () {
   var wanted = _.indexOf(moment.weekdays, "Friday");
-  for (var i = 1; i < 7; i++) {
+  for (var i = 1; i < 8; i++) {
     var new_date = moment(today).add('days', i);
     if (new_date.day() === wanted) {
       return new_date;

@@ -26,3 +26,10 @@
             span.help-inline (No, I won&#39;t store it.)
         .control-actions
           button#authenticate-button.btn.btn-primary Get my homework, please.
+script
+  var email = $("#email");
+  if (email.val()) {
+    $("#password").focus();
+  } else {
+    email.focus();
+  }

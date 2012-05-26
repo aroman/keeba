@@ -124,12 +124,12 @@ AddAssignmentView = Backbone.View.extend({
     // double-submissions.
     this.$(":input").prop('disabled', true);
 
-    // If the date isn't blank, try to parse it.
+    // If the date isn't blank, parse it.
     // If it is, just leave it false-y and let
     // validation mark it as missing.
     var date = this.$("#date").val();
     if (date) {
-      date = Date.parse(date).valueOf();
+      date = moment(date, DATE_EDIT_FORMAT).valueOf();
     }
 
     var course_id = this.parent_course || this.$("#course").val();
@@ -201,11 +201,11 @@ EditAssignmentView = Backbone.View.extend({
     // double-submissions.
     this.$(":input").prop('disabled', true);
 
-    // If the date isn't blank, try to parse it.
+    // If the date isn't blank, parse it.
     // If it is, just leave it false-y and let
     // validation mark it as missing.
     if (date) {
-      date = Date.parse(date).valueOf();
+      date = moment(date, DATE_EDIT_FORMAT).valueOf();
     }
 
     this.model.save({

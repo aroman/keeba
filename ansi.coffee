@@ -7,6 +7,6 @@ module.exports =
   PURPLE:     `"\033[35m"`
   BLUE:       `"\033[36m"`
   GREY:       `"\033[90m"`
-  UNDERLINE:  `'\033[4m'`
+  UNDERLINE:  `"\033[4m"`
   BOLD:       `"\033[1m"`
   END:        `"\033[0m"`

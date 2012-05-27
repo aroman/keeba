@@ -363,6 +363,9 @@ EditCourseView = Backbone.View.extend({
 
   _delete: function () {
     var that = this;
+    if (!confirm("Really delete the course \"" + this.model.get('title') + "\"?\n\nThere is NO undo.")) {
+      return;
+    }
     this.model.destroy({
       wait: true,
       success: function () {

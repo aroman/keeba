@@ -104,6 +104,10 @@ app.get "/about", (req, res) ->
   res.render "about"
     appmode: false
 
+app.get "/help", (req, res) ->
+  res.render "help"
+    appmode: false
+
 app.get "/unsupported", (req, res) ->
   res.render "unsupported"
     appmode: false

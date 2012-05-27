@@ -1,0 +1,172 @@
+.container
+  .row
+    .span12
+      section
+        .page-header
+          img.block-icon(src="/img/glyph/gears.png")
+          h1 Technical
+            small.byline Architecture, platform, and geeky details.
+        article
+          h3.help-header How does Keeba work?
+          .help-body
+            :markdown
+              Well isn't that the $64,000 question. The whole picture is very sophistocated, so I'll just give
+              a general high-level overview of the core architecture. Of course I'm always available to talk
+              about the [stack](http://en.wikipedia.org/wiki/Solution_stack) in greater detail, so don't hesitate to 
+              [hit me up](mailto:avi.romanoff@jbha.org).
+
+
+              Basically, when you log into Keeba, two [sessions](http://en.wikipedia.org/wiki/Session_(computer_science)#HTTP_session_token)
+              are created -- one on the Keeba cloud, and one on jbha.org. The remote session allows Keeba to talk with the school's
+              homework website at jbha.org using a fully reverse-engineered protocol to authenticate
+              and read your account data. This data is then parsed, sanitized, and serialized into
+              Keeba's cloud database, which is powered by [MongoDB](http://www.mongodb.org/).
+
+
+              The browser-side client is an [HTML5](http://en.wikipedia.org/wiki/HTML5) webapp powered by [Backbone.js](http://backbonejs.org/) 
+              and [Bootstrap](http://twitter.github.com/bootstrap/), among other technologies. It talks with the server over [Socket.IO](http://socket.io/), 
+              an adaptive [JSON](http://en.wikipedia.org/wiki/JSON)-based realtime transport layer. The server is a single-threaded 
+              [forking](http://en.wikipedia.org/wiki/Fork_(operating_system)) [node.js](http://nodejs.org/) instance which exposes 
+              [CRUD](http://en.wikipedia.org/wiki/Create,_read,_update_and_delete) access to Keeba's database
+              and serves static content.
+        article
+          h3.help-header Is Keeba secure?
+          .help-body
+            :markdown
+              The short answer is **yes**. Keeba does not log or store your authentication credentials. However, your password and jbha.org session cookie
+              are stored in [RAM](http://en.wikipedia.org/wiki/Random-access_memory) for a short time in order to establish the remote session.
+
+
+              That said, it is important to remember that like the jbha.org homework website, you are submitting your email credentials in 
+              [plaintext](http://en.wikipedia.org/wiki/Plaintext) over a unencrypted HTTP connection. Therefore it may be possible for
+              a malicious third-party to [intercept](http://en.wikipedia.org/wiki/Man-in-the-middle_attack) and/or modify that traffic in transit.
+
+
+              Furthermore, your data is stored by a third-party cloud database provider, [MongoHQ](https://mongohq.com/home). It is possible
+              that employees of that company may have access to your data, but *not* your email password.
+
+
+              Obviously, you take full responsibility for your use of Keeba and that the operators of Keeba are not liable for any poential data
+              compromise or loss.
+        article
+          h3.help-header Who pays for Keeba?
+          .help-body
+            :markdown
+              **Nobody, yet.** Keeba is hosted on the [Nodejitsu](http://nodejitsu.com/) cloud and it's database is hosted by [MongoHQ](https://mongohq.com/home).
+              Keeba runs on free plans on both of these platforms.
+
+              The code, design, and development of Keeba was all done by me (Avi) in his spare time.
+  br
+  .row
+    .span12
+      section
+        .page-header
+          img.block-icon(src="/img/glyph/wrench.png")
+          h1 Issues
+            small.byline When Keeba dun goofs.
+        article
+          h3.help-header Keeba is so slow!
+          .help-body
+            :markdown
+              That could be a number of things. If you're using Keeba on a congested or slow Internet connection (such as the one at school),
+              Keeba will definitely feel slow. Try finding a better connection or closing apps that might be hogging your bandwidth, such as
+              streaming music (Pandora, Spotify, etc) or video (YouTube, iTunes downloads).
+
+              If you're using an older computer (more than 5 years), Keeba could feel sluggish. It does do a fair bit of data-crunching in the browser.
+              Switching to one of the supported browsers [listed here](/unsupported) might help.
+
+        article
+          h3.help-header I can't log in!
+          .help-body
+            :markdown
+              Most likely, you just forgot your email password. Click [here](https://www.google.com/a/jbha.org/DomainContact?service=mail)
+              to reset it via Google's reset tool.
+
+              Another possibility is that the actual homework website is down. See if you can log in to the jbha.org website
+              [here](http://www.jbha.org/students/homework.php. If you can't, the problem isn't Keeba and you should call the school.
+
+              Alternatively, Keeba might be having trouble connecting to the server because of a bug. If you can log in with the above link,
+              but not on keeba.jit.su, then it might actually be Keeba's fault. You should [contact Avi](mailto:avi.romanoff@jbha.org) if you
+              think this is the case.
+
+        article
+          h3.help-header Keeba isn't importing an assignment/course from jbha.org!
+          .help-body
+            :markdown
+              If you've confirmed that the problem isn't that the jbha.org homework website is down (see above), it is possible
+              Keeba has a bug.
+
+              You should [contact Avi](mailto:avi.romanoff@jbha.org) if you think this is the case.
+
+        article
+          h3.help-header Keeba isn't syncing properly!
+          .help-body
+            :markdown
+
+              Try refreshing the page. This usually clears up most syncing issues. If refreshing the page doesn't resolve the problem,
+              read below.
+
+              If you've confirmed that the problem isn't that the jbha.org homework website is down (see above), it is possible
+              Keeba has a bug.
+
+              You should [contact Avi](mailto:avi.romanoff@jbha.org) if you think this is the case.
+  br
+  .row
+    .span12
+      section
+        .page-header
+          img.block-icon(src="/img/glyph/flag.png")
+          h1 How-to
+            small.byline So easy, a caveman could do it.
+        article
+          h3.help-header How can I re-import an assignment/course from jbha.org?
+          .help-body
+            p
+              | Force refresh your account. You can do this from the options menu shown below, or by pressing 
+              code shift + r
+              | .
+              .centex
+                img(src="/img/screenshot-refresh.png")
+              | This will re-import any missing assignments or courses for your account. 
+              br
+              span.label.label-info Note #1
+              |  All re-imported assignments will be marked neither as neither done nor archived.
+              br
+              span.label.label-info Note #2
+              |  If a course or assignment no longer exists on the jbha.org homework website, it cannot be re-imported.
+        article
+          h3.help-header How can I see archived assignments?
+          .help-body
+            p
+              | Toggle "Show archived". You can do this from the options menu shown below, or by pressing 
+              code shift + a
+              | .
+              .centex
+                img(src="/img/screenshot-archive.png")
+        article
+          h3.help-header How can I see more information about an assignment?
+          .help-body
+            p
+              | Toggle "Show details". You can do this from the options menu shown below, or by pressing 
+              code shift + d
+              | .
+              .centex
+                img(src="/img/screenshot-details.png")
+              | This will show details for all assignments, or 
+              i No additional information 
+              | if the assignment has no details specified.
+              br
+              span.label.label-info Note #1
+              |  You can choose to show details by default by ticking 
+              b Options &rarr; Settings &rarr; Details by default.
+        article
+          h3.help-header How can I edit multiple assignments simultaneously?
+          :markdown
+            You can't, for now. [Let Avi know](mailto:avi.romanoff@jbha.org) if this is a feature you would like to see.
+        article
+          h3.help-header How can I delete my account?
+          :markdown
+            If you would like to permanently your Keeba account and all data stored on it, [email Avi](mailto:avi.romanoff@jbha.org).
+
+
+            Alternatively, you can execute ``socket.emit("delete account");`` in the JavaScript console on ``/app*`` if you know how to do that.

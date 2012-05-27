@@ -20,6 +20,11 @@ img.block-icon {
   margin: 7px 10px 0 0;
 }
 
+img.bookmark-icon {
+  float: left;
+  margin: 2px 10px 0 0;
+}
+
 i.icon-browser {
   background-image: url(/img/browsers.png);
   display: inline-block;
@@ -118,6 +123,18 @@ h1#welcome-message {
 
 h3 small {
   color: #777;
+}
+
+.byline {
+  margin-left: 10px;
+}
+
+.help-header {
+  padding-bottom: 10px;
+}
+
+.help-body {
+  margin-left: 10px;
 }
 
 .navbar-fixed-top .brand {

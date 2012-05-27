@@ -614,7 +614,6 @@ DatesView = Backbone.View.extend({
 SectionView = Backbone.View.extend({
 
   template: course_template,
-  // Child views for removal purposes
   _children: [],
 
   events: {
@@ -1147,16 +1146,3 @@ SetupView = Backbone.View.extend({
   }
 
 });
-
-function benchmarkCurrentView (n) {
-
-  console.log("Benchmarking...")
-  var start = moment();
-  for (var i = 0; i < n; i++) {
-    router.current_view.render()
-  }
-  var end = moment();
-  var ms = moment().diff(start);
-  console.log("Total time (ms): " + ms);
-  console.log("Avg time (ms): " + ms/n);
-}

@@ -44,4 +44,8 @@ script(type="text/javascript")
   window.app.updateUpcoming();
   window.app.updateCourses();
 
+  if (settings.get('details') === true) {
+    window.app.showDetails()
+  }
+
   Backbone.history.start({pushState: true, root: "/app/"});

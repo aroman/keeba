@@ -60,7 +60,19 @@ app.dynamicHelpers
   version: (req, res) ->
     return package_info.version
 
-app.get "/", (req, res) ->
+# Redirect requests coming from
+# unsupported browsers to landing
+# page for old browsers.
+browserCheck = (req, res, next) ->
+  ua = req.headers['user-agent']
+  if ua.indexOf("MSIE") isnt -1
+    regex = /MSIE\s(\d{1,2}\.\d)/.exec(ua)
+    version = Number(regex[1])
+    if version < 9
+      return res.redirect "/unsupported"
+  next()
+
+app.get "/", browserCheck, (req, res) ->
   token = req.session.token
   if token
     jbha.Client.read_settings token, (settings) ->
@@ -89,6 +101,10 @@ app.post "/", (req, res) ->
  
 app.get "/about", (req, res) ->
   res.render "about"
+    appmode: false
+
+app.get "/unsupported", (req, res) ->
+  res.render "unsupported"
     appmode: false
 
 app.get "/blog", (req, res) ->

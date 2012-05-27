@@ -11,9 +11,41 @@ body {
   padding-bottom: 40px;
 }
 
+.centex {
+  text-align: center;
+}
+
 img.block-icon {
   float: left;
   margin: 7px 10px 0 0;
+}
+
+i.icon-browser {
+  background-image: url(/img/browsers.png);
+  display: inline-block;
+  width: 141px;
+  height: 132px;
+  background-repeat: no-repeat;
+}
+
+i.browser-chrome {
+  background-position: 0px 0px;
+}
+
+i.browser-firefox {
+  background-position: -141px 0px;
+}
+
+i.browser-opera {
+  background-position: -282px 0px;
+}
+
+i.browser-safari {
+  background-position: -423px 0px;
+}
+
+i.browser-ie {
+  background-position: -564px 0px;
 }
 
 .sidebar-nav {

@@ -632,12 +632,21 @@ SectionView = Backbone.View.extend({
     this.removeChildren();
 
     console.log('render SectionView')
+    var assignments = this.model.get('assignments');
 
-    var num_archived = this.model.get('assignments').filter(function (assignment) {
+    var num_archived = assignments.filter(function (assignment) {
       return assignment.get('archived');
     }).length;
 
-    var unarchived = this.model.get('assignments').reject(function (assignment) {
+    // Add an archive change handler to each of the assignments
+    // even though they might not be visible right now.
+    var that = this;
+    _.each(assignments.models, function (assignment) {
+      assignment.on('change:archived', that.render, that);
+      that._children.push({view: null, model: assignment});
+    });
+
+    var unarchived = assignments.reject(function (assignment) {
       return assignment.get('archived');
     });
 
@@ -659,7 +668,7 @@ SectionView = Backbone.View.extend({
     // should anyway.)
     if (!empty) {
       if (app.showing_archived) {
-        this.addAssignments(this.model.get('assignments').models);
+        this.addAssignments(assignments.models);
       } else {
         this.addAssignments(unarchived);
       }
@@ -693,11 +702,7 @@ SectionView = Backbone.View.extend({
     add_dialog.show();
   },
 
-  addAssignment: function (assignment, course, options) {
-    if (_.isUndefined(options)) {
-      return;
-    }
-    var index = options.index;
+  addAssignment: function (assignment, course) {
     // XXX: https://github.com/PaulUithol/Backbone-relational/issues/48
     var assignment_with_id = this.$("div[data-id='" + assignment.get('_id') + "']");
     if (assignment_with_id.length === 0) {
@@ -715,6 +720,7 @@ SectionView = Backbone.View.extend({
         template: course_assignment_template
       });
       assignment.on('change:archived change:done', this.updateArchivable, this);
+      assignment.on('change:archived', this.updateArchivable, this);
       assignment.on('destroy', this.render, this);
       this._children.push({view: view, model: assignment});
       this.$("tbody").append(view.render().el);
@@ -729,7 +735,7 @@ SectionView = Backbone.View.extend({
   // and unarchived, enable the archive button.
   updateArchivable: _.throttle(function () {
     if (!app.showing_archived) {
-      console.log('updateArchivable')
+      console.log('updateArchivable');
       var done_and_unarchived = this.model.get('assignments').where({
         done: true,
         archived: false
@@ -749,11 +755,14 @@ SectionView = Backbone.View.extend({
   },
 
   removeChildren: function () {
+    var that = this;
     _.each(this._children, function (child) {
-      child.view.remove();
-      child.model.off('change:archived', this.updateArchivable);
-      child.model.off('change:done', this.updateArchivable);
-      child.model.off('destroy', this.render);
+      if (child.view) {
+        child.view.remove();
+      }
+      child.model.off('change:archived change:done', that.updateArchivable);
+      child.model.off('change:archived', that.render);
+      child.model.off('destroy', that.render);
     });
     // And reset the array of child views.
     this._children = [];

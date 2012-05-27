@@ -488,6 +488,14 @@ DatesView = Backbone.View.extend({
       return assignment.get('archived');
     });
 
+    // Add an archive change handler to each of the assignments
+    // even though they might not be visible right now.
+    var that = this;
+    _.each(this.models, function (assignment) {
+      assignment.on('change:archived', that.render, that);
+      that._children.push({view: null, model: assignment});
+    });
+
     var empty = unarchived.length === 0 && !app.showing_archived;
     this.$el.html(this.template({
       title: this.title,
@@ -510,7 +518,7 @@ DatesView = Backbone.View.extend({
     _.each(to_render, function (assignment) {
       var view = new AssignmentView({model: assignment, template: date_assignment_template});
       assignment.on('change:done', that.updateArchivable, that);
-      assignment.on('change:archived update:course', that.render, that);
+      assignment.on('update:course', that.render, that);
       assignment.on('change:date', that.dateChanged, that);
       that._children.push({view: view, model: assignment});
       that.$("tbody").prepend(view.render().el);
@@ -587,9 +595,12 @@ DatesView = Backbone.View.extend({
   removeChildren: function () {
     var that = this;
     _.each(this._children, function (child) {
-      child.view.remove();
+      if (child.view) {
+        child.view.remove();
+      }
       child.model.off('change:done', that.updateArchivable);
-      child.model.off('change:archived update:course', that.render);
+      child.model.off('update:course', that.render);
+      child.model.off('change:archived', that.render);
       child.model.off('change:date', that.dateChanged);
     });
     // And reset the array of child views.

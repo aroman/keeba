@@ -16,6 +16,7 @@ StatusView = Backbone.View.extend({
 
   render: function () {
     if (this.model.get('addable')) {
+      document.title = "(" + app.num_new + ") Keeba";
       app.setFavicon('zap-highlight');
     }
     this.children = this.$el.html(status_template(this.model.toJSON())).children();
@@ -36,6 +37,7 @@ StatusView = Backbone.View.extend({
       router.current_view.render();
       that.model.set({addable: false});
       app.num_new = 0;
+      document.title = "Keeba";
       app.setFavicon('zap');
       app.update_timer = setInterval(app.updateUpdatedAt, 20000);
     }});

@@ -106,6 +106,8 @@ var DATE_FORMAT = "dddd MMM D";
 var DATE_RANGE_FORMAT = "dddd, MMMM Do YYYY";
 var DATE_EDIT_FORMAT = "M/D/YY";
 
+var exclamations = ["Woo-hoo", "Rock on", "Sweet", "Right on", "Nice", "Congrats"];
+
 Handlebars.registerHelper('personalize', function (body) {
   return body.replace("%n", settings.get('nickname'));
 });
@@ -117,6 +119,11 @@ Handlebars.registerHelper('keyword', function (title) {
   else if (title.search(/test/i) !== -1) {
     return new Handlebars.SafeString('<span class="label label-important">Test</span>');
   }
+});
+
+Handlebars.registerHelper('exclamation', function () {
+  var rando = Math.floor(Math.random() * exclamations.length);
+  return exclamations[rando] + "!";
 });
 
 Handlebars.registerHelper('remaining', function (start, end) {

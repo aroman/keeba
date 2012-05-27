@@ -54,7 +54,7 @@
   </h3>
     {{#if empty}}
       <div class="alert alert-success">
-        <h2 class="alert-heading">Woo-hoo! No assignments to do here!</h2>
+        <h2 class="alert-heading">{{exclamation}} No work to do here!</h2>
         <br>
         <p>
           You&apos;ve completed <strong>{{archived}}</strong> assignments in this course to date. Click <i><b>Options > Show archived</b></i> to show them.
@@ -101,7 +101,8 @@
   </h3>
     {{#if empty}}
       <div class="alert alert-success">
-        <h2 class="alert-heading">Woo-hoo! No homework here!</h2>
+        <h2 class="alert-heading">{{exclamation}} No work to do here!</h2>
+        <br>
         <p>
           Go outside and play or something.
         </p>

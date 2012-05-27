@@ -46,14 +46,15 @@ else
 
 io = socketio.listen app, log: false
 
-fs.readFile "#{__dirname}/package.json", "utf-8", (err, data) ->
-  package_info = JSON.parse data
+data = fs.readFileSync "#{__dirname}/package.json", "utf-8"
 
-  if staging
-    logger.info "Keeba #{package_info.version} serving in 
+package_info = JSON.parse data
+
+if staging
+  logger.info "Keeba #{package_info.version} serving in 
 #{ansi.PURPLE}staging#{ansi.END} mode on port #{ansi.BOLD}8888#{ansi.END}."
-  else
-    logger.info "Keeba #{package_info.version} serving in 
+else
+  logger.info "Keeba #{package_info.version} serving in 
 #{ansi.GREEN}production#{ansi.END} mode on port #{ansi.BOLD}80#{ansi.END}."
 
 app.dynamicHelpers
@@ -106,12 +107,6 @@ app.get "/about", (req, res) ->
 app.get "/unsupported", (req, res) ->
   res.render "unsupported"
     appmode: false
-
-app.get "/blog", (req, res) ->
-  fs.readFile "#{__dirname}/blog.json", "utf-8", (err, data) ->
-    res.render "blog"
-      appmode: false
-      blog: JSON.parse data
 
 app.get "/logout", (req, res) ->
   req.session.destroy()

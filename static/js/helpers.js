@@ -121,8 +121,9 @@ Handlebars.registerHelper('keyword', function (title) {
   }
 });
 
+var rando = Math.floor(Math.random() * exclamations.length);
+
 Handlebars.registerHelper('exclamation', function () {
-  var rando = Math.floor(Math.random() * exclamations.length);
   return exclamations[rando] + "!";
 });
 

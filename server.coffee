@@ -202,9 +202,9 @@ io.sockets.on "connection", (socket) ->
     jbha.Client.keep_alive token, () ->
       L "Kept remote session alive", "info"
 
-  # Poll the school server every 30 minutes so
+  # Poll the school server every 25 minutes so
   # they don't drop our session due to inactivity.
-  keep_alive_id = setInterval(keepAlive, 1800000)
+  keep_alive_id = setInterval(keepAlive, 1500000)
 
   # Stop polling after the socket disconnects.
   # This does not happen automatically.

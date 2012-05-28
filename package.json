@@ -1,9 +1,9 @@
 {
   "name": "keeba",
-  "description": "Barrack homework: Sexified",
+  "description": "Homework, simplified.",
   "author": "Avi Romanoff <aviromanoff@gmail.com>",
   "main": "server.js",
-  "version": "3.0.3-2",
+  "version": "3.0.4",
   "scripts": {
     "prestart": "coffee -c *.coffee",
     "start": "server.js"

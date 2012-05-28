@@ -13,7 +13,7 @@ logging      = require "./logging"
 String::capitalize = ->
   @charAt(0).toUpperCase() + @slice 1
 
-mongoose.connect "mongodb://keeba:twistedfork@staff.mongohq.com:10074/keeba"
+mongoose.connect "mongodb://keeba:usinglatin@staff.mongohq.com:10074/keeba"
 
 # [18:46] <timoxley> UserSchema.namedScope('forAccount', function (account) {
 # [18:46] <timoxley>   return this.find({accountId: account})

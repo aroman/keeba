@@ -3,7 +3,7 @@
   "description": "Homework, simplified.",
   "author": "Avi Romanoff <aviromanoff@gmail.com>",
   "main": "server.js",
-  "version": "3.0.8-1",
+  "version": "3.0.1",
   "scripts": {
     "prestart": "coffee -c *.coffee",
     "start": "server.js"

@@ -22,7 +22,6 @@ mongoose.connect "mongodb://keeba:twistedfork@staff.mongohq.com:10074/keeba"
 
 AccountSchema = new mongoose.Schema
   _id: String
-  accessed: Date
   nickname: String
   is_new:
     type: Boolean
@@ -114,7 +113,6 @@ Jbha.Client =
           Account.where('_id', username).run (err, docs) =>
             @_call_if_truthy(err, cb)
             account = docs[0] or new Account()
-            account.accessed = Date.now()
             account.nickname = username.split('.')[0].capitalize()
             account._id = username
             account.save()
@@ -135,7 +133,6 @@ Jbha.Client =
   # Used ONLY for debugging/testing
   _create_account: (username, cb) ->
     account = new Account()
-    account.accessed = Date.now()
     account._id = username
     account.nickname = "TestAccount"
     account.save()

@@ -18,7 +18,7 @@ logger = new logging.Logger "SRV"
 app = express.createServer()
 sessionStore = new MongoStore
   db: 'keeba'
-  url: "mongodb://keeba:twistedfork@staff.mongohq.com:10074/keeba"
+  url: "mongodb://keeba:usinglatin@staff.mongohq.com:10074/keeba"
   clear_interval: 432000 # 5 days
 
 app.configure ->

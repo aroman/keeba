@@ -6,7 +6,7 @@ _          = require "underscore"
 connect    = require "connect"
 express    = require "express"
 socketio   = require "socket.io"
-MongoStore = require('connect-mongo')(express);
+MongoStore = require('connect-mongo')(express)
 
 jbha       = require "./jbha"
 ansi       = require "./ansi"
@@ -141,11 +141,11 @@ app.get "/setup", ensureSession, hydrateSettings, (req, res) ->
 
 app.post "/setup", ensureSession, (req, res) ->
   settings = {
-      nickname: req.body.nickname
-      firstrun: true
+    nickname: req.body.nickname
+    firstrun: true
   }
   jbha.Client.update_settings req.token, settings, ->
-      res.redirect "/"
+    res.redirect "/"
 
 app.get "/app*", ensureSession, hydrateSettings, (req, res) ->
   jbha.Client.by_course req.token, (courses) ->

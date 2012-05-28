@@ -96,8 +96,6 @@ Jbha.Client =
       Passwd: password
       Action: "login"
 
-    # L username, "Authenticating with password: #{password}"
-
     options =
       host: "www.jbha.org"
       path: "/students/index.php"
@@ -129,17 +127,6 @@ Jbha.Client =
 
     req.write post_data
     req.end()
-
-  # Used ONLY for debugging/testing
-  _create_account: (username, cb) ->
-    account = new Account()
-    account._id = username
-    account.nickname = "TestAccount"
-    account.save()
-    cb
-      token:
-        cookie: "1235TESTCOOKIE54321"
-        username: account._id
 
   read_settings: (token, cb) ->
     Account
@@ -188,9 +175,7 @@ Jbha.Client =
           course.assignments.push assignment
           course.save()
           # TODO: Don't hard-code success
-          delete assignment["owner"];
-          console.log assignment
-          console.log assignment.owner
+          delete assignment["owner"]
           cb(null, course, assignment)
 
   update_assignment: (token, assignment, cb) ->
@@ -303,7 +288,7 @@ Jbha.Client =
                         L token.username, "[#{parsed_courses}/#{courses.length}] Parsed course [#{course.title}]"
 
                 assignments_to_parse.each (index, element) =>
-                  text_blob = $(element).text();
+                  text_blob = $(element).text()
                   # Skips over extraneous and unwanted matched objects,
                   # like course policies and stuff.
                   if text_blob.match /Due \w{3} \d{1,2}\, \d{4}:/
@@ -313,7 +298,7 @@ Jbha.Client =
                     # Parse _their_ assignment id
                     assignment_id = $(element).attr('href').match(/\d+/)[0]
                     # Parse the details of the assignment as HTML -- **not** as text.
-                    assignment_details = $("#toggle-cont-#{assignment_id}").html();
+                    assignment_details = $("#toggle-cont-#{assignment_id}").html()
 
                     if $("#toggle-cont-#{assignment_id}").text()
                       # process.exit(1);

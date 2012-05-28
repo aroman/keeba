@@ -54,6 +54,7 @@ SettingsView = Backbone.View.extend({
   },
 
   initialize: function () {
+    this.render();
     this.model.bind('change', this.render, this);
   },
 

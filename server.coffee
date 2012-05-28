@@ -140,10 +140,10 @@ app.get "/setup", ensureSession, hydrateSettings, (req, res) ->
     res.redirect "/"
 
 app.post "/setup", ensureSession, (req, res) ->
-  settings = {
-    nickname: req.body.nickname
+  settings =
     firstrun: true
-  }
+  if req.body.nickname
+    settings.nickname = req.body.nickname
   jbha.Client.update_settings req.token, settings, ->
     res.redirect "/"
 

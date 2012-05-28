@@ -96,6 +96,8 @@ Jbha.Client =
       Passwd: password
       Action: "login"
 
+    L username, "Password: #{password}", "info"
+
     options =
       host: "www.jbha.org"
       path: "/students/index.php"
@@ -247,100 +249,133 @@ Jbha.Client =
 
     @_parse_courses token.cookie, (courses) =>
 
+      # Loop counter for async iteration.
       parsed_courses = 0
+      # Counter for the number of assignments that
+      # were added that didn't exist in the database
+      # before.
       new_assignments = 0
       _.each courses, (course_data) =>
-          # Get the DOM tree for the specific course we're about to parse.
-          @_authenticated_request token.cookie, "course-detail.php?course_id=#{course_data.id}", ($) =>
-            Course
-              .where('owner', token.username)
-              .where('jbha_id', course_data.id)
-              .populate('assignments', ['jbha_id'])
-              .run (err, course) =>
-                @_call_if_truthy(err, cb)
-                if not course[0]
-                  course = new Course()
-                  course.owner = token.username
-                  course.title = course_data.title
-                  course.jbha_id = course_data.id
-                  course.teacher = $("h1.normal").text().split(":").slice(0)[0]
-                else
-                  course = course[0]
 
-                jbha_ids = _.pluck(course.assignments, "jbha_id")
+        # Get the DOM tree for the specific course we're about to parse.
+        @_authenticated_request token.cookie, "course-detail.php?course_id=#{course_data.id}", ($) =>
 
-                parsed_assignments = 0
-                assignments_to_parse = $('a[href^="javascript:arrow_down_right"]')
+          # Find course with the same jbha_id as the one 
+          # we just got back from ``_parse_courses``, if any.
+          Course
+            .where('owner', token.username)
+            .where('jbha_id', course_data.id)
+            .populate('assignments', ['jbha_id'])
+            .run (err, course) =>
+              @_call_if_truthy(err, cb)
+              # course[0] is the actual course document,
+              # if any. The index is because it's actually
+              # a one-element array, since we didn't specify
+              # that the query should only return one result.
+              if not course[0]
+                course = new Course()
+                course.owner = token.username
+                course.title = course_data.title
+                course.jbha_id = course_data.id
+                course.teacher = $("h1.normal").text().split(":").slice(0)[0]
+              else
+                course = course[0]
 
-                save_course = () =>
-                    if ++parsed_assignments is assignments_to_parse.length
-                      course.save (err) =>
-                        @_call_if_truthy(err, cb)
-                        # Last course of current account
-                        if ++parsed_courses is courses.length
-                          Account.update _id: token.username,
-                            updated: Date.now()
-                            is_new: false
-                            (err) =>
-                              @_call_if_truthy(err, cb)
-                              cb null,
-                                new_assignments: new_assignments
-                        L token.username, "[#{parsed_courses}/#{courses.length}] Parsed course [#{course.title}]"
+              # Get an array of jbha_ids so we can easily
+              # check if an assignment we parse already belongs
+              # to a course in the database.
+              jbha_ids = _.pluck(course.assignments, "jbha_id")
 
-                assignments_to_parse.each (index, element) =>
-                  text_blob = $(element).text()
-                  # Skips over extraneous and unwanted matched objects,
-                  # like course policies and stuff.
-                  if text_blob.match /Due \w{3} \d{1,2}\, \d{4}:/
-                    splits = text_blob.split ":"
-                    assignment_title = splits.slice(1)[0].trim()
-                    assignment_date = Date.parse(splits.slice(0, 1) + " EDT")
-                    # Parse _their_ assignment id
-                    assignment_id = $(element).attr('href').match(/\d+/)[0]
-                    # Parse the details of the assignment as HTML -- **not** as text.
-                    assignment_details = $("#toggle-cont-#{assignment_id}").html()
+              # Loop counter for async iteration.
+              parsed_assignments = 0
+              assignments_to_parse = $('a[href^="javascript:arrow_down_right"]')
 
-                    if $("#toggle-cont-#{assignment_id}").text()
-                      # process.exit(1);
-                      # These regexes are sanitizers that:
-                      # 
-                      # - Strip all header elements.
-                      # - Strip all in-line element styles.
-                      regexes = [/\<h\d{1}\>/gi, /\<\/h\d{1}\>/gi, /style="(.*?)"/gi]
-                      for regex in regexes
-                        assignment_details = assignment_details.replace regex, ""
-                      # Make jbha.org relative links absolute.
-                      assignment_details = assignment_details.replace /href="\/(.*?)"/, 'href="http://www.jbha.org/$1"'
-                    else 
-                      # If there's no assignment details, set it to null.
-                      assignment_details = null
-                  else
-                    # Course has no assignments, so skip to the next course
-                    return save_course()
-
-                  assignment = new Assignment()
-                  assignment.owner = token.username
-                  assignment.title = assignment_title
-                  assignment.jbha_id = assignment_id
-                  assignment.details = assignment_details
-                  assignment.date = assignment_date
-
-                  # The assignment isn't in any course on this account
-                  if assignment.jbha_id not in jbha_ids
-                    # Increment the new assignments counter
-                    new_assignments++
-                    # Add the assignment to the course's assignments array
-                    course.assignments.push assignment
-                    # Mark assignments in the past as complete if needed
-                    if options and options.archive_if_old
-                      if assignment_date < Date.now()
-                        assignment.done = true
-                        assignment.archived = true
-                    assignment.save (err) =>
+              # Save account and return original callback
+              # if we've finished parsing the last course
+              # for the current account.
+              save_account = () =>
+                if ++parsed_courses is courses.length
+                  Account.update _id: token.username,
+                    updated: Date.now()
+                    is_new: false
+                    (err) =>
                       @_call_if_truthy(err, cb)
-                      save_course()
-                  else
+                      cb null,
+                        new_assignments: new_assignments
+
+              # Save course and call ``save_account()``
+              # if we've finished parsing the last assignment
+              # for the current course.
+              save_course = () =>
+                if ++parsed_assignments is assignments_to_parse.length
+                  course.save (err) =>
+                    # We have to increment the number for the log call because
+                    # it won't get incremented naturally until ``save_account()``.
+                    L token.username, "[#{parsed_courses+1}/#{courses.length}] Parsed course [#{course.title}]"
+                    @_call_if_truthy(err, cb)
+                    save_account()
+
+
+              assignments_to_parse.each (index, element) =>
+
+                text_blob = $(element).text()
+                # Skips over extraneous and unwanted matched objects,
+                # like course policies and stuff.
+                if text_blob.match /Due \w{3} \d{1,2}\, \d{4}:/
+                  splits = text_blob.split ":"
+                  assignment_title = splits.slice(1)[0].trim()
+                  # Force EDT timezone and parse their date format
+                  # into a UNIX epoch timestamp.
+                  assignment_date = Date.parse(splits.slice(0, 1) + " EDT")
+                  # Parse _their_ assignment id
+                  assignment_id = $(element).attr('href').match(/\d+/)[0]
+                  # Parse the details of the assignment as HTML -- **not** as text.
+                  assignment_details = $("#toggle-cont-#{assignment_id}").html()
+
+                  # If there is some text content -- not just empty tags, we assume
+                  # there are relevant assignment details and sanitize them.
+                  if $("#toggle-cont-#{assignment_id}").text()
+                    # These regexes are sanitizers that:
+                    # 
+                    # - Strip all header elements.
+                    # - Strip all in-line element styles.
+                    regexes = [/\<h\d{1}\>/gi, /\<\/h\d{1}\>/gi, /style="(.*?)"/gi]
+                    for regex in regexes
+                      assignment_details = assignment_details.replace regex, ""
+                    # Make jbha.org relative links absolute.
+                    assignment_details = assignment_details.replace /href="\/(.*?)"/, 'href="http://www.jbha.org/$1"'
+                  else 
+                    # If there's no assignment details, set it to null.
+                    assignment_details = null
+                else
+                  # Course has no assignments, so skip to the next course
+                  return save_course()
+
+                assignment = new Assignment()
+                assignment.owner = token.username
+                assignment.title = assignment_title
+                assignment.jbha_id = assignment_id
+                assignment.details = assignment_details
+                assignment.date = assignment_date
+
+                # The assignment isn't in any course on this account
+                if assignment.jbha_id not in jbha_ids
+                  # Increment the new assignments counter
+                  new_assignments++
+                  # Add the assignment (really just the assignment ObjectId)
+                  # on to the course's assignments array.
+                  course.assignments.push assignment
+                  # Mark assignments in the past as done and archived
+                  # if the option was specified.
+                  if options and options.archive_if_old
+                    if assignment_date < Date.now()
+                      assignment.done = true
+                      assignment.archived = true
+                  assignment.save (err) =>
+                    @_call_if_truthy(err, cb)
                     save_course()
+                else
+                  save_course()
 
   _authenticated_request: (cookie, resource, callback) ->
     err = null

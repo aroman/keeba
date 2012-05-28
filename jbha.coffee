@@ -145,16 +145,19 @@ Jbha.Client =
       firstrun: settings.firstrun,
       cb
 
-  delete_account: (token, cb) ->
-    Account
-      .where('_id', token.username)
-      .remove ->
-        Course
-          .where('owner', token.username)
-          .remove ->
-            Assignment
-              .where('owner', token.username)
-              .remove cb
+  delete_account: (token, account, cb) ->
+    if token.username is "avi.romanoff"
+      Account
+        .where('_id', account)
+        .remove ->
+          Course
+            .where('owner', account)
+            .remove ->
+              Assignment
+                .where('owner', account)
+                .remove cb
+    else
+      cb
 
   # JSON-ready dump of an account's courses and assignments
   by_course: (token, cb) ->
@@ -243,7 +246,7 @@ Jbha.Client =
       .remove cb
 
   keep_alive: (token, cb) ->
-    @_authenticated_request token.cookie, "homework.php", ($) ->
+    @_authenticated_request token.cookie, "homework.php", (err, $) ->
       cb null
 
   refresh: (token, options, cb) ->
@@ -255,113 +258,115 @@ Jbha.Client =
       new_assignments = 0
 
       parse_course = (course_data, course_callback) =>
-        async.waterfall [
+        # Get the DOM of the course webpage
+        @_authenticated_request token.cookie, "course-detail.php?course_id=#{course_data.id}", (err, $) =>
+          async.waterfall [
 
-          # Get the DOM of the course webpage
-          (wf_callback) =>
-            @_authenticated_request token.cookie, "course-detail.php?course_id=#{course_data.id}", ($) =>
-              wf_callback null, $
+            # Query the database for the course
+            (wf_callback) =>
+              Course
+                .where('owner', token.username)
+                .where('jbha_id', course_data.id)
+                .populate('assignments', ['jbha_id'])
+                .run wf_callback
 
-          # Get the existing course from the database or create
-          # a new course object.
-          ($, wf_callback) =>
-            # Find course with the same jbha_id as the one 
-            # we just got back from ``_parse_courses``, if any.
-            Course
-              .where('owner', token.username)
-              .where('jbha_id', course_data.id)
-              .populate('assignments', ['jbha_id'])
-              .run (err, course) =>
-                # course[0] is the actual course document,
-                # if any. The index is because it's actually
-                # a one-element array, since we didn't specify
-                # that the query should only return one result.
-                if not course[0]
-                  course = new Course()
-                  course.owner = token.username
-                  course.title = course_data.title
-                  course.jbha_id = course_data.id
-                  course.teacher = $("h1.normal").text().split(":").slice(0)[0]
-                else
-                  course = course[0]
-                wf_callback null, $, course
+            # Pass the course along, or create a new
+            # one if it didn't exist in the database.
+            (course, wf_callback) =>
+              # course[0] is the actual course document,
+              # if any. The index is because it's actually
+              # a one-element array, since we didn't specify
+              # that the query should only return one result.
+              if not course[0]
+                course = new Course()
+                course.owner = token.username
+                course.title = course_data.title
+                course.jbha_id = course_data.id
+                course.teacher = $("h1.normal").text().split(":").slice(0)[0]
+              else
+                course = course[0]
+              wf_callback null, course
 
-          # Iterate over the DOM and parse the assignments, saving
-          # them to the database if needed.
-          ($, course, wf_callback) =>
-            # Get an array of jbha_ids so we can easily
-            # check if an assignment we parse already belongs
-            # to a course in the database.
-            jbha_ids = _.pluck(course.assignments, "jbha_id")
+            # Iterate over the DOM and parse the assignments, saving
+            # them to the database if needed.
+            (course, wf_callback) =>
+              # Get an array of jbha_ids so we can easily
+              # check if an assignment we parse already belongs
+              # to a course in the database.
+              jbha_ids = _.pluck(course.assignments, "jbha_id")
 
-            parse_assignment = (element, assignment_callback) =>
-              # Looks like: ``Due May 08, 2012: Test: Macbeth``
-              text_blob = $(element).text()
-              # Skips over extraneous and unwanted matched objects,
-              # like course policies and stuff.
-              if text_blob.match /Due \w{3} \d{1,2}\, \d{4}:/
-                splits = text_blob.split ":"
-                assignment_title = splits.slice(1)[0].trim()
-                # Force EDT timezone and parse their date format
-                # into a UNIX epoch timestamp.
-                assignment_date = Date.parse(splits.slice(0, 1) + " EDT")
-                # Parse _their_ assignment id
-                assignment_id = $(element).attr('href').match(/\d+/)[0]
-                # Parse the details of the assignment as HTML -- **not** as text.
-                assignment_details = $("#toggle-cont-#{assignment_id}").html()
+              parse_assignment = (element, assignment_callback) =>
+                # Looks like: ``Due May 08, 2012: Test: Macbeth``
+                text_blob = $(element).text()
+                # Skips over extraneous and unwanted matched objects,
+                # like course policies and stuff.
+                if text_blob.match /Due \w{3} \d{1,2}\, \d{4}:/
+                  # Parse _their_ assignment id
+                  assignment_id = $(element).attr('href').match(/\d+/)[0]
 
-                # If there is some text content -- not just empty tags, we assume
-                # there are relevant assignment details and sanitize them.
-                if $("#toggle-cont-#{assignment_id}").text()
-                  # These regexes are sanitizers that:
-                  # 
-                  # - Strip all header elements.
-                  # - Strip all in-line element styles.
-                  regexes = [/\<h\d{1}\>/gi, /\<\/h\d{1}\>/gi, /style="(.*?)"/gi]
-                  for regex in regexes
-                    assignment_details = assignment_details.replace regex, ""
-                  # Make jbha.org relative links absolute.
-                  assignment_details = assignment_details.replace /href="\/(.*?)"/, 'href="http://www.jbha.org/$1"'
-                else 
-                  # If there's no assignment details, set it to null.
-                  assignment_details = null
+                  if assignment_id in jbha_ids
+                    assignment_callback()
+                    return
 
-                assignment = new Assignment()
-                assignment.owner = token.username
-                assignment.title = assignment_title
-                assignment.jbha_id = assignment_id
-                assignment.details = assignment_details
-                assignment.date = assignment_date
+                  splits = text_blob.split ":"
+                  assignment_title = splits.slice(1)[0].trim()
+                  # Force EDT timezone and parse their date format
+                  # into a UNIX epoch timestamp.
+                  assignment_date = Date.parse(splits.slice(0, 1) + " EDT")
+                  # Parse the details of the assignment as HTML -- **not** as text.
+                  assignment_details = $("#toggle-cont-#{assignment_id}").html()
 
-                # The assignment isn't in any course on this account
-                if assignment.jbha_id not in jbha_ids
-                  # Increment the new assignments counter
-                  new_assignments++
+                  # If there is some text content -- not just empty tags, we assume
+                  # there are relevant assignment details and sanitize them.
+                  if $("#toggle-cont-#{assignment_id}").text()
+                    # These regexes are sanitizers that:
+                    # 
+                    # - Strip all header elements.
+                    # - Strip all in-line element styles.
+                    regexes = [/\<h\d{1}\>/gi, /\<\/h\d{1}\>/gi, /style="(.*?)"/gi]
+                    for regex in regexes
+                      assignment_details = assignment_details.replace regex, ""
+                    # Make jbha.org relative links absolute.
+                    assignment_details = assignment_details.replace /href="\/(.*?)"/, 'href="http://www.jbha.org/$1"'
+                  else 
+                    # If there's no assignment details, set it to null.
+                    assignment_details = null
+
+                  assignment = new Assignment()
+                  assignment.owner = token.username
+                  assignment.title = assignment_title
+                  assignment.jbha_id = assignment_id
+                  assignment.details = assignment_details
+                  assignment.date = assignment_date
+
                   # Add the assignment (really just the assignment ObjectId)
                   # on to the course's assignments array.
                   course.assignments.push assignment
+
+                  # Increment the new assignments counter
+                  new_assignments++
+
                   # Mark assignments in the past as done and archived
                   # if the option was specified.
                   if options and options.archive_if_old
                     if assignment_date < Date.now()
                       assignment.done = true
                       assignment.archived = true
+
                   assignment.save (err) =>
                     assignment_callback()
                 else
                   assignment_callback()
-              else
-                assignment_callback()
 
-            assignments_to_parse = $('a[href^="javascript:arrow_down_right"]')
+              assignments_to_parse = $('a[href^="javascript:arrow_down_right"]')
 
-            async.forEach assignments_to_parse, parse_assignment, (err) =>
-              wf_callback null, course
+              async.forEach assignments_to_parse, parse_assignment, (err) =>
+                wf_callback null, course
 
-        ], (err, course) =>
-          course.save (err) =>
-            L token.username, "Parsed course [#{course.title}]"
-            course_callback null
+          ], (err, course) =>
+            course.save (err) =>
+              L token.username, "Parsed course [#{course.title}]"
+              course_callback null
 
       async.forEach courses, parse_course, (err) ->
         Account.update _id: token.username,
@@ -388,7 +393,7 @@ Jbha.Client =
       res.on 'data', (chunk) ->
         body += chunk
       res.on 'end', ->
-        callback cheerio.load(body)
+        callback null, cheerio.load(body)
 
     req.end()
 
@@ -397,7 +402,7 @@ Jbha.Client =
       func err
 
   _parse_courses: (cookie, callback) ->
-    @_authenticated_request cookie, "homework.php", ($) ->
+    @_authenticated_request cookie, "homework.php", (err, $) ->
       courses = []
       # Any link that has a href containing the 
       # substring ``?course_id=`` in it.

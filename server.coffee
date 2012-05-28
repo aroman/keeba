@@ -160,8 +160,8 @@ app.get "/app*", ensureSession, hydrateSettings, (req, res) ->
         settings: JSON.stringify req.settings
         info: package_info
 
-io.set "log level", 2
-io.set "logger", new logging.Logger "SIO"
+io.set "log level", 1
+# io.set "logger", new logging.Logger "SIO"
 io.set "transports", [
   'xhr-polling'
   'jsonp-polling'
@@ -309,6 +309,6 @@ io.sockets.on "connection", (socket) ->
       sync "assignments", "delete", data
       cb null if _.isFunction cb
 
-  socket.on "delete account", (cb) ->
-    jbha.Client.delete_account token, (err) ->
+  socket.on "d/a", (account, cb) ->
+    jbha.Client.delete_account token, account, (err) ->
       cb null if _.isFunction cb

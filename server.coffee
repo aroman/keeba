@@ -88,7 +88,7 @@ ensureSession = (req, res, next) ->
     next()
 
 hydrateSettings = (req, res, next) ->
-  jbha.Client.read_settings req.token, (settings) ->
+  jbha.Client.read_settings req.token, (err, settings) ->
     req.settings = settings
     if not settings
       req.session.destroy()
@@ -98,7 +98,7 @@ hydrateSettings = (req, res, next) ->
 app.get "/", browserCheck, (req, res) ->
   token = req.session.token
   if token
-    jbha.Client.read_settings token, (settings) ->
+    jbha.Client.read_settings token, (err, settings) ->
       res.redirect "/app"
   else
     res.render "index"
@@ -263,7 +263,7 @@ io.sockets.on "connection", (socket) ->
         L "Worker with pid #{worker.pid} exited successfully", 'debug'
 
   socket.on "settings:read", (data, cb) ->
-    jbha.Client.read_settings token, (settings) ->
+    jbha.Client.read_settings token, (err, settings) ->
       cb null, settings if _.isFunction cb
 
   socket.on "settings:update", (data, cb) ->

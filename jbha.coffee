@@ -109,18 +109,21 @@ Jbha.Client =
       res.on 'end', () =>
         if res.headers.location is "/students/homework.php"
           L username, "Remote authentication succeeded", "info"
-          Account.where('_id', username).run (err, docs) =>
-            @_call_if_truthy(err, cb)
-            account = docs[0] or new Account()
-            account.nickname = username.split('.')[0].capitalize()
-            account._id = username
-            account.save()
-            cookie = res.headers['set-cookie'][1].split(';')[0]
-            cb null
-              token:
-                cookie: cookie
-                username: username
-              is_new: account.is_new
+          Account
+            .findOne()
+            .where('_id', username)
+            .run (err, account_from_db) =>
+              @_call_if_truthy(err, cb)
+              account = account_from_db or new Account()
+              account.nickname = username.split('.')[0].capitalize()
+              account._id = username
+              account.save()
+              cookie = res.headers['set-cookie'][1].split(';')[0]
+              cb null
+                token:
+                  cookie: cookie
+                  username: username
+                is_new: account.is_new
         else
           L username, "Remote authentication failed", "warn"
           @_call_if_truthy("Invalid login", cb)
@@ -131,10 +134,10 @@ Jbha.Client =
 
   read_settings: (token, cb) ->
     Account
+      .findOne()
       .where('_id', token.username)
       .select(['initial_view', 'nickname', 'details', 'is_new', 'firstrun', 'updated'])
-      .run (err, docs) ->
-        cb(docs[0])
+      .run cb
 
   update_settings: (token, settings, cb) ->
     Account.update _id: token.username,
@@ -395,6 +398,8 @@ Jbha.Client =
   _call_if_truthy: (err, func) ->
     if err
       func err
+    else
+      return true
 
   _parse_courses: (cookie, callback) ->
     @_authenticated_request cookie, "homework.php", (err, $) ->

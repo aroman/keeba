@@ -72,6 +72,8 @@ SettingsView = Backbone.View.extend({
     },
     {
       error: function (model, errors) {
+        that.$(".error").removeClass('error');
+        that.$('.help-inline').text();
         _.each(errors, function (error) {
           var control_group = that.$("#" + error.attr).parents(".control-group");
           control_group.addClass('error');
@@ -144,6 +146,8 @@ AddAssignmentView = Backbone.View.extend({
     },
     {
       error: function (model, errors) {
+        that.$(".error").removeClass('error');
+        that.$('.help-inline').text('');
         _.each(errors, function (error) {
           var control_group = that.$("#" + error.attr).parents(".control-group");
           control_group.addClass('error');
@@ -219,6 +223,8 @@ EditAssignmentView = Backbone.View.extend({
     },
     {
       error: function (model, errors) {
+        that.$(".error").removeClass('error');
+        that.$('.help-inline').text('');
         _.each(errors, function (error) {
           var control_group = that.$("#" + error.attr).parents(".control-group");
           control_group.addClass('error');
@@ -285,6 +291,8 @@ AddCourseView = Backbone.View.extend({
     },
     {
       error: function (model, errors) {
+        that.$(".error").removeClass('error');
+        that.$('.help-inline').text('');
         _.each(errors, function (error) {
           var control_group = that.$("#" + error.attr).parents(".control-group");
           control_group.addClass('error');
@@ -348,6 +356,8 @@ EditCourseView = Backbone.View.extend({
     },
     {
       error: function (model, errors) {
+        that.$(".error").removeClass('error');
+        that.$('.help-inline').text('');
         _.each(errors, function (error) {
           var control_group = that.$("#" + error.attr).parents(".control-group");
           control_group.addClass('error');

@@ -12,8 +12,13 @@ jbha       = require "./jbha"
 ansi       = require "./ansi"
 logging    = require "./logging"
 
+
 package_info = JSON.parse(fs.readFileSync "#{__dirname}/package.json", "utf-8")
 logger = new logging.Logger "SRV"
+
+if _.isUndefined process.env.NODE_ENV
+  logger.error "NODE_ENV environment variable not set, exiting."
+  process.exit(1)
 
 app = express.createServer()
 io = socketio.listen app, log: false

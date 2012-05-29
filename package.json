@@ -14,7 +14,7 @@
   "subdomain": "keeba",
   "dependencies": {
     "async": "0.1.21",
-    "cheerio": "0.8.0",
+    "cheerio": "0.7.0",
     "colors": "0.6.0",
     "connect": "2.2.2",
     "connect-mongo": "0.1.9",

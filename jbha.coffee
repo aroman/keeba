@@ -197,7 +197,7 @@ Jbha.Client =
 
     ], (err, course, assignment) ->
       delete assignment["owner"]
-      cb null, course, assignment
+      cb err, course, assignment
 
   update_assignment: (token, assignment, cb) ->
     # Pull the assignment from the current course,
@@ -393,10 +393,9 @@ Jbha.Client =
             cb err, new_assignments: new_assignments
 
   _authenticated_request: (cookie, resource, callback) ->
-    err = null
 
     if not cookie
-      err = "Authentication error: No session cookie"
+      callback "Authentication error: No session cookie"
 
     options =
       host: "www.jbha.org"
@@ -411,6 +410,9 @@ Jbha.Client =
         body += chunk
       res.on 'end', ->
         callback null, cheerio.load(body)
+
+    req.on 'error', (err) ->
+      callback err
 
     req.end()
 

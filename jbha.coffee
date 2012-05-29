@@ -263,6 +263,7 @@ Jbha.Client =
             # Query the database for the course
             (wf_callback) =>
               Course
+                .findOne()
                 .where('owner', token.username)
                 .where('jbha_id', course_data.id)
                 .populate('assignments', ['jbha_id'])
@@ -270,19 +271,15 @@ Jbha.Client =
 
             # Pass the course along, or create a new
             # one if it didn't exist in the database.
-            (course, wf_callback) =>
-              # course[0] is the actual course document,
-              # if any. The index is because it's actually
-              # a one-element array, since we didn't specify
-              # that the query should only return one result.
-              if not course[0]
+            (course_from_db, wf_callback) =>
+              if not course_from_db
                 course = new Course()
                 course.owner = token.username
                 course.title = course_data.title
                 course.jbha_id = course_data.id
                 course.teacher = $("h1.normal").text().split(":").slice(0)[0]
               else
-                course = course[0]
+                course = course_from_db
               wf_callback null, course
 
             # Iterate over the DOM and parse the assignments, saving

@@ -148,15 +148,20 @@ Jbha.Client =
 
   delete_account: (token, account, cb) ->
     if token.username is "avi.romanoff"
-      Account
-        .where('_id', account)
-        .remove ->
+      async.parallel [
+        (callback) ->
+          Account
+            .where('_id', account)
+            .remove callback
+        (callback) ->
           Course
             .where('owner', account)
-            .remove ->
-              Assignment
-                .where('owner', account)
-                .remove cb
+            .remove callback
+        (callback) ->
+          Assignment
+            .where('owner', account)
+            .remove callback
+      ], cb
     else
       cb
 
@@ -189,33 +194,41 @@ Jbha.Client =
     # Pull the assignment from the current course,
     # push it onto the new one, save it,
     # and finally update the assignment fields. 
-    Course.update {
-      owner: token.username
-      assignments: assignment._id
-    },
-    {
-      $pull: {assignments: assignment._id}
-    },
-    {},
-    (err, num_affected) =>
-      Course
-        .findOne({'owner': token.username, '_id': assignment.course})
-        .run (err, course) =>
-          course.assignments.push assignment._id
-          course.save (err) =>
-            Assignment.update {
-                owner: token.username
-                _id: assignment._id
-              },
-              {
-                title: assignment.title
-                date: assignment.date
-                details: assignment.details
-                done: assignment.done
-                archived: assignment.archived
-              },
-              {},
-              cb
+    async.waterfall [
+      (wf_callback) ->
+        Course.update {
+          owner: token.username
+          assignments: assignment._id
+        },
+        {
+          $pull: {assignments: assignment._id}
+        },
+        {},
+        (err) ->
+          wf_callback()
+      (wf_callback) ->
+        Course
+          .findOne()
+          .where('owner', token.username)
+          .where('_id', assignment.course)
+          .run wf_callback
+      (course, wf_callback) ->
+        course.assignments.push assignment._id
+        course.save wf_callback
+    ], (err) ->
+      Assignment.update {
+          owner: token.username
+          _id: assignment._id
+        },
+        {
+          title: assignment.title
+          date: assignment.date
+          details: assignment.details
+          done: assignment.done
+          archived: assignment.archived
+        },
+        {},
+        cb
 
   delete_assignment: (token, assignment, cb) ->
     Assignment
@@ -248,7 +261,7 @@ Jbha.Client =
 
   keep_alive: (token, cb) ->
     @_authenticated_request token.cookie, "homework.php", (err, $) ->
-      cb null
+      cb err
 
   refresh: (token, options, cb) ->
 

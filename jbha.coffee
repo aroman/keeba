@@ -349,26 +349,26 @@ Jbha.Client =
                       assignment.archived = true
 
                   assignment.save (err) =>
-                    assignment_callback()
+                    assignment_callback err
                 else
-                  assignment_callback()
+                  assignment_callback err
 
               assignments_to_parse = $('a[href^="javascript:arrow_down_right"]')
 
               async.forEach assignments_to_parse, parse_assignment, (err) =>
-                wf_callback null, course
+                wf_callback err, course
 
           ], (err, course) =>
             course.save (err) =>
               L token.username, "Parsed course [#{course.title}]"
-              course_callback null
+              course_callback err
 
       async.forEach courses, parse_course, (err) ->
         Account.update _id: token.username,
           updated: Date.now()
           is_new: false
           (err) =>
-            cb null, new_assignments: new_assignments
+            cb err, new_assignments: new_assignments
 
   _authenticated_request: (cookie, resource, callback) ->
     err = null

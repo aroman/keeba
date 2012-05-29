@@ -3,13 +3,13 @@
 fs         = require "fs"
 cp         = require "child_process"
 _          = require "underscore"
+colors     = require "colors"
 connect    = require "connect"
 express    = require "express"
 socketio   = require "socket.io"
 MongoStore = require('connect-mongo')(express)
 
 jbha       = require "./jbha"
-ansi       = require "./ansi"
 logging    = require "./logging"
 
 
@@ -46,7 +46,7 @@ app.configure ->
 
 app.configure 'staging', ->
   port = 8888
-  color = ansi.PURPLE
+  color = 'magenta'
   io.set "log level", 3
   io.set "logger", new logging.Logger "SIO"
   app.use express.logger()
@@ -54,7 +54,7 @@ app.configure 'staging', ->
 
 app.configure 'production', ->
   port = 80
-  color = ansi.GREEN
+  color = 'green'
   # Don't allow WebSockets in production.
   io.set 'transports', [
     'xhr-polling'
@@ -66,8 +66,7 @@ app.configure 'production', ->
 app.listen port
 
 logger.info "Keeba #{package_info.version} serving in
- #{color}#{process.env.NODE_ENV}#{ansi.END} mode
- on port #{ansi.BOLD}#{port}#{ansi.END}."
+ #{process.env.NODE_ENV[color]} mode on port #{String(port).bold}."
 
 app.dynamicHelpers
   version: (req, res) ->
@@ -193,7 +192,7 @@ io.sockets.on "connection", (socket) ->
   socket.join token.username
 
   L = (message, urgency="debug") ->
-    logger[urgency] "#{ansi.UNDERLINE}#{token.username}#{ansi.END} :: #{message}"
+    logger[urgency] "#{token.username.underline} :: #{message}"
 
   # Syncs model state to all connected sessions,
   # EXCEPT the one that initiated the sync.

@@ -2,8 +2,7 @@
 # Based on socket.io-node's MIT licensed logger.
 
 _ = require 'underscore'
-
-ansi = require "./ansi"
+colors = require "colors"
 
 class Logger
 
@@ -20,10 +19,10 @@ class Logger
   ]
 
   _colors: [
-    ansi.RED
-    ansi.YELLOW
-    ansi.BLUE
-    ansi.GREY
+    'red'
+    'yellow'
+    'cyan'
+    'grey'
   ]
 
   _pad: (str) ->
@@ -40,6 +39,6 @@ class Logger
     index = @_levels.indexOf(type)
     console.log.apply(
       console,
-       ["  " + @_colors[index] + @._pad(type) + " - " + ansi.END + ansi.BOLD + @prefix + ansi.END].concat(_.toArray(arguments)[1..]))
+       ["  " + @._pad(type)[@_colors[index]] + " - " + @prefix.bold].concat(_.toArray(arguments)[1..]))
 
 module.exports = {Logger: Logger}

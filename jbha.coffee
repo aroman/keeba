@@ -3,11 +3,11 @@
 _            = require "underscore"
 async        = require "async"
 http         = require "http"
+colors       = require "colors"
 cheerio      = require "cheerio"
 mongoose     = require "mongoose"
 querystring  = require "querystring"
 
-ansi         = require "./ansi"
 logging      = require "./logging"
 
 String::capitalize = ->
@@ -82,7 +82,7 @@ logger = new logging.Logger "API"
 Jbha = exports
 
 L = (prefix, message, urgency="debug") ->
-  logger[urgency] "#{ansi.UNDERLINE}#{prefix}#{ansi.END} :: #{message}"
+  logger[urgency] "#{prefix.underline} :: #{message}"
 
 Jbha.Client =
 

@@ -316,7 +316,7 @@ Jbha.Client =
                   assignment_id = $(element).attr('href').match(/\d+/)[0]
 
                   if assignment_id in jbha_ids
-                    assignment_callback()
+                    assignment_callback null
                     return
 
                   splits = text_blob.split ":"
@@ -363,15 +363,12 @@ Jbha.Client =
                     if assignment_date < Date.now()
                       assignment.done = true
                       assignment.archived = true
-
                   assignment.save (err) =>
                     assignment_callback err
                 else
                   assignment_callback err
 
-              assignments_to_parse = $('a[href^="javascript:arrow_down_right"]')
-
-              async.forEach assignments_to_parse, parse_assignment, (err) =>
+              async.forEach $('a[href^="javascript:arrow_down_right"]'), parse_assignment, (err) =>
                 wf_callback err, course
 
           ], (err, course) =>
@@ -416,11 +413,16 @@ Jbha.Client =
 
   _parse_courses: (cookie, callback) ->
     @_authenticated_request cookie, "homework.php", (err, $) ->
+
       courses = []
+
+      parse_course = (element, fe_callback) ->
+        courses.push
+          title: $(element).text()
+          id: $(element).attr('href').match(/\d+/)[0]
+        fe_callback null
+
       # Any link that has a href containing the 
       # substring ``?course_id=`` in it.
-      $('a[href*="?course_id="]').each () ->
-        courses.push
-          title: $(@).text()
-          id: $(@).attr('href').match(/\d+/)[0]
-      callback courses
+      async.forEach $('a[href*="?course_id="]'), parse_course, (err) ->
+        callback courses

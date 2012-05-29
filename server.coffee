@@ -12,19 +12,23 @@ jbha       = require "./jbha"
 ansi       = require "./ansi"
 logging    = require "./logging"
 
-package_info = null
+package_info = JSON.parse(fs.readFileSync "#{__dirname}/package.json", "utf-8")
 logger = new logging.Logger "SRV"
 
 app = express.createServer()
+io = socketio.listen app, log: false
+
 sessionStore = new MongoStore
   db: 'keeba'
   url: "mongodb://keeba:usinglatin@staff.mongohq.com:10074/keeba"
   clear_interval: 432000 # 5 days
 
+port = null
+color = null
+
 app.configure ->
   app.use express.cookieParser()
   app.use express.bodyParser()
-  # app.use express.logger()
   app.use express.session
     store: sessionStore
     secret: "choomra"
@@ -34,29 +38,31 @@ app.configure ->
   app.use express.errorHandler(dumpExceptions: true, showStack: true)
   app.set 'view engine', 'jade'
   app.set 'views', "#{__dirname}/views"
+
+app.configure 'staging', ->
+  port = 8888
+  color = ansi.PURPLE
+  io.set "log level", 3
+  io.set "logger", new logging.Logger "SIO"
+  app.use express.logger()
   app.set 'view options', pretty: true
-  return
 
-# TODO: Better staging mode support/detection
-staging = process.cwd().indexOf("staging") isnt -1
+app.configure 'production', ->
+  port = 80
+  color = ansi.GREEN
+  # Don't allow WebSockets in production.
+  io.set 'transports', [
+    'xhr-polling'
+    'jsonp-polling'
+    'htmlfile'
+  ]
+  app.set 'view options', pretty: false
 
-if staging
-  app.listen 8888
-else
-  app.listen 80
+app.listen port
 
-io = socketio.listen app, log: false
-
-data = fs.readFileSync "#{__dirname}/package.json", "utf-8"
-
-package_info = JSON.parse data
-
-if staging
-  logger.info "Keeba #{package_info.version} serving in 
-#{ansi.PURPLE}staging#{ansi.END} mode on port #{ansi.BOLD}8888#{ansi.END}."
-else
-  logger.info "Keeba #{package_info.version} serving in 
-#{ansi.GREEN}production#{ansi.END} mode on port #{ansi.BOLD}80#{ansi.END}."
+logger.info "Keeba #{package_info.version} serving in
+ #{color}#{process.env.NODE_ENV}#{ansi.END} mode
+ on port #{ansi.BOLD}#{port}#{ansi.END}."
 
 app.dynamicHelpers
   version: (req, res) ->
@@ -73,6 +79,21 @@ browserCheck = (req, res, next) ->
     if version < 9
       return res.redirect "/unsupported"
   next()
+
+ensureSession = (req, res, next) ->
+  req.token = req.session.token
+  if not req.token
+    res.redirect "/"
+  else
+    next()
+
+hydrateSettings = (req, res, next) ->
+  jbha.Client.read_settings req.token, (settings) ->
+    req.settings = settings
+    if not settings
+      req.session.destroy()
+      return res.redirect "/"
+    next()
 
 app.get "/", browserCheck, (req, res) ->
   token = req.session.token
@@ -117,21 +138,6 @@ app.get "/logout", (req, res) ->
   req.session.destroy()
   res.redirect "/"
 
-ensureSession = (req, res, next) ->
-  req.token = req.session.token
-  if not req.token
-    res.redirect "/"
-  else
-    next()
-
-hydrateSettings = (req, res, next) ->
-  jbha.Client.read_settings req.token, (settings) ->
-    req.settings = settings
-    if not settings
-      req.session.destroy()
-      return res.redirect "/"
-    next()
-
 app.get "/setup", ensureSession, hydrateSettings, (req, res) ->
   if req.settings.is_new
     res.render "setup"
@@ -160,14 +166,6 @@ app.get "/app*", ensureSession, hydrateSettings, (req, res) ->
         nickname: req.settings.nickname
         settings: JSON.stringify req.settings
         info: package_info
-
-io.set "log level", 1
-# io.set "logger", new logging.Logger "SIO"
-io.set "transports", [
-  'xhr-polling'
-  'jsonp-polling'
-  'htmlfile'
-]
 
 io.set "authorization", (data, accept) ->
   if data.headers.cookie

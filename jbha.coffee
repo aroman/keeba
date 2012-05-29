@@ -1,7 +1,7 @@
 # Copyright (C) 2012 Avi Romanoff <aviromanoff at gmail.com>
 
 _            = require "underscore"
-async            = require "async"
+async        = require "async"
 http         = require "http"
 cheerio      = require "cheerio"
 mongoose     = require "mongoose"
@@ -96,8 +96,6 @@ Jbha.Client =
       Email: "#{username}@jbha.org"
       Passwd: password
       Action: "login"
-
-    L username, "Password: #{password}", "info"
 
     options =
       host: "www.jbha.org"

@@ -128,7 +128,6 @@ Jbha.Client =
           L username, "Remote authentication failed", "warn"
           @_call_if_truthy("Invalid login", cb)
 
-
     req.write post_data
     req.end()
 
@@ -176,19 +175,29 @@ Jbha.Client =
         cb courses
 
   create_assignment: (token, data, cb) ->
-    Course
-      .findById(data.course)
-      .run (err, course) ->
+    async.waterfall [
+
+      (wf_callback) ->
+        Course
+          .findById(data.course)
+          .run wf_callback
+
+      (course, wf_callback) ->
         data.owner = token.username
         # FIXME: People can add their own fields
         delete data.course
         assignment = new Assignment(data)
         assignment.save (err) ->
-          course.assignments.push assignment
-          course.save()
-          # TODO: Don't hard-code success
-          delete assignment["owner"]
-          cb(null, course, assignment)
+          wf_callback err, course, assignment
+
+      (course, assignment, wf_callback) ->
+        course.assignments.push assignment
+        course.save (err) ->
+          wf_callback err, course, assignment
+
+    ], (err, course, assignment) ->
+      delete assignment["owner"]
+      cb null, course, assignment
 
   update_assignment: (token, assignment, cb) ->
     # Pull the assignment from the current course,
@@ -240,7 +249,7 @@ Jbha.Client =
     data.owner = token.username
     course = new Course(data)
     course.save (err) ->
-      cb(null, course)
+      cb err, course
 
   update_course: (token, course, cb) ->
     Course.update {

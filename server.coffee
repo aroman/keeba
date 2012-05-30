@@ -1,8 +1,8 @@
 # Copyright (C) 2012 Avi Romanoff <aviromanoff at gmail.com>
 
+_          = require "underscore"
 fs         = require "fs"
 cp         = require "child_process"
-_          = require "underscore"
 colors     = require "colors"
 connect    = require "connect"
 express    = require "express"
@@ -13,8 +13,8 @@ jbha       = require "./jbha"
 logging    = require "./logging"
 
 
-package_info = JSON.parse(fs.readFileSync "#{__dirname}/package.json", "utf-8")
 logger = new logging.Logger "SRV"
+package_info = JSON.parse(fs.readFileSync "#{__dirname}/package.json", "utf-8")
 
 if _.isUndefined process.env.NODE_ENV
   logger.error "NODE_ENV environment variable not set, exiting."
@@ -23,33 +23,15 @@ if _.isUndefined process.env.NODE_ENV
 app = express.createServer()
 io = socketio.listen app, log: false
 
-sessionStore = new MongoStore
-  db: 'keeba'
-  url: "mongodb://keeba:usinglatin@staff.mongohq.com:10074/keeba"
-  clear_interval: 432000 # 5 days
-
 port = null
 color = null
-
-app.configure ->
-  app.use express.cookieParser()
-  app.use express.bodyParser()
-  app.use express.session
-    store: sessionStore
-    secret: "choomra"
-    key: "express.sid"
-  app.use app.router
-  app.use express.static "#{__dirname}/static"
-  app.use express.errorHandler(dumpExceptions: true, showStack: true)
-  app.set 'view engine', 'jade'
-  app.set 'views', "#{__dirname}/views"
 
 app.configure 'staging', ->
   port = 8888
   color = 'magenta'
   io.set "log level", 3
   io.set "logger", new logging.Logger "SIO"
-  app.use express.logger()
+  # app.use express.logger()
   app.set 'view options', pretty: true
 
 app.configure 'production', ->
@@ -63,10 +45,26 @@ app.configure 'production', ->
   ]
   app.set 'view options', pretty: false
 
-app.listen port
+sessionStore = new MongoStore
+  db: 'keeba'
+  url: "mongodb://keeba:usinglatin@staff.mongohq.com:10074/keeba"
+  clear_interval: 432000, # 5 days
+  () ->
+    app.listen port
+    logger.info "Keeba #{package_info.version} serving in #{process.env.NODE_ENV[color]} mode on port #{String(port).bold}."
 
-logger.info "Keeba #{package_info.version} serving in
- #{process.env.NODE_ENV[color]} mode on port #{String(port).bold}."
+app.configure ->
+  app.use express.cookieParser()
+  app.use express.bodyParser()
+  app.use express.session
+    store: sessionStore
+    secret: "choomra"
+    key: "express.sid"
+  app.use app.router
+  app.use express.static "#{__dirname}/static"
+  app.use express.errorHandler(dumpExceptions: true, showStack: true)
+  app.set 'view engine', 'jade'
+  app.set 'views', "#{__dirname}/views"
 
 app.dynamicHelpers
   version: (req, res) ->

@@ -87,7 +87,7 @@ browserCheck = (req, res, next) ->
 ensureSession = (req, res, next) ->
   req.token = req.session.token
   if not req.token
-    res.redirect "/"
+    res.redirect "/?whence=#{req.url}"
   else
     next()
 
@@ -113,6 +113,7 @@ app.get "/", browserCheck, (req, res) ->
 app.post "/", (req, res) ->
   email = req.body.email
   password = req.body.password
+  whence = req.query.whence
   jbha.Client.authenticate email, password, (err, response) ->
     if err
       res.render "index"
@@ -124,7 +125,10 @@ app.post "/", (req, res) ->
       if response.is_new
         res.redirect "/setup"
       else
-        res.redirect "/"
+        if whence
+          res.redirect whence
+        else
+          res.redirect "/app"
  
 app.get "/about", (req, res) ->
   res.render "about"

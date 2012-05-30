@@ -248,7 +248,7 @@ Jbha.Client =
 
   create_course: (token, data, cb) ->
     course = new Course()
-    course.owner = data.owner
+    course.owner = token.username
     course.title = data.title
     course.teacher = data.teacher
     course.save (err) ->

@@ -537,7 +537,7 @@ DatesView = Backbone.View.extend({
       assignment.on('update:course', that.render, that);
       assignment.on('change:date', that.dateChanged, that);
       that._children.push({view: view, model: assignment});
-      that.$("tbody").prepend(view.render().el);
+      that.$("tbody").append(view.render().el);
     });
     if (!empty) {
       this.updateArchivable();

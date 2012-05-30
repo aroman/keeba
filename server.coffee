@@ -12,7 +12,6 @@ MongoStore = require('connect-mongo')(express)
 jbha       = require "./jbha"
 logging    = require "./logging"
 
-
 logger = new logging.Logger "SRV"
 package_info = JSON.parse(fs.readFileSync "#{__dirname}/package.json", "utf-8")
 

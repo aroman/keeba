@@ -251,8 +251,7 @@ Jbha.Client =
     course.owner = token.username
     course.title = data.title
     course.teacher = data.teacher
-    course.save (err) ->
-      cb err, course
+    course.save cb
 
   update_course: (token, course, cb) ->
     Course.update {

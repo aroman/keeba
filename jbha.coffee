@@ -247,8 +247,10 @@ Jbha.Client =
       .remove cb
 
   create_course: (token, data, cb) ->
-    data.owner = token.username
-    course = new Course(data)
+    course = new Course()
+    course.owner = data.owner
+    course.title = data.title
+    course.teacher = data.teacher
     course.save (err) ->
       cb err, course
 

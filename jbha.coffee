@@ -183,10 +183,11 @@ Jbha.Client =
           .run wf_callback
 
       (course, wf_callback) ->
-        data.owner = token.username
-        # FIXME: People can add their own fields
-        delete data.course
-        assignment = new Assignment(data)
+        assignment = new Assignment()
+        assignment.owner = token.username
+        assignment.title = data.title
+        assignment.date = data.date
+        assignment.details = data.details
         assignment.save (err) ->
           wf_callback err, course, assignment
 

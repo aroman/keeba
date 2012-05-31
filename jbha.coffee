@@ -9,11 +9,12 @@ mongoose     = require "mongoose"
 querystring  = require "querystring"
 
 logging      = require "./logging"
+secrets      = require "./secrets"
 
 String::capitalize = ->
   @charAt(0).toUpperCase() + @slice 1
 
-mongoose.connect "mongodb://keeba:usinglatin@staff.mongohq.com:10074/keeba"
+mongoose.connect secrets.MONGO_URI
 
 # [18:46] <timoxley> UserSchema.namedScope('forAccount', function (account) {
 # [18:46] <timoxley>   return this.find({accountId: account})
@@ -84,6 +85,10 @@ Jbha = exports
 L = (prefix, message, urgency="debug") ->
   logger[urgency] "#{prefix.underline} :: #{message}"
 
+exports.silence = () ->
+  L = () ->
+    # pass
+
 Jbha.Client =
 
   # Logs a user into the homework website.
@@ -113,20 +118,26 @@ Jbha.Client =
             .findOne()
             .where('_id', username)
             .run (err, account_from_db) =>
-              @_call_if_truthy(err, cb)
-              account = account_from_db or new Account()
-              account.nickname = username.split('.')[0].capitalize()
-              account._id = username
-              account.save()
+              return if @_call_if_truthy err, cb
               cookie = res.headers['set-cookie'][1].split(';')[0]
-              cb null
+              account = account_from_db or new Account()
+              res =
                 token:
                   cookie: cookie
                   username: username
                 is_new: account.is_new
+              if account_from_db
+                cb null, res
+              else
+                account.nickname = username.split('.')[0].capitalize()
+                account._id = username
+                account.save (err) =>
+                  return if @_call_if_truthy err, cb
+                  cb null, res
+
         else
           L username, "Remote authentication failed", "warn"
-          @_call_if_truthy("Invalid login", cb)
+          @_call_if_truthy "Invalid login", cb
 
     req.write post_data
     req.end()
@@ -327,7 +338,6 @@ Jbha.Client =
               # check if an assignment we parse already belongs
               # to a course in the database.
               jbha_ids = _.pluck(course.assignments, "jbha_id")
-              console.log jbha_ids
 
               parse_assignment = (element, assignment_callback) =>
                 # Looks like: ``Due May 08, 2012: Test: Macbeth``
@@ -430,11 +440,6 @@ Jbha.Client =
 
     req.end()
 
-  _call_if_truthy: (err, func) ->
-    if err
-      func err
-      return true
-
   _parse_courses: (cookie, callback) ->
     @_authenticated_request cookie, "homework.php", (err, $) ->
 
@@ -450,3 +455,8 @@ Jbha.Client =
       # substring ``?course_id=`` in it.
       async.forEach $('a[href*="?course_id="]'), parse_course, (err) ->
         callback courses
+
+  _call_if_truthy: (err, func) ->
+    if err
+      func err
+      return true

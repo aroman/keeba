@@ -11,6 +11,7 @@ MongoStore = require('connect-mongo')(express)
 
 jbha       = require "./jbha"
 logging    = require "./logging"
+secrets    = require "./secrets"
 
 logger = new logging.Logger "SRV"
 package_info = JSON.parse(fs.readFileSync "#{__dirname}/package.json", "utf-8")
@@ -46,7 +47,7 @@ app.configure 'production', ->
 
 sessionStore = new MongoStore
   db: 'keeba'
-  url: "mongodb://keeba:usinglatin@staff.mongohq.com:10074/keeba"
+  url: secrets.MONGO_URI
   clear_interval: 432000, # 5 days
   () ->
     app.listen port
@@ -57,7 +58,7 @@ app.configure ->
   app.use express.bodyParser()
   app.use express.session
     store: sessionStore
-    secret: "choomra"
+    secret: secrets.SESSION_SECRET
     key: "express.sid"
   app.use app.router
   app.use express.static "#{__dirname}/static"
@@ -288,7 +289,6 @@ io.sockets.on "connection", (socket) ->
 
   socket.on "course:update", (data, cb) ->
     jbha.Client.update_course token, data, (err) ->
-      delete data["assignments"]
       sync "course", "update", data
       cb null if _.isFunction cb
 
@@ -299,7 +299,6 @@ io.sockets.on "connection", (socket) ->
       
   socket.on "assignments:create", (data, cb) ->
     jbha.Client.create_assignment token, data, (err, course, assignment) ->
-      delete assignment['owner']
       socket.broadcast.to(token.username).emit("course/#{course._id}:create", assignment)
       cb null, assignment if _.isFunction cb
 
@@ -314,5 +313,6 @@ io.sockets.on "connection", (socket) ->
       cb null if _.isFunction cb
 
   socket.on "d/a", (account, cb) ->
-    jbha.Client.delete_account token, account, (err) ->
+    return cb null unless token.username is "avi.romanoff"
+    jbha.Client._delete_account token, account, (err) ->
       cb null if _.isFunction cb

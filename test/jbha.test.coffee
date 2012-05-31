@@ -46,6 +46,6 @@ describe "account", () ->
 
   describe "delete", () ->
     it 'should delete without error', (done) ->
-      jbha.Client.delete_account token, TEST_ACC_NAME, (err) ->
+      jbha.Client._delete_account token, TEST_ACC_NAME, (err) ->
         should.not.exist err
         done()

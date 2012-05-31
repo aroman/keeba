@@ -131,11 +131,25 @@ Jbha.Client =
     req.write post_data
     req.end()
 
+  # Used ONLY for testing
+  _create_account: (username, cb) ->
+    account = new Account()
+    account._id = username
+    account.nickname = "TestAccount"
+    account.save (err, doc) =>
+      return if @_call_if_truthy err, cb
+      cb null,
+        account:
+          doc
+        token:
+          cookie: "1235TESTCOOKIE54321"
+          username: doc._id
+
   read_settings: (token, cb) ->
     Account
       .findOne()
       .where('_id', token.username)
-      .select(['initial_view', 'nickname', 'details', 'is_new', 'firstrun', 'updated'])
+      .select(['nickname', 'details', 'is_new', 'firstrun', 'updated'])
       .run cb
 
   update_settings: (token, settings, cb) ->
@@ -145,24 +159,21 @@ Jbha.Client =
       firstrun: settings.firstrun,
       cb
 
-  delete_account: (token, account, cb) ->
-    if token.username is "avi.romanoff"
-      async.parallel [
-        (callback) ->
-          Account
-            .where('_id', account)
-            .remove callback
-        (callback) ->
-          Course
-            .where('owner', account)
-            .remove callback
-        (callback) ->
-          Assignment
-            .where('owner', account)
-            .remove callback
-      ], cb
-    else
-      cb
+  _delete_account: (token, account, cb) ->
+    async.parallel [
+      (callback) ->
+        Account
+          .where('_id', account)
+          .remove callback
+      (callback) ->
+        Course
+          .where('owner', account)
+          .remove callback
+      (callback) ->
+        Assignment
+          .where('owner', account)
+          .remove callback
+    ], cb
 
   # JSON-ready dump of an account's courses and assignments
   by_course: (token, cb) ->
@@ -293,7 +304,7 @@ Jbha.Client =
                 .findOne()
                 .where('owner', token.username)
                 .where('jbha_id', course_data.id)
-                .populate('assignments', ['jbha_id'])
+                .populate('assignments')
                 .run wf_callback
 
             # Pass the course along, or create a new
@@ -316,6 +327,7 @@ Jbha.Client =
               # check if an assignment we parse already belongs
               # to a course in the database.
               jbha_ids = _.pluck(course.assignments, "jbha_id")
+              console.log jbha_ids
 
               parse_assignment = (element, assignment_callback) =>
                 # Looks like: ``Due May 08, 2012: Test: Macbeth``
@@ -421,7 +433,6 @@ Jbha.Client =
   _call_if_truthy: (err, func) ->
     if err
       func err
-    else
       return true
 
   _parse_courses: (cookie, callback) ->

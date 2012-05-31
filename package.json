@@ -3,7 +3,7 @@
   "description": "Homework, simplified.",
   "author": "Avi Romanoff <aviromanoff@gmail.com>",
   "main": "server.js",
-  "version": "3.0.11",
+  "version": "3.0.11-1",
   "scripts": {
     "prestart": "coffee -c *.coffee",
     "start": "server.js"
@@ -14,6 +14,7 @@
   "subdomain": "keeba",
   "dependencies": {
     "async": "0.1.21",
+    "chai": "1.0.3",
     "cheerio": "0.7.0",
     "colors": "0.6.0",
     "connect": "2.2.2",

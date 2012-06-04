@@ -6,6 +6,7 @@ http         = require "http"
 colors       = require "colors"
 cheerio      = require "cheerio"
 mongoose     = require "mongoose"
+moment       = require "moment"
 querystring  = require "querystring"
 
 logging      = require "./logging"
@@ -460,3 +461,23 @@ Jbha.Client =
     if err
       func err
       return true
+
+  _stats: (callback) ->
+    Account
+      .find()
+      .sort('updated', -1)
+      .select('_id', 'updated', 'nickname')
+      .run (err, docs) ->
+        NUM_SHOWN = 10
+        if docs.length < NUM_SHOWN
+          showing = docs.length
+        else
+          showing = NUM_SHOWN
+        console.log "Showing most recently active #{String(showing).red} of #{String(docs.length).red} accounts"
+        for doc in docs[0..NUM_SHOWN]
+          name = doc._id
+          nickname = doc.nickname
+          date = moment(doc.updated)
+          console.log "\n#{name.bold} (#{nickname})"
+          console.log date.format("» M/D").yellow + " @ " + date.format("h:mm:ss A").cyan + " (#{date.fromNow().green})"
+        callback()

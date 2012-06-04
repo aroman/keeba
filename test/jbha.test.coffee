@@ -29,7 +29,7 @@ describe "account", () ->
         done()
 
   describe "update", () ->
-    it 'should read without error', (done) ->
+    it 'should update without error', (done) ->
       jbha.Client.update_settings token, mock_settings, (err) ->
         should.not.exist err
         done()

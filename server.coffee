@@ -2,6 +2,7 @@
 
 _          = require "underscore"
 fs         = require "fs"
+os         = require "os"
 cp         = require "child_process"
 colors     = require "colors"
 connect    = require "connect"
@@ -316,3 +317,11 @@ io.sockets.on "connection", (socket) ->
     return cb null unless token.username is "avi.romanoff"
     jbha.Client._delete_account token, account, (err) ->
       cb null if _.isFunction cb
+
+  socket.on "stats", (cb) ->
+    return unless _.isFunction cb
+    cb
+      loadavg: os.loadavg()
+      totalmem: os.totalmem() / 1048576
+      free: os.freemem() / 1048576
+      process: process.memoryUsage().rss / 1048576

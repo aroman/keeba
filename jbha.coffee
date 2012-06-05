@@ -349,10 +349,6 @@ Jbha.Client =
                   assignment_from_db = _.find course.assignments, (assignment) ->
                     true if assignment.jbha_id is assignment_id
 
-                  if assignment_from_db
-                    assignment_callback null
-                    return
-
                   splits = text_blob.split ":"
                   assignment_title = splits.slice(1)[0].trim()
                   # Force EDT timezone and parse their date format
@@ -376,6 +372,14 @@ Jbha.Client =
                   else 
                     # If there's no assignment details, set it to null.
                     assignment_details = null
+
+                  if assignment_from_db.date.valueOf() isnt assignment_date and
+                    assignment_from_db.title isnt assignment_title
+                      console.log "Sig diff"
+
+                  if assignment_from_db
+                    assignment_callback null
+                    return
 
                   assignment = new Assignment()
                   assignment.owner = token.username

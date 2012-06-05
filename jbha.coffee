@@ -335,11 +335,6 @@ Jbha.Client =
             # Iterate over the DOM and parse the assignments, saving
             # them to the database if needed.
             (course, wf_callback) =>
-              # Get an array of jbha_ids so we can easily
-              # check if an assignment we parse already belongs
-              # to a course in the database.
-              jbha_ids = _.pluck(course.assignments, "jbha_id")
-
               parse_assignment = (element, assignment_callback) =>
                 # Looks like: ``Due May 08, 2012: Test: Macbeth``
                 text_blob = $(element).text()
@@ -349,7 +344,12 @@ Jbha.Client =
                   # Parse _their_ assignment id
                   assignment_id = $(element).attr('href').match(/\d+/)[0]
 
-                  if assignment_id in jbha_ids
+                  # Get the assignment with the jbha_id we're currently parsing,
+                  # if one exists, or return ``undefined``.
+                  assignment_from_db = _.find course.assignments, (assignment) ->
+                    true if assignment.jbha_id is assignment_id
+
+                  if assignment_from_db
                     assignment_callback null
                     return
 

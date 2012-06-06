@@ -374,18 +374,13 @@ Jbha.Client =
                     true if assignment.jbha_id is assignment_id
 
                   if assignment_from_db
-                    if assignment_from_db.date.valueOf() isnt assignment_date and
-                      assignment_from_db.title isnt assignment_title
-                        L token.username, "Move detected on assignment with jbha_id #{assignment_id}!", 'warn'
-                        assignment_from_db.title = assignment_title
-                        assignment_from_db.details = assignment_details
-                        assignment_from_db.date = assignment_date
-                        new_assignments++
-                        assignment_from_db.save (err) ->
-                          assignment_callback err
-                    else
+                    # Heuristic for assuming that an assignment has been "created-by-move".
+                    # See #25
+                    moved = assignment_from_db.date.valueOf() isnt assignment_date and
+                        assignment_from_db.title isnt assignment_title
+                    if not moved
                       assignment_callback null
-                    return
+                      return
 
                   assignment = new Assignment()
                   assignment.owner = token.username
@@ -408,7 +403,15 @@ Jbha.Client =
                       assignment.done = true
                       assignment.archived = true
                   assignment.save (err) ->
-                    assignment_callback err
+                    # If we identified a moved assignment, rename the old jbha_id
+                    # to indicate that it's no longer valid -- that it's been replaced.
+                    if moved
+                      L token.username, "Move detected on assignment with jbha_id #{assignment_id}!", 'warn'
+                      assignment_from_db.jbha_id += "-#{assignment_from_db._id}"
+                      assignment_from_db.save (err) ->
+                        assignment_callback err
+                    else
+                      assignment_callback err
                 else
                   assignment_callback err
 

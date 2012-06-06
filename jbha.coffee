@@ -376,10 +376,17 @@ Jbha.Client =
                   if assignment_from_db
                     # Heuristic for assuming that an assignment has been "created-by-move".
                     # See #25
-                    moved = assignment_from_db.date.valueOf() isnt assignment_date and
-                        assignment_from_db.title isnt assignment_title
+                    date_changed = assignment_from_db.date.valueOf() isnt assignment_date
+                    moved = date_changed and assignment_from_db.title isnt assignment_title
                     if not moved
-                      assignment_callback null
+                      if date_changed
+                        L token.username, "Date move detected on assignment with jbha_id #{assignment_id}!", 'warn'
+                        assignment_from_db.date = assignment_date
+                        new_assignments++
+                        assignment_from_db.save (err) ->
+                          assignment_callback err
+                      else
+                        assignment_callback null
                       return
 
                   assignment = new Assignment()
@@ -406,7 +413,7 @@ Jbha.Client =
                     # If we identified a moved assignment, rename the old jbha_id
                     # to indicate that it's no longer valid -- that it's been replaced.
                     if moved
-                      L token.username, "Move detected on assignment with jbha_id #{assignment_id}!", 'warn'
+                      L token.username, "Create-by-move detected on assignment with jbha_id #{assignment_id}!", 'warn'
                       assignment_from_db.jbha_id += "-#{assignment_from_db._id}"
                       assignment_from_db.save (err) ->
                         assignment_callback err

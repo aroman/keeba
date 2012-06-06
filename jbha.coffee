@@ -475,19 +475,18 @@ Jbha.Client =
       func err
       return true
 
-  _stats: (callback) ->
+  _stats: (num_shown=Infinity, callback) ->
     Account
       .find()
       .sort('updated', -1)
       .select('_id', 'updated', 'nickname')
       .run (err, docs) ->
-        NUM_SHOWN = 10
-        if docs.length < NUM_SHOWN
+        if docs.length < num_shown
           showing = docs.length
         else
-          showing = NUM_SHOWN
+          showing = num_shown
         console.log "Showing most recently active #{String(showing).red} of #{String(docs.length).red} accounts"
-        for doc in docs[0..NUM_SHOWN]
+        for doc in docs[1..num_shown]
           name = doc._id
           nickname = doc.nickname
           date = moment(doc.updated)

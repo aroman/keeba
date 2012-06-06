@@ -344,11 +344,6 @@ Jbha.Client =
                   # Parse _their_ assignment id
                   assignment_id = $(element).attr('href').match(/\d+/)[0]
 
-                  # Get the assignment with the jbha_id we're currently parsing,
-                  # if one exists, or return ``undefined``.
-                  assignment_from_db = _.find course.assignments, (assignment) ->
-                    true if assignment.jbha_id is assignment_id
-
                   splits = text_blob.split ":"
                   assignment_title = splits.slice(1)[0].trim()
                   # Force EDT timezone and parse their date format
@@ -373,12 +368,23 @@ Jbha.Client =
                     # If there's no assignment details, set it to null.
                     assignment_details = null
 
-                  if assignment_from_db.date.valueOf() isnt assignment_date and
-                    assignment_from_db.title isnt assignment_title
-                      console.log "Sig diff"
+                  # Get the assignment with the jbha_id we're currently parsing,
+                  # if one exists, or return ``undefined``.
+                  assignment_from_db = _.find course.assignments, (assignment) ->
+                    true if assignment.jbha_id is assignment_id
 
                   if assignment_from_db
-                    assignment_callback null
+                    if assignment_from_db.date.valueOf() isnt assignment_date and
+                      assignment_from_db.title isnt assignment_title
+                        L token.username, "Move detected on assignment with jbha_id #{assignment_id}!", 'warn'
+                        assignment_from_db.title = assignment_title
+                        assignment_from_db.details = assignment_details
+                        assignment_from_db.date = assignment_date
+                        new_assignments++
+                        assignment_from_db.save (err) ->
+                          assignment_callback err
+                    else
+                      assignment_callback null
                     return
 
                   assignment = new Assignment()
@@ -401,7 +407,7 @@ Jbha.Client =
                     if assignment_date < Date.now()
                       assignment.done = true
                       assignment.archived = true
-                  assignment.save (err) =>
+                  assignment.save (err) ->
                     assignment_callback err
                 else
                   assignment_callback err

@@ -12,10 +12,13 @@ querystring  = require "querystring"
 logging      = require "./logging"
 secrets      = require "./secrets"
 
+if process.env.NODE_ENV is "production"
+  mongoose.connect secrets.MONGO_PRODUCTION_URI
+else
+  mongoose.connect secrets.MONGO_STAGING_URI
+
 String::capitalize = ->
   @charAt(0).toUpperCase() + @slice 1
-
-mongoose.connect secrets.MONGO_URI
 
 # [18:46] <timoxley> UserSchema.namedScope('forAccount', function (account) {
 # [18:46] <timoxley>   return this.find({accountId: account})
@@ -456,7 +459,6 @@ Jbha.Client =
 
   _parse_courses: (cookie, callback) ->
     @_authenticated_request cookie, "homework.php", (err, $) ->
-
       courses = []
 
       parse_course = (element, fe_callback) ->

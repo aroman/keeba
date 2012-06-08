@@ -26,10 +26,12 @@ io = socketio.listen app, log: false
 
 port = null
 color = null
+mongo_uri = null
 
-app.configure 'staging', ->
+app.configure 'development', ->
   port = 8888
   color = 'magenta'
+  mongo_uri = secrets.MONGO_STAGING_URI
   io.set "log level", 3
   io.set "logger", new logging.Logger "SIO"
   # app.use express.logger()
@@ -38,6 +40,7 @@ app.configure 'staging', ->
 app.configure 'production', ->
   port = 80
   color = 'green'
+  mongo_uri = secrets.MONGO_PRODUCTION_URI
   # Don't allow WebSockets in production.
   io.set 'transports', [
     'xhr-polling'
@@ -48,7 +51,8 @@ app.configure 'production', ->
 
 sessionStore = new MongoStore
   db: 'keeba'
-  url: secrets.MONGO_URI
+  url: mongo_uri
+  stringify: false
   clear_interval: 432000, # 5 days
   () ->
     app.listen port

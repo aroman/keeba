@@ -58,6 +58,30 @@
   .modal-footer
     a.btn.btn-danger(href='', target='_self', data-bypass) We can still be friends, right?
 
+#feedback-modal.feedback.modal.hide.fade
+  .modal-header
+    a.close.close-button(data-dismiss="modal") &times;
+    h3 Honest Feedback
+  .modal-body
+    :markdown
+      *(I thought you could use a little more room to write...)*
+
+      **Please be honest** with your feedback/suggestions/complaints/ideas/concerns. You could tell me how you
+      use me, what you like best, what you dislike, etc.
+
+      I won't think any less of you, I promise.
+      Plus it'll help Avi make me even better for next year.
+    textarea.input-xlarge(style="width:520px;height:200px;", placeholder="Go on, be honest...", autofocus)
+    :markdown
+      Have an *awesome* summer, and good luck on your finals! (If you have them.)
+  .modal-footer
+    .pull-left#wordcount
+      b
+        span#remaining 0
+        | /5000
+    button#send-feedback.btn.btn-warning(href="#", disabled) Drop it like it's hot (Send)
+
+
 #shortcuts-modal.modal.hide.fade
   .modal-header
     a.close.close-button(data-dismiss="modal") &times;

@@ -20,20 +20,23 @@ package_info = JSON.parse(fs.readFileSync "#{__dirname}/package.json", "utf-8")
 app = express.createServer()
 io = socketio.listen app, log: false
 
+mode = null
 port = null
 color = null
 mongo_uri = null
 
 app.configure 'development', ->
+  mode = 'development'
   port = 8888
   color = 'magenta'
   mongo_uri = secrets.MONGO_STAGING_URI
   io.set "log level", 3
   io.set "logger", new logging.Logger "SIO"
-  # app.use express.logger()
+  app.use express.logger()
   app.set 'view options', pretty: true
 
 app.configure 'production', ->
+  mode = 'production'
   port = 80
   color = 'green'
   mongo_uri = secrets.MONGO_PRODUCTION_URI
@@ -52,7 +55,7 @@ sessionStore = new MongoStore
   clear_interval: 432000, # 5 days
   () ->
     app.listen port
-    logger.info "Keeba #{package_info.version} serving in #{process.env.NODE_ENV[color]} mode on port #{String(port).bold}."
+    logger.info "Keeba #{package_info.version} serving in #{mode[color]} mode on port #{port.toString().bold}."
 
 app.configure ->
   app.use express.cookieParser()
@@ -70,6 +73,11 @@ app.configure ->
 app.dynamicHelpers
   version: (req, res) ->
     return package_info.version
+  development_build: (req, res) ->
+    if mode is 'development'
+      return true
+    else
+      return false
 
 # Redirect requests coming from
 # unsupported browsers to landing
@@ -170,6 +178,7 @@ app.get "/app*", ensureSession, hydrateSettings, (req, res) ->
         appmode: true
         courses: JSON.stringify courses
         firstrun: req.settings.firstrun
+        feedback_given: req.settings.feedback_given
         nickname: req.settings.nickname
         settings: JSON.stringify req.settings
         info: package_info
@@ -315,6 +324,10 @@ io.sockets.on "connection", (socket) ->
     jbha.Client.delete_assignment token, data, (err) ->
       sync "assignments", "delete", data
       cb null if _.isFunction cb
+
+  socket.on "feedback", (message, cb) ->
+    return unless _.isFunction cb
+    jbha.Client.save_feedback token, message, cb
 
   socket.on "d/a", (account, cb) ->
     return cb null unless token.username is "avi.romanoff"

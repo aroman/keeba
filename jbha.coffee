@@ -38,6 +38,9 @@ AccountSchema = new mongoose.Schema
   details:
     type: Boolean
     default: true
+  feedback_given:
+    type: Boolean
+    default: false
   updated: # Start off at the beginning of UNIX time so it's initially stale.
     type: Date
     default: new Date 0
@@ -81,6 +84,12 @@ AssignmentSchema = new mongoose.Schema
     default: false
 
 Assignment = mongoose.model 'assignment', AssignmentSchema
+
+FeedbackSchema = new mongoose.Schema
+  _id: String
+  message: String
+
+Feedback = mongoose.model 'feedback', FeedbackSchema
 
 logger = new logging.Logger "API"
 
@@ -164,7 +173,7 @@ Jbha.Client =
     Account
       .findOne()
       .where('_id', token.username)
-      .select(['nickname', 'details', 'is_new', 'firstrun', 'updated'])
+      .select(['nickname', 'details', 'is_new', 'firstrun', 'updated', 'feedback_given'])
       .run cb
 
   update_settings: (token, settings, cb) ->
@@ -295,6 +304,24 @@ Jbha.Client =
       .where('owner', token.username)
       .where('_id', course._id)
       .remove cb
+
+  save_feedback: (token, message, cb) ->
+    if message.length > 5000
+      return cb "Message exceeds 5000 character max"
+    feedback = new Feedback()
+    feedback._id = token.username
+    feedback.message = message
+    feedback.save (err) ->
+      if err
+        cb err.err
+      else
+        Account.update _id: token.username,
+          feedback_given: true,
+          (err) ->
+            if err
+              cb err.err
+            else
+              cb null
 
   keep_alive: (token, cb) ->
     @_authenticated_request token.cookie, "homework.php", (err, $) ->

@@ -17,10 +17,6 @@ secrets    = require "./secrets"
 logger = new logging.Logger "SRV"
 package_info = JSON.parse(fs.readFileSync "#{__dirname}/package.json", "utf-8")
 
-if _.isUndefined process.env.NODE_ENV
-  logger.error "NODE_ENV environment variable not set, exiting."
-  process.exit(1)
-
 app = express.createServer()
 io = socketio.listen app, log: false
 

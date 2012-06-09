@@ -44,6 +44,7 @@ AccountSchema = new mongoose.Schema
   updated: # Start off at the beginning of UNIX time so it's initially stale.
     type: Date
     default: new Date 0
+  {strict: true}
 
 Account = mongoose.model 'account', AccountSchema
 
@@ -63,6 +64,7 @@ CourseSchema = new mongoose.Schema
   teacher: String
   assignments: [{ type: mongoose.Schema.ObjectId, ref: 'assignment' }]
   details: String
+  {strict: true}
 
 Course = mongoose.model 'course', CourseSchema
 
@@ -82,12 +84,14 @@ AssignmentSchema = new mongoose.Schema
   done:
     type: Boolean
     default: false
+  {strict: true}
 
 Assignment = mongoose.model 'assignment', AssignmentSchema
 
 FeedbackSchema = new mongoose.Schema
   _id: String
   message: String
+  {strict: true}
 
 Feedback = mongoose.model 'feedback', FeedbackSchema
 

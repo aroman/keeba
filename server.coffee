@@ -247,7 +247,7 @@ io.sockets.on "connection", (socket) ->
     if worker
       L "Worker with pid #{worker.pid} replaced", 'warn'
       worker.kill('SIGHUP')
-    worker = workers[token.username] = cp.fork "#{__dirname}/worker.js"
+    worker = workers[token.username] = cp.fork "#{__dirname}/worker.js", [], env: process.env
 
     L "Worker with pid #{worker.pid} spawned", 'debug'
 

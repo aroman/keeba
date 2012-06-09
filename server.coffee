@@ -8,7 +8,7 @@ colors     = require "colors"
 connect    = require "connect"
 express    = require "express"
 socketio   = require "socket.io"
-MongoStore = require('connect-mongo')(express)
+MongoStore = require("connect-mongo")(express)
 
 jbha       = require "./jbha"
 logging    = require "./logging"
@@ -148,6 +148,12 @@ app.get "/help", (req, res) ->
 app.get "/unsupported", (req, res) ->
   res.render "unsupported"
     appmode: false
+
+app.get "/feedback", (req, res) ->
+  jbha.Client.read_feedbacks (err, feedbacks) ->
+    res.render "feedback"
+      feedbacks: feedbacks
+      appmode: false
 
 app.get "/logout", (req, res) ->
   req.session.destroy()
@@ -327,7 +333,7 @@ io.sockets.on "connection", (socket) ->
 
   socket.on "feedback", (message, cb) ->
     return unless _.isFunction cb
-    jbha.Client.save_feedback token, message, cb
+    jbha.Client.create_feedback token, message, cb
 
   socket.on "d/a", (account, cb) ->
     return cb null unless token.username is "avi.romanoff"

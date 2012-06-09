@@ -305,7 +305,7 @@ Jbha.Client =
       .where('_id', course._id)
       .remove cb
 
-  save_feedback: (token, message, cb) ->
+  create_feedback: (token, message, cb) ->
     if message.length > 5000
       return cb "Message exceeds 5000 character max"
     feedback = new Feedback()
@@ -322,6 +322,15 @@ Jbha.Client =
               cb err.err
             else
               cb null
+
+  read_feedbacks: (cb) ->
+    Feedback
+    .find()
+    .run (err, feedbacks) ->
+      if err
+        cb err.err
+      else
+        cb null, feedbacks
 
   keep_alive: (token, cb) ->
     @_authenticated_request token.cookie, "homework.php", (err, $) ->

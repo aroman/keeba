@@ -833,12 +833,6 @@ AppView = Backbone.View.extend({
       }
       // Cache has expired
       else if ((moment() - settings.getUpdatedAt()) > CACHE_TTL) {
-        app_status.set({
-          heading: "Heads up!",
-          message: "I haven't checked the school website for new homework " +
-          "in a while. I'm doing that now, and I'll load it in below ASAP.",
-          kind: "info"
-        });
         that.refresh();
       } else {
         that.updateUpdatedAt();

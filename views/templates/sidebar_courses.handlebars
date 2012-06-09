@@ -1,0 +1,10 @@
+<li class="nav-header">Courses</li>
+{{#each courses}}
+  <li>
+    <a href="courses/{{_id}}"> {{title}} </a>
+  </li>
+{{/each}}
+<button class="btn btn-mini btn-success" id="add-course" style="margin-top:5px;">
+  <i class="icon-plus icon-white"></i>
+  <span>Add </span>
+</button>

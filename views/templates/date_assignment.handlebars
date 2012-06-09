@@ -1,0 +1,25 @@
+<td name="done" class="done-toggle"><input type="checkbox" {{#if done}} checked {{/if}}></td>
+<td>
+  <span data-target="title" data-child>{{{keyword title}}} {{title}}</span>
+  <input type="text" style="display:none;" data-role="title" data-child value="{{title}}">
+</td>
+<td>
+  <span data-target="course_title" data-child>{{course}}</span>
+  <input type="text" style="display:none;" data-role="course_title" data-child data-provide="typeahead" data-items="5" data-source="{{courses}}">
+</td>
+<td>{{{format_date date}}}</td>
+
+{{#if details}}
+  {{#if show_details}}
+    <td>{{{details}}}</td>
+  {{else}}
+    <td><i>Details hidden.</i></td>
+  {{/if}}
+{{else}}
+  <td><i>No additional information.</i></td>
+{{/if}}
+<td>
+  <button class="btn btn-mini button-edit" title="Edit">
+    <i class="icon-pencil"></i>
+  </button>
+</td>

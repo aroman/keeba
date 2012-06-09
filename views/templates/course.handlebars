@@ -1,0 +1,47 @@
+<section style="padding-top:0px">
+<h3>
+  <span class="course-title">{{title}}</span>
+  <input type="text" class="input-medium" style="display:none;" value="{{title}}">
+  <small> {{teacher}}</small>
+  <input type="text" class="input-medium" style="display:none;" value="{{teacher}}">
+  {{#if show_archive_button}}
+    <button class="btn btn-mini btn-inverse side-button archive-button" disabled>
+      <i class="icon-inbox icon-white"></i>
+      <span> Archive Done </span>
+    </button>
+    <button class="btn btn-mini btn-info side-button edit-button">
+      <i class="icon-pencil icon-white"></i>
+      <span> Edit Course </span>
+    </button>
+    <button class="btn btn-mini btn-success side-button add-button">
+      <i class="icon-plus icon-white"></i>
+      <span> Add Assignment </span>
+    </button>
+  {{/if}}
+</h3>
+  {{#if empty}}
+    <div class="alert alert-success">
+      <h2 class="alert-heading">{{exclamation}} No work to do here!</h2>
+      <br>
+      <p>
+        You&apos;ve completed <strong>{{archived}}</strong> assignments in this course to date. Click <i><b>Options > Show archived</b></i> to show them.
+        <br><br>
+        Or just go outside and play or something.
+      </p>
+    </div>
+  {{else}}
+    <table class="table table-striped table-bordered">
+      <thead>
+        <tr>
+          <th width="2%">Done</th>
+          <th width="35%">Title</th>
+          <th width="20%">Due Date</th>
+          <th width="40%">Details</th>
+          <th width="3%">Edit</th>
+        </tr>
+      </thead>
+      <tbody>
+      </tbody>
+    </table>
+  {{/if}}
+</section>

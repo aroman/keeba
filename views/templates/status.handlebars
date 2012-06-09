@@ -1,0 +1,7 @@
+<div class="alert alert-{{kind}} alert-app">
+  <strong>{{heading}}</strong>
+  <span>{{{personalize message}}} {{#if addable}}<a target="_self" href="#" data-bypass class="link-action">{{link_text}}{{/if}}</span>
+  {{#if closable}}
+    <a class="close" data-dismiss="alert">&times;</a>
+  {{/if}}
+</div>

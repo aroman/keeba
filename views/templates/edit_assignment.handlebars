@@ -1,0 +1,43 @@
+<form class="form-horizontal">
+  <fieldset>
+    <div class="control-group">
+      <label class="control-label">Title</label>
+      <div class="controls">
+        <input type="text" autofocus class="input-xlarge" id="title" placeholder="e.g Page 419 #1-300 odd" value="{{title}}">
+        <span class="help-inline"></span>
+      </div>
+    </div>
+    <div class="control-group">
+      <label class="control-label">Details</label>
+      <div class="controls">
+        <textarea type="text" rows="3" class="input-xlarge" id="details" placeholder="e.g Use a calculator for 200-205, and graph everything.">{{details}}</textarea>
+        {{#if jbha_id}}
+          {{#if details}}
+            <span class="help-inline" style="margin-right: 100px">
+            <b>note:</b> This assignment came from the school website, so it contains HTML (a computer language). I didn&apos;t convert it to "normal text" because formatting would be lost. Feel free to replace it.
+            </span>
+          {{/if}}
+        {{else}}
+          <span class="help-inline"></span>
+        {{/if}}
+      </div>
+    </div>
+    {{#unless hard_course}}
+      <div class="control-group">
+        <label class="control-label">Course</label>
+        <div class="controls">
+          <select id="course" class="input-xlarge">
+            {{{course_options course}}}
+          </select>
+        </div>
+      </div>
+    {{/unless}}
+    <div class="control-group">
+      <label class="control-label">Date</label>
+      <div class="controls">
+        <input type="text" data-date-format="mm/dd/yy" id="date" class="input-xlarge" placeholder="e.g 4/23/12" value="{{editable_date date}}">
+        <span class="help-inline"></span>
+      </div>
+    </div>
+  </fieldset>
+</form>

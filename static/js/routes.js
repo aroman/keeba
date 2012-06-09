@@ -9,7 +9,7 @@ var KeebaRouter = Backbone.Router.extend({
   },
 
   home: function () {
-    $("#content").html(home_template());
+    $("#content").html(Handlebars.templates.home());
   },
 
   course: function (id) {
@@ -41,7 +41,7 @@ var KeebaRouter = Backbone.Router.extend({
     }
 
     this.current_view = new DatesView({
-      template: dates_template,
+      template: Handlebars.templates.dates,
       title: date.name,
       range: {start: date.start, end: date.end}
     });

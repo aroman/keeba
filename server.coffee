@@ -8,6 +8,7 @@ colors     = require "colors"
 connect    = require "connect"
 express    = require "express"
 socketio   = require "socket.io"
+hbpc       = require "handlebars-precompiler"
 MongoStore = require("connect-mongo")(express)
 
 jbha       = require "./jbha"
@@ -60,6 +61,7 @@ sessionStore = new MongoStore
 app.configure ->
   app.use express.cookieParser()
   app.use express.bodyParser()
+  hbpc.watchDir "#{__dirname}/views/templates", "#{__dirname}/static/js/templates.min.js", ['handlebars']
   app.use express.session
     store: sessionStore
     secret: secrets.SESSION_SECRET

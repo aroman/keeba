@@ -1,6 +1,7 @@
 StatusView = Backbone.View.extend({
 
   el: "#status",
+  template: Handlebars.templates.status,
   children: null, // Optimization to use a cache for animating.
 
   events: {
@@ -19,7 +20,7 @@ StatusView = Backbone.View.extend({
       document.title = "(" + app.num_new + ") Keeba";
       app.setFavicon('zap-highlight');
     }
-    this.children = this.$el.html(status_template(this.model.toJSON())).children();
+    this.children = this.$el.html(this.template(this.model.toJSON())).children();
     return this;
   },
 
@@ -48,6 +49,7 @@ StatusView = Backbone.View.extend({
 SettingsView = Backbone.View.extend({
 
   el: $("#settings-modal"),
+  template: Handlebars.templates.settings,
 
   events: {
     "click button#save": "save"
@@ -91,7 +93,7 @@ SettingsView = Backbone.View.extend({
       details: this.model.get('details'),
       nickname: this.model.get('nickname')
     };
-    this.$(".modal-body").html(settings_template(context));
+    this.$(".modal-body").html(this.template(context));
     return this;
   }
 
@@ -261,7 +263,7 @@ EditAssignmentView = Backbone.View.extend({
 
 AddCourseView = Backbone.View.extend({
   el: $("#add-course-modal"),
-  template: edit_course_template,
+  template: Handlebars.templates.edit_course,
 
   events: {
     "click button#add":    "add",
@@ -325,7 +327,7 @@ AddCourseView = Backbone.View.extend({
 EditCourseView = Backbone.View.extend({
 
   el: $("#edit-course-modal"),
-  template: edit_course_template, 
+  template: Handlebars.templates.edit_course, 
 
   events: {
     "click button#save":       "save",
@@ -452,7 +454,7 @@ AssignmentView = Backbone.View.extend({
 
   edit: function () {
     var edit_dialog = new EditAssignmentView({
-      template: edit_assignment_template,
+      template: Handlebars.templates.edit_assignment,
       model: this.model
     });
     edit_dialog.show();
@@ -532,7 +534,7 @@ DatesView = Backbone.View.extend({
 
     var that = this;
     _.each(to_render, function (assignment) {
-      var view = new AssignmentView({model: assignment, template: date_assignment_template});
+      var view = new AssignmentView({model: assignment, template: Handlebars.templates.date_assignment});
       assignment.on('change:done', that.updateArchivable, that);
       assignment.on('update:course', that.render, that);
       assignment.on('change:date', that.dateChanged, that);
@@ -566,7 +568,7 @@ DatesView = Backbone.View.extend({
     }
     var that = this;
     var add_dialog = new AddAssignmentView({
-      template: edit_assignment_template,
+      template: Handlebars.templates.edit_assignment,
       model: this.model,
       date: date
     });
@@ -627,7 +629,7 @@ DatesView = Backbone.View.extend({
 
 SectionView = Backbone.View.extend({
 
-  template: course_template,
+  template: Handlebars.templates.course,
   _children: [],
 
   events: {
@@ -677,7 +679,7 @@ SectionView = Backbone.View.extend({
     });
 
     var empty = unarchived.length === 0 && !app.showing_archived;
-    this.$el.html(course_template({
+    this.$el.html(this.template({
       title: this.model.get('title'),
       teacher: this.model.get('teacher'),
       archived: num_archived,
@@ -721,7 +723,7 @@ SectionView = Backbone.View.extend({
 
   createAssignment: function () {
     var add_dialog = new AddAssignmentView({
-      template: edit_assignment_template,
+      template: Handlebars.templates.edit_assignment,
       model: this.model,
       course: this.model.id
     });
@@ -743,7 +745,7 @@ SectionView = Backbone.View.extend({
       }
       var view = new AssignmentView({
         model: assignment,
-        template: course_assignment_template
+        template: Handlebars.templates.course_assignment
       });
       assignment.on('change:archived change:done', this.updateArchivable, this);
       assignment.on('change:archived', this.updateArchivable, this);
@@ -1040,12 +1042,12 @@ AppView = Backbone.View.extend({
   },
 
   updateUpcoming: _.throttle(function () {
-    $("#sidebar-upcoming").html(sidebar_dates_template({dates: UPCOMING_DATES}));
+    $("#sidebar-upcoming").html(Handlebars.templates.sidebar_dates({dates: UPCOMING_DATES}));
     app.highlightSidebar();
   }, 100),
 
   updateCourses: _.throttle(function () {
-    $("#sidebar-courses").html(sidebar_courses_template({courses: courses.toJSON()}));
+    $("#sidebar-courses").html(Handlebars.templates.sidebar_courses({courses: courses.toJSON()}));
     app.highlightSidebar();
   }, 100),
 

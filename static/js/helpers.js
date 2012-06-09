@@ -1,28 +1,16 @@
-// Compile templates
-sidebar_courses_template = Handlebars.compile($("#sidebar-courses-template").html());
-sidebar_dates_template = Handlebars.compile($("#sidebar-dates-template").html());
+// Pre-compile dates.
+function compileDateConstants () {
+  _now = moment();
+  today = moment([_now.year(), _now.month(), _now.date()]);
+  yesterday = moment(today).subtract('days', 1);
+  tomorrow = moment(today).add('days', 1);
+  in_a_week = moment(today).add('weeks', 1);
+  in_two_weeks = moment(today).add('weeks', 2);
+  big_bang = moment(0); // Actually 1970
+  doomsday = moment(9999999999999); // Year 2286 lol
+}
 
-course_template = Handlebars.compile($("#course-template").html());
-edit_course_template = Handlebars.compile($("#edit-course-template").html());
-course_assignment_template = Handlebars.compile($("#course-assignment-template").html());
-
-dates_template = Handlebars.compile($("#dates-template").html());
-date_assignment_template = Handlebars.compile($("#date-assignment-template").html());
-
-edit_assignment_template = Handlebars.compile($("#edit-assignment-template").html());
-
-status_template = Handlebars.compile($("#status-template").html());
-settings_template = Handlebars.compile($("#settings-template").html());
-home_template = Handlebars.compile($("#home-template").html());
-
-_now = moment();
-today = moment([_now.year(), _now.month(), _now.date()]);
-yesterday = moment(today).subtract('days', 1);
-tomorrow = moment(today).add('days', 1);
-in_a_week = moment(today).add('weeks', 1);
-in_two_weeks = moment(today).add('weeks', 2);
-big_bang = moment(0); // Actually 1970
-doomsday = moment(9999999999999); // Year 2286 lol
+compileDateConstants();
 
 function getEndOfWeek () {
   var wanted = _.indexOf(moment.weekdays, "Friday");

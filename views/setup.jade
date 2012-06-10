@@ -40,17 +40,17 @@
         input#gobutton.btn.btn-success(type="submit", value="I agree to the terms. Let's go!", disabled)
 
 script(src='/socket.io/socket.io.js')
+script(src='/js/lib/moment.js')
 script(src='/js/lib/underscore.js')
 script(src='/js/lib/backbone.js')
 script(src='/js/lib/backbone-relational.js')
 script(src='/js/lib/backbone-iobind.js')
 script(src='/js/lib/backbone-iosync.js')
 script(src='/js/lib/backbone-query.js')
-script(src='/js/lib/handlebars.js')
-script(src='/js/lib/moment.js')
+script(src='/js/lib/handlebars.runtime.js')
+script(src='/js/templates.min.js')
 
 // App
-include templates.html
 script(src='/js/helpers.js')
 script(src='/js/models.js')
 script(src='/js/views.js')

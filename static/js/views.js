@@ -147,14 +147,19 @@ AddAssignmentView = Backbone.View.extend({
       date: date
     },
     {
+      wait: true,
       error: function (model, errors) {
         that.$(".error").removeClass('error');
-        that.$('.help-inline').text('');
-        _.each(errors, function (error) {
-          var control_group = that.$("#" + error.attr).parents(".control-group");
-          control_group.addClass('error');
-          control_group.find('.help-inline').text(error.message);
-        });
+        if (_.isArray(errors)) {
+          that.$('.help-inline').text('');
+          _.each(errors, function (error) {
+            var control_group = that.$("#" + error.attr).parents(".control-group");
+            control_group.addClass('error');
+            control_group.find('.help-inline').text(error.message);
+          });
+        } else {
+          alert("Whoops, a server error occured.")
+        }
         that.$(":input").prop('disabled', false);
       },
       success: function (model) {

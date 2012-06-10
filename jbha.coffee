@@ -46,6 +46,9 @@ AccountSchema = new mongoose.Schema
     default: new Date 0
   {strict: true}
 
+AccountSchema.path('nickname').validate (v) ->
+  return v.length < 50
+
 Account = mongoose.model 'account', AccountSchema
 
 # jbha_id is the content id for a course
@@ -56,15 +59,20 @@ Account = mongoose.model 'account', AccountSchema
 CourseSchema = new mongoose.Schema
   owner: String
   title: String
+  teacher: String
   jbha_id:
     type: String
     index:
       unique: false
       sparse: true
-  teacher: String
   assignments: [{ type: mongoose.Schema.ObjectId, ref: 'assignment' }]
-  details: String
   {strict: true}
+
+CourseSchema.path('title').validate (v) ->
+  return v.length < 50
+
+CourseSchema.path('teacher').validate (v) ->
+  return v.length < 50
 
 Course = mongoose.model 'course', CourseSchema
 
@@ -86,12 +94,22 @@ AssignmentSchema = new mongoose.Schema
     default: false
   {strict: true}
 
+AssignmentSchema.path('title').validate (v) ->
+  return v.length < 200
+
+AssignmentSchema.path('details').validate (v) ->
+  return true if _.isNull(v)
+  return v.length < 100000
+
 Assignment = mongoose.model 'assignment', AssignmentSchema
 
 FeedbackSchema = new mongoose.Schema
   _id: String
   message: String
   {strict: true}
+
+FeedbackSchema.path('message').validate (v) ->
+  return v.length < 5000
 
 Feedback = mongoose.model 'feedback', FeedbackSchema
 
@@ -236,7 +254,6 @@ Jbha.Client =
           wf_callback err, course, assignment
 
     ], (err, course, assignment) ->
-      delete assignment["owner"]
       cb err, course, assignment
 
   update_assignment: (token, assignment, cb) ->
@@ -310,22 +327,16 @@ Jbha.Client =
       .remove cb
 
   create_feedback: (token, message, cb) ->
-    if message.length > 5000
-      return cb "Message exceeds 5000 character max"
     feedback = new Feedback()
     feedback._id = token.username
     feedback.message = message
     feedback.save (err) ->
-      if err
-        cb err.err
-      else
-        Account.update _id: token.username,
-          feedback_given: true,
-          (err) ->
-            if err
-              cb err.err
-            else
-              cb null
+      return cb err if err
+      Account.update _id: token.username,
+        feedback_given: true,
+        (err) ->
+          return cb err if err
+          cb null
 
   read_feedbacks: (cb) ->
     Feedback

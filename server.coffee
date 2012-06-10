@@ -290,38 +290,46 @@ io.sockets.on "connection", (socket) ->
         L "Worker with pid #{worker.pid} exited successfully", 'debug'
 
   socket.on "settings:read", (data, cb) ->
+    return unless _.isFunction cb
     jbha.Client.read_settings token, (err, settings) ->
-      cb null, settings if _.isFunction cb
+      cb null, settings
 
   socket.on "settings:update", (data, cb) ->
+    return unless _.isFunction cb
     jbha.Client.update_settings token, data, ->
       # Hardcode the 0 for a singleton pattern. (See client model).
       socket.broadcast.to(token.username).emit("settings/0:update", data)
-      cb null if _.isFunction cb
+      cb null
 
   socket.on "course:create", (data, cb) ->
+    return unless _.isFunction cb
     jbha.Client.create_course token, data, (err, course) ->
       socket.broadcast.to(token.username).emit("courses:create", course)
-      cb null, course if _.isFunction cb
+      cb null, course
 
   socket.on "courses:read", (data, cb) ->
+    return unless _.isFunction cb
     jbha.Client.by_course token, (courses) ->
-      cb null, courses if _.isFunction cb
+      cb null, courses
 
   socket.on "course:update", (data, cb) ->
+    return unless _.isFunction cb
     jbha.Client.update_course token, data, (err) ->
       sync "course", "update", data
-      cb null if _.isFunction cb
+      cb null
 
   socket.on "course:delete", (data, cb) ->
+    return unless _.isFunction cb
     jbha.Client.delete_course token, data, (err) ->
       sync "course", "delete", data
-      cb null if _.isFunction cb
+      cb null
       
   socket.on "assignments:create", (data, cb) ->
+    return unless _.isFunction cb
     jbha.Client.create_assignment token, data, (err, course, assignment) ->
+      return cb err if err
       socket.broadcast.to(token.username).emit("course/#{course._id}:create", assignment)
-      cb null, assignment if _.isFunction cb
+      cb null, assignment
 
   socket.on "assignments:update", (data, cb) ->
     jbha.Client.update_assignment token, data, (err) ->
@@ -329,18 +337,20 @@ io.sockets.on "connection", (socket) ->
       cb null if _.isFunction cb
 
   socket.on "assignments:delete", (data, cb) ->
+    return unless _.isFunction cb
     jbha.Client.delete_assignment token, data, (err) ->
       sync "assignments", "delete", data
-      cb null if _.isFunction cb
+      cb null
 
   socket.on "feedback", (message, cb) ->
     return unless _.isFunction cb
     jbha.Client.create_feedback token, message, cb
 
   socket.on "d/a", (account, cb) ->
+    return unless _.isFunction cb
     return cb null unless token.username is "avi.romanoff"
     jbha.Client._delete_account token, account, (err) ->
-      cb null if _.isFunction cb
+      cb null
 
   socket.on "stats", (cb) ->
     return unless _.isFunction cb

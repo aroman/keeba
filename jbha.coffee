@@ -46,9 +46,6 @@ AccountSchema = new mongoose.Schema
     default: new Date 0
   {strict: true}
 
-AccountSchema.path('nickname').validate (v) ->
-  return v.length < 50
-
 Account = mongoose.model 'account', AccountSchema
 
 # jbha_id is the content id for a course
@@ -67,12 +64,6 @@ CourseSchema = new mongoose.Schema
       sparse: true
   assignments: [{ type: mongoose.Schema.ObjectId, ref: 'assignment' }]
   {strict: true}
-
-CourseSchema.path('title').validate (v) ->
-  return v.length < 50
-
-CourseSchema.path('teacher').validate (v) ->
-  return v.length < 50
 
 Course = mongoose.model 'course', CourseSchema
 
@@ -93,13 +84,6 @@ AssignmentSchema = new mongoose.Schema
     type: Boolean
     default: false
   {strict: true}
-
-AssignmentSchema.path('title').validate (v) ->
-  return v.length < 200
-
-AssignmentSchema.path('details').validate (v) ->
-  return true if _.isNull(v)
-  return v.length < 100000
 
 Assignment = mongoose.model 'assignment', AssignmentSchema
 

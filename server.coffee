@@ -327,7 +327,6 @@ io.sockets.on "connection", (socket) ->
   socket.on "assignments:create", (data, cb) ->
     return unless _.isFunction cb
     jbha.Client.create_assignment token, data, (err, course, assignment) ->
-      return cb err if err
       socket.broadcast.to(token.username).emit("course/#{course._id}:create", assignment)
       cb null, assignment
 

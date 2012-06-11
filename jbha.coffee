@@ -496,10 +496,14 @@ Jbha.Client =
     @_authenticated_request cookie, "homework.php", (err, $) ->
       courses = []
 
+      blacklist = ['433', '665']
+
       parse_course = (element, fe_callback) ->
-        courses.push
-          title: $(element).text()
-          id: $(element).attr('href').match(/\d+/)[0]
+        course_id = $(element).attr('href').match(/\d+/)[0]
+        if course_id not in blacklist
+          courses.push
+            title: $(element).text()
+            id: course_id
         fe_callback null
 
       # Any link that has a href containing the 

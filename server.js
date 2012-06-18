@@ -76,7 +76,7 @@
     stringify: false,
     clear_interval: 432000
   }, function() {
-    app.listen(port);
+    app.listen(process.env.PORT || port);
     return logger.info("Keeba " + package_info.version + " serving in " + mode[color] + " mode on port " + (port.toString().bold) + ".");
   });
 

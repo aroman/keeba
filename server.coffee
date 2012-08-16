@@ -33,7 +33,7 @@ app.configure 'development', ->
   mongo_uri = secrets.MONGO_STAGING_URI
   io.set "log level", 3
   io.set "logger", new logging.Logger "SIO"
-  app.use express.logger()
+  # app.use express.logger()
   app.set 'view options', pretty: true
 
 app.configure 'production', ->
@@ -56,7 +56,8 @@ sessionStore = new MongoStore
   clear_interval: 432000, # 5 days
   () ->
     app.listen port
-    logger.info "Keeba #{package_info.version} serving in #{mode[color]} mode on port #{port.toString().bold}."
+    logger.info "Keeba #{package_info.version} serving in #{mode[color]} mode."
+    logger.info "http://localhost:#{port}".underline
 
 app.configure ->
   app.use express.cookieParser()

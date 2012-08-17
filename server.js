@@ -32,6 +32,8 @@
 
   package_info = JSON.parse(fs.readFileSync("" + __dirname + "/package.json", "utf-8"));
 
+  console.log("Got here");
+
   app = express.createServer();
 
   io = socketio.listen(app, {
@@ -53,9 +55,10 @@
     mongo_uri = secrets.MONGO_STAGING_URI;
     io.set("log level", 3);
     io.set("logger", new logging.Logger("SIO"));
-    return app.set('view options', {
+    app.set('view options', {
       pretty: true
     });
+    return console.log("devel");
   });
 
   app.configure('production', function() {
@@ -64,9 +67,10 @@
     color = 'green';
     mongo_uri = secrets.MONGO_PRODUCTION_URI;
     io.set('transports', ['xhr-polling', 'jsonp-polling', 'htmlfile']);
-    return app.set('view options', {
+    app.set('view options', {
       pretty: false
     });
+    return console.log("prod");
   });
 
   sessionStore = new MongoStore({
@@ -76,7 +80,7 @@
     clear_interval: 432000
   }, function() {
     return app.listen(port);
-  }, logger.info("Keeba " + package_info.version + " serving in " + mode[color] + "   mode on port " + (port.toString().bold) + "."));
+  }, logger.info("Keeba " + package_info.version + " serving in " + mode[color] + " mode on port " + (port.toString().bold) + "."));
 
   app.configure(function() {
     app.use(express.cookieParser());

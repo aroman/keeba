@@ -18,6 +18,8 @@ secrets    = require "./secrets"
 logger = new logging.Logger "SRV"
 package_info = JSON.parse(fs.readFileSync "#{__dirname}/package.json", "utf-8")
 
+console.log "Got here"
+
 app = express.createServer()
 io = socketio.listen app, log: false
 
@@ -35,6 +37,7 @@ app.configure 'development', ->
   io.set "logger", new logging.Logger "SIO"
   # app.use express.logger()
   app.set 'view options', pretty: true
+  console.log "devel"
 
 app.configure 'production', ->
   mode = 'production'
@@ -48,6 +51,7 @@ app.configure 'production', ->
     'htmlfile'
   ]
   app.set 'view options', pretty: false
+  console.log "prod"
 
 sessionStore = new MongoStore
   db: 'keeba'
@@ -56,8 +60,7 @@ sessionStore = new MongoStore
   clear_interval: 432000, # 5 days
   () ->
     app.listen port
-   logger.info "Keeba #{package_info.version} serving in #{mode[color]}
-   mode on port #{port.toString().bold}."
+   logger.info "Keeba #{package_info.version} serving in #{mode[color]} mode on port #{port.toString().bold}."
 
 app.configure ->
   app.use express.cookieParser()

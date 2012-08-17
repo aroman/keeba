@@ -56,8 +56,8 @@ sessionStore = new MongoStore
   clear_interval: 432000, # 5 days
   () ->
     app.listen port
-    logger.info "Keeba #{package_info.version} serving in #{mode[color]} mode."
-    logger.info "http://localhost:#{port}".underline
+   logger.info "Keeba #{package_info.version} serving in #{mode[color]}
+   mode on port #{port.toString().bold}."
 
 app.configure ->
   app.use express.cookieParser()

@@ -1,2 +1,4 @@
 .DS_STORE*
 Thumbs.db
+node_modules/
+/*.js

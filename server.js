@@ -75,10 +75,8 @@
     stringify: false,
     clear_interval: 432000
   }, function() {
-    app.listen(port);
-    logger.info("Keeba " + package_info.version + " serving in " + mode[color] + " mode.");
-    return logger.info(("http://localhost:" + port).underline);
-  });
+    return app.listen(port);
+  }, logger.info("Keeba " + package_info.version + " serving in " + mode[color] + "   mode on port " + (port.toString().bold) + "."));
 
   app.configure(function() {
     app.use(express.cookieParser());

@@ -18,8 +18,6 @@ secrets    = require "./secrets"
 logger = new logging.Logger "SRV"
 package_info = JSON.parse(fs.readFileSync "#{__dirname}/package.json", "utf-8")
 
-console.log "Got here"
-
 app = express.createServer()
 io = socketio.listen app, log: false
 

@@ -48,7 +48,7 @@
 
   app.configure('development', function() {
     mode = 'development';
-    port = 8888;
+    port = process.env.PORT || 8888;
     color = 'magenta';
     mongo_uri = secrets.MONGO_STAGING_URI;
     io.set("log level", 3);
@@ -61,7 +61,7 @@
 
   app.configure('production', function() {
     mode = 'production';
-    port = process.env.PORT;
+    port = process.env.PORT || 80;
     color = 'green';
     mongo_uri = secrets.MONGO_PRODUCTION_URI;
     io.set('transports', ['xhr-polling', 'jsonp-polling', 'htmlfile']);

@@ -53,7 +53,6 @@
     mongo_uri = secrets.MONGO_STAGING_URI;
     io.set("log level", 3);
     io.set("logger", new logging.Logger("SIO"));
-    app.use(express.logger());
     return app.set('view options', {
       pretty: true
     });
@@ -76,8 +75,9 @@
     stringify: false,
     clear_interval: 432000
   }, function() {
-    app.listen(process.env.PORT || port);
-    return logger.info("Keeba " + package_info.version + " serving in " + mode[color] + " mode on port " + (port.toString().bold) + ".");
+    app.listen(port);
+    logger.info("Keeba " + package_info.version + " serving in " + mode[color] + " mode.");
+    return logger.info(("http://localhost:" + port).underline);
   });
 
   app.configure(function() {

@@ -39,7 +39,7 @@ app.configure 'development', ->
 
 app.configure 'production', ->
   mode = 'production'
-  port = 80
+  port = process.env.PORT
   color = 'green'
   mongo_uri = secrets.MONGO_PRODUCTION_URI
   # Don't allow WebSockets in production.

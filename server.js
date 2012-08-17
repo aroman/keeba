@@ -61,7 +61,7 @@
 
   app.configure('production', function() {
     mode = 'production';
-    port = 80;
+    port = process.env.PORT;
     color = 'green';
     mongo_uri = secrets.MONGO_PRODUCTION_URI;
     io.set('transports', ['xhr-polling', 'jsonp-polling', 'htmlfile']);

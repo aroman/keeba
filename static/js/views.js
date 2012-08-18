@@ -906,7 +906,7 @@ AppView = Backbone.View.extend({
   updateUpdatedAt: function () {
     app_status.set({
       heading: "",
-      message: "Last sync with school website: " + settings.getUpdatedAt().from(moment()) + ".",
+      message: "Last checked for new homework: " + settings.getUpdatedAt().from(moment()) + ".",
       kind: "info"
     });
   },
@@ -978,7 +978,7 @@ AppView = Backbone.View.extend({
     app.update_timer = null;
     window.app_status.set({
       heading: "Refreshing...",
-      message: "I'm pulling down the latest homework from the school website.",
+      message: "I'm pulling down the latest homework from your teachers.",
       kind: "info"
     });
   },
@@ -997,10 +997,10 @@ AppView = Backbone.View.extend({
     } else {
       var num_new = res.new_assignments + app.num_new;
       if (num_new === 1) {
-        var message = "There was <b>1</b> new assignment synced from the school website.";
+        var message = "There was <b>1</b> new assignment added by your teachers.";
         var link_text = "Click here to add it."
       } else {
-        var message = "There were <b>" + num_new + "</b> new assignments synced from the school website.";
+        var message = "There were <b>" + num_new + "</b> new assignments added by your teachers.";
         var link_text = "Click here to add them."
       }
       if (num_new === 0) {

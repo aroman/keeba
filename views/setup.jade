@@ -2,41 +2,38 @@
   #setup
   p
     .page-header 
-      h1 Success! I'm in.
+      h1 Success! You're in.
       small I'll need a few moments to do some 
         b one-time-only 
         | setting up.
   #status
   form.well(method="POST", target="_self")
     fieldset
-      legend While we wait, you can set up your account below.
+      legend
+        span#form-header While we wait, you can set up your account below.
         br
         h4.control-label Nickname
         input#nickname.input-large(type="text", size=30, name="nickname", placeholder="Dr. Rabeeya?")
         p.help-block
           | anything you want &mdash; it's how i'll address you from now on
-        h4.control-label Terms of Service
-        p Okay I'm going to make this as simple as possible:
-          br
-          br
-          b 1. 
-          | There is absolutely no warranty, implied or otherwise, that Keeba will actually work.
-          br
-          | In other words, you can't use it as an excuse to not do your homework.
-          br
-          br
-          b 2. 
-          | You're using Keeba at your own risk.
-          br
-          | Any harm/broken limbs that may be caused by Keeba are entirely not my responsibility.
-          br
-          br
-          b 3. 
-          | Keeba may malfunction/break/explode. Deal with it.
-          br
-          | Please let me know, and I'll do everything I can to help, but no guarantees.
+        h4.control-label Terms of Service (please read them)
+        pre
+          :markdown
+            1. **Keeba is not an excuse**
+            While Keeba can be a very helpful and useful tool for managing your school life,
+            that doesn't mean you can blame it for not being responsible with assignments.
+            Your homework is YOUR responsibilty.
+
+            2. **Keeba is not a replacement**
+            Your planner might not be as interactive and fun as Keeba, but it's still an essential tool. Use it!
+
+            3. **Keeba is not perfect**
+            Keeba is very stable, but it's still new and might goof up.
+            Please check the [Help section](/help) first if you run into a problem.
+            If you're still having trouble, [let Avi know](mailto:avi.romanoff@jbha.org) and I'll try to help you out if I can.
+
         p.help-block
-          | just covering my bases, you know?
+          | that wasn't so bad, was it?
         input#gobutton.btn.btn-success(type="submit", value="I agree to the terms. Let's go!", disabled)
 
 // Libraries

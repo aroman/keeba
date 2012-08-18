@@ -1145,6 +1145,7 @@ SetupView = Backbone.View.extend({
         message: "Ready when you are.",
         kind: "success"
       });
+      $("#form-header").text("You can set up your account below.");
       $("#gobutton").prop('disabled', false);
     }
 

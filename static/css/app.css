@@ -24,6 +24,12 @@ h1, h2, h3, h4, h5, h6 {
   margin: 0;
 }
 
+/* REGRESSION FIX: 2.0.4 -> 2.1.0
+  Form text is too big */
+label, input, button, select, textarea, .btn {
+  font-size: 13px;
+}
+
 body {
   background-color: #FAFAFA;
   font-size: 13px;

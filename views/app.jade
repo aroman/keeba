@@ -1,14 +1,5 @@
 .container-fluid
   #status
-  if !feedback_given
-    .hidden-phone.feedback(style="margin-top:-5px")
-      .alert.alert-success.alert-app
-        span
-          strong Hey #{nickname}! 
-          | Can I ask you a favor? I'd really appreciate feedback about me.
-          .hidden-phone.input-append.pull-right(style="margin-top:-9px;margin-right:-30px")
-            input#feedback.input-large.span3(style="margin-left:10px;margin-top:4px", placeholder="Go on, be honest...")
-            button.btn(style="margin-top:3px; margin-left:-5px") Send!
   .row-fluid
     .span3
       .well.sidebar-nav

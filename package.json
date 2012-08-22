@@ -8,7 +8,8 @@
     "start": "server.js"
   },
   "engines": {
-    "node": "0.8.7"
+    "node": "0.8.7",
+    "npm":  "1.1.49"
   },
   "subdomain": "keeba",
   "dependencies": {

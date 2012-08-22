@@ -1,12 +1,33 @@
 /* Copyright (C) 2012 Avi Romanoff <aviromanoff at gmail.com> */
 
-/* Make the background slightly off-white */
-html, body {
-  background-color: #FAFAFA;
+/* BUGFIX: 2.0.4 -> 2.1.0
+  Icons inside .btn-mini are misaligned by 1px
+  https://github.com/twitter/bootstrap/pull/4522 */
+.btn-mini [class^="icon-"] {
+  margin-top: -1px;
 }
 
-/* Make the body not overlap with the topbar */
+/* REGRESSION FIX: 2.0.4 -> 2.1.0
+  header text is too big */
+h2 {
+  font-size: 24px;
+  line-height: 36px;
+}
+h3 {
+  font-size: 18px;
+  line-height: 27px;
+}
+
+/* REGRESSION FIX: 2.0.4 -> 2.1.0
+  Headers have 10px padding */
+h1, h2, h3, h4, h5, h6 {
+  margin: 0;
+}
+
 body {
+  background-color: #FAFAFA;
+  font-size: 13px;
+  line-height: 18px;
   padding-top: 60px;
   padding-bottom: 40px;
 }

@@ -42,12 +42,6 @@ app.configure 'production', ->
   port = process.env.PORT || 80
   color = 'green'
   mongo_uri = secrets.MONGO_PRODUCTION_URI
-  # Don't allow WebSockets in production.
-  io.set 'transports', [
-    'xhr-polling'
-    'jsonp-polling'
-    'htmlfile'
-  ]
   app.set 'view options', pretty: false
   console.log "prod"
 
@@ -193,6 +187,14 @@ app.get "/app*", ensureSession, hydrateSettings, (req, res) ->
         settings: JSON.stringify req.settings
         info: package_info
 
+# Never allow WebSockets
+io.set 'transports', [
+  'xhr-polling'
+  'jsonp-polling'
+  'htmlfile'
+]
+
+# Bridge express and socket.io sessions
 io.set "authorization", (data, accept) ->
   if data.headers.cookie
     data.cookie = connect.utils.parseCookie data.headers.cookie

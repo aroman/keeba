@@ -64,7 +64,6 @@
     port = process.env.PORT || 80;
     color = 'green';
     mongo_uri = secrets.MONGO_PRODUCTION_URI;
-    io.set('transports', ['xhr-polling', 'jsonp-polling', 'htmlfile']);
     app.set('view options', {
       pretty: false
     });
@@ -261,6 +260,8 @@
       }
     });
   });
+
+  io.set('transports', ['xhr-polling', 'jsonp-polling', 'htmlfile']);
 
   io.set("authorization", function(data, accept) {
     if (data.headers.cookie) {

@@ -30,6 +30,10 @@ label, input, button, select, textarea, .btn {
   font-size: 13px;
 }
 
+.btn-mini {
+  font-size: 11px;
+}
+
 body {
   background-color: #FAFAFA;
   font-size: 13px;

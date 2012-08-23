@@ -176,6 +176,8 @@
         req.session.token = response.token;
         if (response.is_new) {
           return res.redirect("/setup");
+        } else if (response.migrate) {
+          return res.redirect("/migrate");
         } else {
           if (whence) {
             return res.redirect(whence);
@@ -217,6 +219,17 @@
   app.get("/logout", function(req, res) {
     req.session.destroy();
     return res.redirect("/");
+  });
+
+  app.get("/migrate", ensureSession, hydrateSettings, function(req, res) {
+    if (req.settings.migrated === true) {
+      return res.redirect("/");
+    } else {
+      return res.render("migrate", {
+        appmode: false,
+        nickname: req.settings.nickname
+      });
+    }
   });
 
   app.get("/setup", ensureSession, hydrateSettings, function(req, res) {

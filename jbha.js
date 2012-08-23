@@ -168,7 +168,8 @@
                   cookie: cookie,
                   username: username
                 },
-                is_new: account.is_new
+                is_new: account.is_new,
+                migrate: account_from_db && !account_from_db.migrated
               };
               if (account_from_db) {
                 return cb(null, res);
@@ -220,7 +221,8 @@
       }, {
         nickname: settings.nickname,
         details: settings.details,
-        firstrun: settings.firstrun
+        firstrun: settings.firstrun,
+        migrated: settings.migrated
       }, cb);
     },
     _delete_account: function(token, account, cb) {
@@ -228,6 +230,15 @@
         function(callback) {
           return Account.where('_id', account).remove(callback);
         }, function(callback) {
+          return Course.where('owner', account).remove(callback);
+        }, function(callback) {
+          return Assignment.where('owner', account).remove(callback);
+        }
+      ], cb);
+    },
+    _delete_data: function(token, account, cb) {
+      return async.parallel([
+        function(callback) {
           return Course.where('owner', account).remove(callback);
         }, function(callback) {
           return Assignment.where('owner', account).remove(callback);

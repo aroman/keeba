@@ -174,7 +174,7 @@ app.post "/setup", ensureSession, (req, res) ->
     res.redirect "/"
 
 app.get "/app*", ensureSession, hydrateSettings, (req, res) ->
-  jbha.Client.by_course req.token, (courses) ->
+  jbha.Client.by_course req.token, (err, courses) ->
     if !req.settings || req.settings.is_new
       res.redirect "/setup"
     else
@@ -313,7 +313,7 @@ io.sockets.on "connection", (socket) ->
 
   socket.on "courses:read", (data, cb) ->
     return unless _.isFunction cb
-    jbha.Client.by_course token, (courses) ->
+    jbha.Client.by_course token, (err, courses) ->
       cb null, courses
 
   socket.on "course:update", (data, cb) ->

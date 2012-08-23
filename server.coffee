@@ -129,6 +129,8 @@ app.post "/", (req, res) ->
       req.session.token = response.token
       if response.is_new
         res.redirect "/setup"
+      else if response.migrate
+        res.redirect "/migrate"
       else
         if whence
           res.redirect whence
@@ -156,6 +158,14 @@ app.get "/feedback", (req, res) ->
 app.get "/logout", (req, res) ->
   req.session.destroy()
   res.redirect "/"
+
+app.get "/migrate", ensureSession, hydrateSettings, (req, res) ->
+  if req.settings.migrated is true
+    res.redirect "/"
+  else
+    res.render "migrate"
+      appmode: false
+      nickname: req.settings.nickname
 
 app.get "/setup", ensureSession, hydrateSettings, (req, res) ->
   if req.settings.is_new

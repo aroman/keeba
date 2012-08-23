@@ -1,0 +1,71 @@
+style
+  .row {
+    display: none;
+    margin-bottom: 25px;
+    font-size: 14px;
+  }
+  p, h2 {
+    margin-bottom: 0;
+    text-align: left;
+  }
+  .btn-large {
+    font-size: 15px;
+  }
+
+.container.centex
+  .hero-unit.landing(style="padding: 40px")
+    h1 You rock, #{nickname}.
+    h2.centex Thanks for giving me a shot last year.
+    br
+    img.img-polaroid(src="/img/baby.jpg", width=400, height=400)
+    br
+    br
+    h2.centex.lead What do you want to do with last year's homework?
+    button#show-options.btn-large.btn-info(style="font-size:18px") Show me my options
+
+  .options(style="display: none")
+    .hero-unit
+      h1(style="font-size: 55px") What happens to your old homework?
+      br
+      h2.centex Choose wisely.
+    .row.nihilist
+      .span2.offset1
+        h2 Do nothing*
+      .span6
+        :markdown
+          **Keep all your old courses and assignments exactly as you last left them.**
+
+          Your new courses will be added alongside your old ones.
+
+          You can delete your old courses individually later, if you want.
+      .span2
+        a.btn.btn-primary.btn-large(href="#") Make it so &raquo;
+    .row.optimist
+      .span2.offset1
+        h2 Delete it
+      .span6
+        :markdown
+          **Remove all your old courses and assignments to date.**
+
+          This effectively resets your account data.
+
+          You **CAN NOT** undo this -- once you delete your old data, it's gone forever.
+      .span2
+        a.btn.btn-danger.btn-large(href="#") Make it so &raquo;
+    br
+    .row.worrywort
+      .offset1
+        p
+          b * 
+          | If you're at all unsure, this is obviously the safest option.
+ 
+// Libraries
+script(src='/js/lib/underscore.js')
+
+:coffeescript
+  $("#show-options").click () ->
+    $(".landing").hide 'blind', direction: 'vertical', 'slow', () ->
+      $(".options").show 'blind', direction: 'vertical', 700, () ->
+        $(".nihilist").show 'blind', direction: 'vertical', 700, () ->
+          $(".optimist").show 'blind', direction: 'vertical', 700, () ->
+            $(".worrywort").show 'blind', direction: 'vertical', 700

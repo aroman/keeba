@@ -142,6 +142,7 @@ Jbha.Client =
                   cookie: cookie
                   username: username
                 is_new: account.is_new
+                migrate: account_from_db && !account_from_db.migrated
               if account_from_db
                 cb null, res
               else
@@ -183,7 +184,8 @@ Jbha.Client =
     Account.update _id: token.username,
       nickname: settings.nickname
       details: settings.details
-      firstrun: settings.firstrun,
+      firstrun: settings.firstrun
+      migrated: settings.migrated,
       cb
 
   _delete_account: (token, account, cb) ->
@@ -192,6 +194,18 @@ Jbha.Client =
         Account
           .where('_id', account)
           .remove callback
+      (callback) ->
+        Course
+          .where('owner', account)
+          .remove callback
+      (callback) ->
+        Assignment
+          .where('owner', account)
+          .remove callback
+    ], cb
+
+  _delete_data: (token, account, cb) ->
+    async.parallel [
       (callback) ->
         Course
           .where('owner', account)

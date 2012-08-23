@@ -1,24 +1,27 @@
 <div style="display:none" data-id="{{_id}}"</div>
+
 <td name="done" class="done-toggle">
   <input type="checkbox" {{#if done}} checked {{/if}}>
 </td>
+
 <td>
-    <span>{{{keyword title}}} {{title}}</span>
-    <input type="text" style="display:none;" value="{{title}}">
+  <span>{{{keyword title}}} {{title}}</span>
+  <input type="text" style="display:none;" value="{{title}}">
 </td>
+
 <td>
   {{{format_date date}}}
 </td>
 
-{{#if details}}
-  {{#if show_details}}
-    <td>{{{details}}}</td>
+<td class="details">
+  {{#if details}}
+    <button class="btn btn-link details-show">Show details</button>
+    <div class="details-content" style="display:none"> {{{details}} </div>
   {{else}}
-    <td><i>Details hidden.</i></td>
+    <i>No additional information</i>
   {{/if}}
-{{else}}
-  <td><i>No additional information.</i></td>
-{{/if}}
+</td>
+
 <td>
   <button class="btn btn-mini button-edit" title="Edit">
     <i class="icon-pencil"></i>

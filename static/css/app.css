@@ -175,3 +175,7 @@ h3 small {
 select.input-xlarge {
   width: 280px;
 }
+
+.details-show, .details-hide {
+  padding: 0;
+}

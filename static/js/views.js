@@ -410,6 +410,8 @@ AssignmentView = Backbone.View.extend({
 
   events: {
     "click td.done-toggle": "toggleDone",
+    "click .details-show": "showDetails",
+    "click .details-hide": "hideDetails",
     "click button.button-edit": "edit"
   },
 
@@ -419,20 +421,17 @@ AssignmentView = Backbone.View.extend({
     this.model.on('change', this.render, this);
     this.model.on('update:course', this.remove, this);
     this.model.on('destroy', this.remove, this);
-    app.on('details:show details:hide', this.render, this);
   },
 
   remove: function () {
     this.model.off('change', this.render);
     this.model.off('update:course', this.remove);
     this.model.off('destroy', this.remove);
-    app.off('details:show details:hide', this.render);
     this.$el.remove();
   },
 
   render: function () {
     var context = this.model.toJSON();
-    context.show_details = app.showing_details;
 
     // Set the `course` field to be the course's
     // title, not it's _id.
@@ -449,6 +448,10 @@ AssignmentView = Backbone.View.extend({
       this.$el.removeClass("done");
     }
 
+    if (settings.get('details')) {
+      this.showDetails();
+    }
+
     return this;
   },
 
@@ -458,6 +461,22 @@ AssignmentView = Backbone.View.extend({
       model: this.model
     });
     edit_dialog.show();
+  },
+
+  showDetails: function (event) {
+    this.$(".details-show")
+      .removeClass("details-show")
+      .addClass("details-hide")
+      .text("Hide details");
+    this.$(".details-content").show();
+  },
+
+  hideDetails: function (event) {
+    this.$(".details-hide")
+      .removeClass("details-hide")
+      .addClass("details-show")
+      .text("Show details");
+    this.$(".details-content").hide();
   },
 
   toggleDone: function (event) {
@@ -912,13 +931,13 @@ AppView = Backbone.View.extend({
   },
 
   toggleDetails: function (options) {
-    if (this.showing_details) {
+    if (app.showing_details) {
       this.hideDetails();
     } else {
       this.showDetails();
     }
     if (!options.silent) {
-      $('.dropdown-toggle').dropdown('toggle');
+      $('.dropdown-toggle').dropdown();
     }
     return false;
   },
@@ -1024,20 +1043,20 @@ AppView = Backbone.View.extend({
   forceRefresh: function (options) {
     this.refresh();
     if (!options.silent) {
-      $('.dropdown-toggle').dropdown('toggle');
+      $('.dropdown-toggle').dropdown();
     }
     return false;
   },
 
   showSettings: function () {
     window.settings_view.show();
-    $('.dropdown-toggle').dropdown('toggle');
+    $('.dropdown-toggle').dropdown();
     return false;
   },
 
   showShortcuts: function () {
     $("#shortcuts-modal").modal();
-    $('.dropdown-toggle').dropdown('toggle');
+    $('.dropdown-toggle').dropdown();
     return false;
   },
 
@@ -1053,14 +1072,14 @@ AppView = Backbone.View.extend({
 
   showDetails: function () {
     $("#toggle-details").html('<i class="icon-ok"></i> Show details');
-    this.showing_details = true;
-    this.trigger("details:show");
+    app.showing_details = true;
+    $(".details-show").click();
   },
 
   hideDetails: function () {
     $("#toggle-details").html("Show details");
-    this.showing_details = false;
-    this.trigger("details:hide");
+    app.showing_details = false;
+    $(".details-hide").click();
   },
 
   showArchived: function () {

@@ -2,14 +2,12 @@ hr
 footer
   p(style="text-align:center")
     if development_build
-      b
-        big
-          | ♞
-          br
-          tt Development build
-      br
-      br
-    | Made with love, care, and sunshine by 
-    a(href="mailto:avi.romanoff@jbha.org") Avi. 
-    | Version: 
-    b #{version}
+      b(style="color: #970707")
+        span(style="font-size: 20px;") ☢
+        br
+        tt Development build @ #{version}
+    else
+      | Made with love, care, and sunshine by 
+      a(href="mailto:avi.romanoff@jbha.org") Avi. 
+      | Version: 
+      b #{version}

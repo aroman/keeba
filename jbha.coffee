@@ -63,7 +63,6 @@ CourseSchema = new mongoose.Schema
       unique: false
       sparse: true
   assignments: [{ type: mongoose.Schema.ObjectId, ref: 'assignment' }]
-  {strict: true}
 
 Course = mongoose.model 'course', CourseSchema
 
@@ -83,14 +82,12 @@ AssignmentSchema = new mongoose.Schema
   done:
     type: Boolean
     default: false
-  {strict: true}
 
 Assignment = mongoose.model 'assignment', AssignmentSchema
 
 FeedbackSchema = new mongoose.Schema
   _id: String
   message: String
-  {strict: true}
 
 FeedbackSchema.path('message').validate (v) ->
   return v.length < 5000
@@ -136,7 +133,7 @@ Jbha.Client =
           Account
             .findOne()
             .where('_id', username)
-            .run (err, account_from_db) =>
+            .exec (err, account_from_db) =>
               return if @_call_if_truthy err, cb
               cookie = res.headers['set-cookie'][1].split(';')[0]
               account = account_from_db or new Account()
@@ -179,8 +176,8 @@ Jbha.Client =
     Account
       .findOne()
       .where('_id', token.username)
-      .select(['nickname', 'details', 'is_new', 'firstrun', 'updated', 'feedback_given'])
-      .run cb
+      .select('nickname details is_new firstrun updated feedback_given')
+      .exec cb
 
   update_settings: (token, settings, cb) ->
     Account.update _id: token.username,
@@ -209,11 +206,11 @@ Jbha.Client =
   by_course: (token, cb) ->
     Course
       .where('owner', token.username)
-      .populate('assignments', ['title', 'archived', 'details', 'date', 'done', 'jbha_id'])
-      .exclude(['owner', 'jbha_id'])
-      .run (err, courses) =>
+      .populate('assignments', 'title archived details date done jbha_id')
+      .select('-owner -jbha_id')
+      .exec (err, courses) =>
         @_call_if_truthy(err, cb)
-        cb courses
+        cb err, courses
 
   create_assignment: (token, data, cb) ->
     async.waterfall [
@@ -221,7 +218,7 @@ Jbha.Client =
       (wf_callback) ->
         Course
           .findById(data.course)
-          .run wf_callback
+          .exec wf_callback
 
       (course, wf_callback) ->
         assignment = new Assignment()
@@ -251,7 +248,7 @@ Jbha.Client =
           assignments: assignment._id
         },
         {
-          $pull: {assignments: assignment._id}
+          pull: {assignments: assignment._id}
         },
         {},
         (err) ->
@@ -261,7 +258,7 @@ Jbha.Client =
           .findOne()
           .where('owner', token.username)
           .where('_id', assignment.course)
-          .run wf_callback
+          .exec wf_callback
       (course, wf_callback) ->
         course.assignments.push assignment._id
         course.save wf_callback
@@ -302,7 +299,8 @@ Jbha.Client =
         title: course.title
         teacher: course.teacher
       },
-      cb
+      (err, numAffected, raw) ->
+        cb err
 
   delete_course: (token, course, cb) ->
     Course
@@ -325,7 +323,7 @@ Jbha.Client =
   read_feedbacks: (cb) ->
     Feedback
     .find()
-    .run (err, feedbacks) ->
+    .exec (err, feedbacks) ->
       if err
         cb err.err
       else
@@ -355,7 +353,7 @@ Jbha.Client =
                 .where('owner', token.username)
                 .where('jbha_id', course_data.id)
                 .populate('assignments')
-                .run wf_callback
+                .exec wf_callback
 
             # Pass the course along, or create a new
             # one if it didn't exist in the database.
@@ -520,8 +518,8 @@ Jbha.Client =
     Account
       .find()
       .sort('updated', -1)
-      .select('_id', 'updated', 'nickname')
-      .run (err, docs) ->
+      .select('_id updated nickname')
+      .exec (err, docs) ->
         if docs.length < num_shown
           showing = docs.length
         else

@@ -79,8 +79,6 @@
         ref: 'assignment'
       }
     ]
-  }, {
-    strict: true
   });
 
   Course = mongoose.model('course', CourseSchema);
@@ -105,8 +103,6 @@
       type: Boolean,
       "default": false
     }
-  }, {
-    strict: true
   });
 
   Assignment = mongoose.model('assignment', AssignmentSchema);
@@ -114,8 +110,6 @@
   FeedbackSchema = new mongoose.Schema({
     _id: String,
     message: String
-  }, {
-    strict: true
   });
 
   FeedbackSchema.path('message').validate(function(v) {
@@ -162,7 +156,7 @@
         return res.on('end', function() {
           if (res.headers.location === "/students/homework.php") {
             L(username, "Remote authentication succeeded", "info");
-            return Account.findOne().where('_id', username).run(function(err, account_from_db) {
+            return Account.findOne().where('_id', username).exec(function(err, account_from_db) {
               var account, cookie;
               if (_this._call_if_truthy(err, cb)) {
                 return;
@@ -218,7 +212,7 @@
       });
     },
     read_settings: function(token, cb) {
-      return Account.findOne().where('_id', token.username).select(['nickname', 'details', 'is_new', 'firstrun', 'updated', 'feedback_given']).run(cb);
+      return Account.findOne().where('_id', token.username).select('nickname details is_new firstrun updated feedback_given').exec(cb);
     },
     update_settings: function(token, settings, cb) {
       return Account.update({
@@ -242,15 +236,15 @@
     },
     by_course: function(token, cb) {
       var _this = this;
-      return Course.where('owner', token.username).populate('assignments', ['title', 'archived', 'details', 'date', 'done', 'jbha_id']).exclude(['owner', 'jbha_id']).run(function(err, courses) {
+      return Course.where('owner', token.username).populate('assignments', 'title archived details date done jbha_id').select('-owner -jbha_id').exec(function(err, courses) {
         _this._call_if_truthy(err, cb);
-        return cb(courses);
+        return cb(err, courses);
       });
     },
     create_assignment: function(token, data, cb) {
       return async.waterfall([
         function(wf_callback) {
-          return Course.findById(data.course).run(wf_callback);
+          return Course.findById(data.course).exec(wf_callback);
         }, function(course, wf_callback) {
           var assignment;
           assignment = new Assignment();
@@ -278,14 +272,14 @@
             owner: token.username,
             assignments: assignment._id
           }, {
-            $pull: {
+            pull: {
               assignments: assignment._id
             }
           }, {}, function(err) {
             return wf_callback();
           });
         }, function(wf_callback) {
-          return Course.findOne().where('owner', token.username).where('_id', assignment.course).run(wf_callback);
+          return Course.findOne().where('owner', token.username).where('_id', assignment.course).exec(wf_callback);
         }, function(course, wf_callback) {
           course.assignments.push(assignment._id);
           return course.save(wf_callback);
@@ -321,7 +315,9 @@
       }, {
         title: course.title,
         teacher: course.teacher
-      }, cb);
+      }, function(err, numAffected, raw) {
+        return cb(err);
+      });
     },
     delete_course: function(token, course, cb) {
       return Course.where('owner', token.username).where('_id', course._id).remove(cb);
@@ -348,7 +344,7 @@
       });
     },
     read_feedbacks: function(cb) {
-      return Feedback.find().run(function(err, feedbacks) {
+      return Feedback.find().exec(function(err, feedbacks) {
         if (err) {
           return cb(err.err);
         } else {
@@ -370,7 +366,7 @@
           return _this._authenticated_request(token.cookie, "course-detail.php?course_id=" + course_data.id, function(err, $) {
             return async.waterfall([
               function(wf_callback) {
-                return Course.findOne().where('owner', token.username).where('jbha_id', course_data.id).populate('assignments').run(wf_callback);
+                return Course.findOne().where('owner', token.username).where('jbha_id', course_data.id).populate('assignments').exec(wf_callback);
               }, function(course_from_db, wf_callback) {
                 var course;
                 if (!course_from_db) {
@@ -531,7 +527,7 @@
       if (num_shown == null) {
         num_shown = Infinity;
       }
-      return Account.find().sort('updated', -1).select('_id', 'updated', 'nickname').run(function(err, docs) {
+      return Account.find().sort('updated', -1).select('_id updated nickname').exec(function(err, docs) {
         var date, doc, name, nickname, showing, _i, _len, _ref;
         if (docs.length < num_shown) {
           showing = docs.length;

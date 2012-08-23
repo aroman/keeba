@@ -3,38 +3,34 @@
   p
     .page-header 
       h1 Success! You're in.
-      small I'll need a few moments to do some 
+      span I'll need a few moments to do some 
         b one-time-only 
         | setting up.
-  #status
+  #status(style="margin-top: -10px")
   form.well(method="POST", target="_self")
-    fieldset
-      legend
-        span#form-header While we wait, you can set up your account below.
-        br
-        h4.control-label Nickname
-        input#nickname.input-large(type="text", size=30, name="nickname", placeholder="Dr. Rabeeya?")
-        p.help-block
-          | anything you want &mdash; it's how i'll address you from now on
-        h4.control-label Terms of Service (please read them)
-        pre
-          :markdown
-            1. **Keeba is not an excuse**
-            While Keeba can be a very helpful and useful tool for managing your school life,
-            that doesn't mean you can blame it for not being responsible with assignments.
-            Your homework is YOUR responsibilty.
+    legend#form-header While we wait, you can set up your account below.
+    h4.control-label Nickname
+    input#nickname.input-large(type="text", size=30, name="nickname", placeholder="Dr. Rabeeya?")
+    p.help-block
+      | anything you want &mdash; it's what i'll call you from now on
+    h4.control-label Terms of Service (please read them)
+    pre
+      :markdown
+        1. **Keeba is not an excuse**
+        While Keeba can be a very helpful and useful tool for managing your school life,
+        that doesn't mean you can blame it for not being responsible with assignments.
+        Your homework is YOUR responsibilty.
 
-            2. **Keeba is not a replacement**
-            Your planner might not be as interactive and fun as Keeba, but it's still an essential tool. Use it!
+        2. **Keeba is not a replacement**
+        Your planner might not be as interactive and fun as Keeba, but it's still an essential tool. Use it!
 
-            3. **Keeba is not perfect**
-            Keeba is very stable, but it's still new and might goof up.
-            Please check the [Help section](/help) first if you run into a problem.
-            If you're still having trouble, [let Avi know](mailto:avi.romanoff@jbha.org) and I'll try to help you out if I can.
-
-        p.help-block
-          | that wasn't so bad, was it?
-        input#gobutton.btn.btn-success(type="submit", value="I agree to the terms. Let's go!", disabled)
+        3. **Keeba is not perfect**
+        Keeba is very stable, but it's still new and might goof up.
+        Please check the [Help section](/help) first if you run into a problem.
+        If you're still having trouble, [let Avi know](mailto:avi.romanoff@jbha.org) and I'll try to help you out if I can.
+    p.help-block
+      | that wasn't so bad, was it?
+    input#gobutton.btn.btn-success(type="submit", value="I agree to the terms. Let's go!", disabled)
 
 // Libraries
 script(src='/socket.io/socket.io.js')

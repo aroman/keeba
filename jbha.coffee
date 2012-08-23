@@ -248,7 +248,7 @@ Jbha.Client =
           assignments: assignment._id
         },
         {
-          pull: {assignments: assignment._id}
+          $pull: {assignments: assignment._id}
         },
         {},
         (err) ->
@@ -260,6 +260,7 @@ Jbha.Client =
           .where('_id', assignment.course)
           .exec wf_callback
       (course, wf_callback) ->
+
         course.assignments.push assignment._id
         course.save wf_callback
     ], (err) ->

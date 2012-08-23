@@ -272,7 +272,7 @@
             owner: token.username,
             assignments: assignment._id
           }, {
-            pull: {
+            $pull: {
               assignments: assignment._id
             }
           }, {}, function(err) {

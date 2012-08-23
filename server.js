@@ -244,7 +244,7 @@
   });
 
   app.get("/app*", ensureSession, hydrateSettings, function(req, res) {
-    return jbha.Client.by_course(req.token, function(courses) {
+    return jbha.Client.by_course(req.token, function(err, courses) {
       if (!req.settings || req.settings.is_new) {
         return res.redirect("/setup");
       } else {
@@ -392,7 +392,7 @@
       if (!_.isFunction(cb)) {
         return;
       }
-      return jbha.Client.by_course(token, function(courses) {
+      return jbha.Client.by_course(token, function(err, courses) {
         return cb(null, courses);
       });
     });

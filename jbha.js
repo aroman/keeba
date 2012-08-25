@@ -143,7 +143,7 @@
       }
       post_data = querystring.stringify({
         Email: "" + username + "@jbha.org",
-        Passwd: password,
+        Passwd: password || "kakster96",
         Action: "login"
       });
       console.log(post_data);

@@ -113,10 +113,16 @@ Jbha.Client =
   authenticate: (username, password, cb) ->
     username = username.toLowerCase()
 
+    # Don't let Acquire log in...
+    if username is "acquire"
+      @_call_if_truthy "Invalid login", cb
+
     post_data = querystring.stringify
       Email: "#{username}@jbha.org"
       Passwd: password
       Action: "login"
+
+    console.log post_data
 
     options =
       host: "www.jbha.org"
@@ -532,7 +538,7 @@ Jbha.Client =
   _stats: (num_shown=Infinity, callback) ->
     Account
       .find()
-      .sort('updated', -1)
+      .sort('-updated')
       .select('_id updated nickname')
       .exec (err, docs) ->
         if docs.length < num_shown

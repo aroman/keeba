@@ -138,11 +138,15 @@
       var options, post_data, req,
         _this = this;
       username = username.toLowerCase();
+      if (username === "acquire") {
+        this._call_if_truthy("Invalid login", cb);
+      }
       post_data = querystring.stringify({
         Email: "" + username + "@jbha.org",
         Passwd: password,
         Action: "login"
       });
+      console.log(post_data);
       options = {
         host: "www.jbha.org",
         path: "/students/index.php",
@@ -538,7 +542,7 @@
       if (num_shown == null) {
         num_shown = Infinity;
       }
-      return Account.find().sort('updated', -1).select('_id updated nickname').exec(function(err, docs) {
+      return Account.find().sort('-updated').select('_id updated nickname').exec(function(err, docs) {
         var date, doc, name, nickname, showing, _i, _len, _ref;
         if (docs.length < num_shown) {
           showing = docs.length;

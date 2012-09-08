@@ -11,6 +11,8 @@ socketio   = require "socket.io"
 hbpc       = require "handlebars-precompiler"
 MongoStore = require("connect-mongo")(express)
 
+MemoryStore = express.session.MemoryStore
+
 jbha       = require "./jbha"
 logging    = require "./logging"
 secrets    = require "./secrets"
@@ -45,14 +47,19 @@ app.configure 'production', ->
 
 logger.info "Using database: #{mongo_uri}"
 
-sessionStore = new MongoStore
-  db: 'keeba'
-  url: mongo_uri
-  stringify: false
-  clear_interval: 432000, # 5 days
-  () ->
-    app.listen port
-    logger.info "Keeba #{package_info.version} serving in #{mode[color]} mode on port #{port.toString().bold}."
+# sessionStore = new MongoStore
+#   db: 'keeba'
+#   url: mongo_uri
+#   stringify: false
+#   clear_interval: 432000, # 5 days
+#   () ->
+#     app.listen port
+#     logger.info "Keeba #{package_info.version} serving in #{mode[color]} mode on port #{port.toString().bold}."
+
+sessionStore = new MemoryStore()
+app.listen port
+logger.info "Keeba #{package_info.version} serving in #{mode[color]} mode on port #{port.toString().bold}."
+
 
 app.configure ->
   app.use express.cookieParser()

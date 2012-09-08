@@ -53,6 +53,7 @@
     mongo_uri = secrets.MONGO_STAGING_URI;
     io.set("log level", 3);
     io.set("logger", new logging.Logger("SIO"));
+    app.use(express.logger());
     return app.set('view options', {
       pretty: true
     });
@@ -68,6 +69,8 @@
     });
   });
 
+  logger.info("Using database: " + mongo_uri);
+
   sessionStore = new MongoStore({
     db: 'keeba',
     url: mongo_uri,
@@ -75,7 +78,6 @@
     clear_interval: 432000
   }, function() {
     app.listen(port);
-    logger.info("Using database: " + mongo_uri);
     return logger.info("Keeba " + package_info.version + " serving in " + mode[color] + " mode on port " + (port.toString().bold) + ".");
   });
 
@@ -174,7 +176,6 @@
         });
       } else {
         req.session.token = response.token;
-        console.log(req.session.token);
         if (response.account.is_new) {
           return res.redirect("/setup");
         } else if (!response.account.migrated) {
@@ -234,7 +235,6 @@
   });
 
   app.post("/migrate", ensureSession, hydrateSettings, function(req, res) {
-    console.log(req.query);
     if (req.settings.migrated) {
       return res.redirect("/app");
     } else {
@@ -255,16 +255,15 @@
     }
   });
 
-  app.post("/setup", ensureSession, function(req, res) {
+  app.post("/setup", ensureSession, hydrateSettings, function(req, res) {
     var settings;
-    settings = {
-      firstrun: true
-    };
+    settings = req.settings;
+    settings.firstrun = true;
     if (req.body.nickname) {
       settings.nickname = req.body.nickname;
     }
     return jbha.Client.update_settings(req.token, settings, function() {
-      return res.redirect("/");
+      return res.redirect("/app");
     });
   });
 

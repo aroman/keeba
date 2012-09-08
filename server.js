@@ -127,6 +127,7 @@
   ensureSession = function(req, res, next) {
     req.token = req.session.token;
     if (!req.token) {
+      console.log("No token");
       return res.redirect("/?whence=" + req.url);
     } else {
       return next();
@@ -180,6 +181,7 @@
           return res.redirect("/migrate");
         } else {
           if (whence) {
+            console.log("Whencing");
             return res.redirect(whence);
           } else {
             return res.redirect("/app");

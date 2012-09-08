@@ -91,6 +91,7 @@ browserCheck = (req, res, next) ->
 ensureSession = (req, res, next) ->
   req.token = req.session.token
   if not req.token
+    console.log "No token"
     res.redirect "/?whence=#{req.url}"
   else
     next()
@@ -132,6 +133,7 @@ app.post "/", (req, res) ->
         res.redirect "/migrate"
       else
         if whence
+          console.log "Whencing"
           res.redirect whence
         else
           res.redirect "/app"

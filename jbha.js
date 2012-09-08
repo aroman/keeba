@@ -52,6 +52,10 @@
       type: Boolean,
       "default": false
     },
+    migrated: {
+      type: Boolean,
+      "default": true
+    },
     updated: {
       type: Date,
       "default": new Date(0)
@@ -143,10 +147,9 @@
       }
       post_data = querystring.stringify({
         Email: "" + username + "@jbha.org",
-        Passwd: password || "kakster96",
+        Passwd: password,
         Action: "login"
       });
-      console.log(post_data);
       options = {
         host: "www.jbha.org",
         path: "/students/index.php",
@@ -172,8 +175,7 @@
                   cookie: cookie,
                   username: username
                 },
-                is_new: account.is_new,
-                migrate: account_from_db && !account_from_db.migrated
+                account: account
               };
               if (account_from_db) {
                 return cb(null, res);
@@ -217,7 +219,7 @@
       });
     },
     read_settings: function(token, cb) {
-      return Account.findOne().where('_id', token.username).select('nickname details is_new firstrun updated feedback_given').exec(cb);
+      return Account.findOne().where('_id', token.username).select('nickname details is_new firstrun updated migrated feedback_given').exec(cb);
     },
     update_settings: function(token, settings, cb) {
       return Account.update({
@@ -240,14 +242,27 @@
         }
       ], cb);
     },
-    _delete_data: function(token, account, cb) {
-      return async.parallel([
-        function(callback) {
-          return Course.where('owner', account).remove(callback);
-        }, function(callback) {
-          return Assignment.where('owner', account).remove(callback);
-        }
-      ], cb);
+    migrate: function(token, nuke, cb) {
+      var finish;
+      finish = function() {
+        return Account.update({
+          _id: token.username
+        }, {
+          migrated: true
+        }, cb);
+      };
+      if (nuke) {
+        console.log("Herp derp");
+        return async.parallel([
+          function(callback) {
+            return Course.where('owner', token.username).remove(callback);
+          }, function(callback) {
+            return Assignment.where('owner', token.username).remove(callback);
+          }
+        ], finish);
+      } else {
+        return finish();
+      }
     },
     by_course: function(token, cb) {
       var _this = this;

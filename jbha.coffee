@@ -41,6 +41,9 @@ AccountSchema = new mongoose.Schema
   feedback_given:
     type: Boolean
     default: false
+  migrated:
+    type: Boolean
+    default: true
   updated: # Start off at the beginning of UNIX time so it's initially stale.
     type: Date
     default: new Date 0
@@ -119,10 +122,8 @@ Jbha.Client =
 
     post_data = querystring.stringify
       Email: "#{username}@jbha.org"
-      Passwd: password || "kakster96"
+      Passwd: password
       Action: "login"
-
-    console.log post_data
 
     options =
       host: "www.jbha.org"
@@ -136,19 +137,21 @@ Jbha.Client =
       res.on 'end', () =>
         if res.headers.location is "/students/homework.php"
           L username, "Remote authentication succeeded", "info"
+          # TODO: Don't explicitly pass settings as kwargs,
+          # pass the entire settings object for DRY sake.
           Account
             .findOne()
             .where('_id', username)
             .exec (err, account_from_db) =>
               return if @_call_if_truthy err, cb
               cookie = res.headers['set-cookie'][1].split(';')[0]
+
               account = account_from_db or new Account()
               res =
                 token:
                   cookie: cookie
                   username: username
-                is_new: account.is_new
-                migrate: account_from_db && !account_from_db.migrated
+                account: account
               if account_from_db
                 cb null, res
               else
@@ -183,7 +186,7 @@ Jbha.Client =
     Account
       .findOne()
       .where('_id', token.username)
-      .select('nickname details is_new firstrun updated feedback_given')
+      .select('nickname details is_new firstrun updated migrated feedback_given')
       .exec cb
 
   update_settings: (token, settings, cb) ->
@@ -210,17 +213,25 @@ Jbha.Client =
           .remove callback
     ], cb
 
-  _delete_data: (token, account, cb) ->
-    async.parallel [
-      (callback) ->
-        Course
-          .where('owner', account)
-          .remove callback
-      (callback) ->
-        Assignment
-          .where('owner', account)
-          .remove callback
-    ], cb
+  migrate: (token, nuke, cb) ->
+    finish = () ->
+      Account.update _id: token.username,
+        migrated: true,
+        cb
+    if nuke
+      console.log "Herp derp"
+      async.parallel [
+        (callback) ->
+          Course
+            .where('owner', token.username)
+            .remove callback
+        (callback) ->
+          Assignment
+            .where('owner', token.username)
+            .remove callback
+      ], finish
+    else
+      finish()
 
   # JSON-ready dump of an account's courses and assignments
   by_course: (token, cb) ->

@@ -13,9 +13,12 @@ logging      = require "./logging"
 secrets      = require "./secrets"
 
 if process.env.NODE_ENV is "production"
-  mongoose.connect secrets.MONGO_PRODUCTION_URI
+  mongo_uri = secrets.MONGO_PRODUCTION_URI
 else
-  mongoose.connect secrets.MONGO_STAGING_URI
+  mongo_uri = secrets.MONGO_STAGING_URI
+
+mongoose.connect mongo_uri, () ->
+  console.log "Connection established"
 
 String::capitalize = ->
   @charAt(0).toUpperCase() + @slice 1

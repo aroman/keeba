@@ -89,8 +89,8 @@ browserCheck = (req, res, next) ->
   next()
 
 ensureSession = (req, res, next) ->
-  req.token = req.session.token
-  if not req.token
+  console.log req.session
+  if not req.session.token
     console.log "No token"
     res.redirect "/?whence=#{req.url}"
   else

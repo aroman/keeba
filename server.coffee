@@ -35,7 +35,6 @@ app.configure 'development', ->
   io.set "logger", new logging.Logger "SIO"
   # app.use express.logger()
   app.set 'view options', pretty: true
-  console.log "devel"
 
 app.configure 'production', ->
   mode = 'production'
@@ -43,7 +42,6 @@ app.configure 'production', ->
   color = 'green'
   mongo_uri = secrets.MONGO_PRODUCTION_URI
   app.set 'view options', pretty: false
-  console.log "prod"
 
 sessionStore = new MongoStore
   db: 'keeba'
@@ -52,7 +50,8 @@ sessionStore = new MongoStore
   clear_interval: 432000, # 5 days
   () ->
     app.listen port
-   logger.info "Keeba #{package_info.version} serving in #{mode[color]} mode on port #{port.toString().bold}."
+    logger.info "Using database: #{mongo_uri}"
+    logger.info "Keeba #{package_info.version} serving in #{mode[color]} mode on port #{port.toString().bold}."
 
 app.configure ->
   app.use express.cookieParser()
@@ -127,9 +126,9 @@ app.post "/", (req, res) ->
         email: email
     else
       req.session.token = response.token
-      if response.is_new
+      if response.account.is_new
         res.redirect "/setup"
-      else if response.migrate
+      else if !response.account.migrated
         res.redirect "/migrate"
       else
         if whence
@@ -160,12 +159,20 @@ app.get "/logout", (req, res) ->
   res.redirect "/"
 
 app.get "/migrate", ensureSession, hydrateSettings, (req, res) ->
-  if req.settings.migrated is true
+  if req.settings.migrated
     res.redirect "/"
   else
     res.render "migrate"
       appmode: false
       nickname: req.settings.nickname
+
+app.post "/migrate", ensureSession, hydrateSettings, (req, res) ->
+  console.log req.query
+  if req.settings.migrated 
+    res.redirect "/app"
+  else
+    jbha.Client.migrate req.token, req.query.nuke, () ->
+      res.redirect "/app"
 
 app.get "/setup", ensureSession, hydrateSettings, (req, res) ->
   if req.settings.is_new
@@ -187,6 +194,8 @@ app.get "/app*", ensureSession, hydrateSettings, (req, res) ->
   jbha.Client.by_course req.token, (err, courses) ->
     if !req.settings || req.settings.is_new
       res.redirect "/setup"
+    else if !req.settings.migrated
+      res.redirect "/migrate"
     else
       res.render "app"
         appmode: true

@@ -53,10 +53,9 @@
     mongo_uri = secrets.MONGO_STAGING_URI;
     io.set("log level", 3);
     io.set("logger", new logging.Logger("SIO"));
-    app.set('view options', {
+    return app.set('view options', {
       pretty: true
     });
-    return console.log("devel");
   });
 
   app.configure('production', function() {
@@ -64,10 +63,9 @@
     port = process.env.PORT || 80;
     color = 'green';
     mongo_uri = secrets.MONGO_PRODUCTION_URI;
-    app.set('view options', {
+    return app.set('view options', {
       pretty: false
     });
-    return console.log("prod");
   });
 
   sessionStore = new MongoStore({
@@ -76,8 +74,10 @@
     stringify: false,
     clear_interval: 432000
   }, function() {
-    return app.listen(port);
-  }, logger.info("Keeba " + package_info.version + " serving in " + mode[color] + " mode on port " + (port.toString().bold) + "."));
+    app.listen(port);
+    logger.info("Using database: " + mongo_uri);
+    return logger.info("Keeba " + package_info.version + " serving in " + mode[color] + " mode on port " + (port.toString().bold) + ".");
+  });
 
   app.configure(function() {
     app.use(express.cookieParser());
@@ -174,9 +174,9 @@
         });
       } else {
         req.session.token = response.token;
-        if (response.is_new) {
+        if (response.account.is_new) {
           return res.redirect("/setup");
-        } else if (response.migrate) {
+        } else if (!response.account.migrated) {
           return res.redirect("/migrate");
         } else {
           if (whence) {
@@ -222,12 +222,23 @@
   });
 
   app.get("/migrate", ensureSession, hydrateSettings, function(req, res) {
-    if (req.settings.migrated === true) {
+    if (req.settings.migrated) {
       return res.redirect("/");
     } else {
       return res.render("migrate", {
         appmode: false,
         nickname: req.settings.nickname
+      });
+    }
+  });
+
+  app.post("/migrate", ensureSession, hydrateSettings, function(req, res) {
+    console.log(req.query);
+    if (req.settings.migrated) {
+      return res.redirect("/app");
+    } else {
+      return jbha.Client.migrate(req.token, req.query.nuke, function() {
+        return res.redirect("/app");
       });
     }
   });
@@ -260,6 +271,8 @@
     return jbha.Client.by_course(req.token, function(err, courses) {
       if (!req.settings || req.settings.is_new) {
         return res.redirect("/setup");
+      } else if (!req.settings.migrated) {
+        return res.redirect("/migrate");
       } else {
         return res.render("app", {
           appmode: true,

@@ -33,7 +33,7 @@ app.configure 'development', ->
   mongo_uri = secrets.MONGO_STAGING_URI
   io.set "log level", 3
   io.set "logger", new logging.Logger "SIO"
-  # app.use express.logger()
+  app.use express.logger()
   app.set 'view options', pretty: true
 
 app.configure 'production', ->
@@ -43,6 +43,8 @@ app.configure 'production', ->
   mongo_uri = secrets.MONGO_PRODUCTION_URI
   app.set 'view options', pretty: false
 
+logger.info "Using database: #{mongo_uri}"
+
 sessionStore = new MongoStore
   db: 'keeba'
   url: mongo_uri
@@ -50,7 +52,6 @@ sessionStore = new MongoStore
   clear_interval: 432000, # 5 days
   () ->
     app.listen port
-    logger.info "Using database: #{mongo_uri}"
     logger.info "Keeba #{package_info.version} serving in #{mode[color]} mode on port #{port.toString().bold}."
 
 app.configure ->
@@ -126,7 +127,6 @@ app.post "/", (req, res) ->
         email: email
     else
       req.session.token = response.token
-      console.log req.session.token
       if response.account.is_new
         res.redirect "/setup"
       else if !response.account.migrated
@@ -168,7 +168,6 @@ app.get "/migrate", ensureSession, hydrateSettings, (req, res) ->
       nickname: req.settings.nickname
 
 app.post "/migrate", ensureSession, hydrateSettings, (req, res) ->
-  console.log req.query
   if req.settings.migrated 
     res.redirect "/app"
   else
@@ -183,13 +182,14 @@ app.get "/setup", ensureSession, hydrateSettings, (req, res) ->
   else
     res.redirect "/"
 
-app.post "/setup", ensureSession, (req, res) ->
-  settings =
-    firstrun: true
+app.post "/setup", ensureSession, hydrateSettings, (req, res) ->
+  settings = req.settings
+  settings.firstrun = true
+
   if req.body.nickname
     settings.nickname = req.body.nickname
   jbha.Client.update_settings req.token, settings, ->
-    res.redirect "/"
+    res.redirect "/app"
 
 app.get "/app*", ensureSession, hydrateSettings, (req, res) ->
   jbha.Client.by_course req.token, (err, courses) ->

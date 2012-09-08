@@ -38,12 +38,12 @@ AccountSchema = new mongoose.Schema
   details:
     type: Boolean
     default: true
-  feedback_given:
-    type: Boolean
-    default: false
   migrated:
     type: Boolean
     default: true
+  feedback_given:
+    type: Boolean
+    default: false
   updated: # Start off at the beginning of UNIX time so it's initially stale.
     type: Date
     default: new Date 0
@@ -218,9 +218,8 @@ Jbha.Client =
       Account.update _id: token.username,
         migrated: true,
         cb
-        
+
     if nuke
-      console.log "Herp derp"
       async.parallel [
         (callback) ->
           Course

@@ -48,13 +48,13 @@
       type: Boolean,
       "default": true
     },
-    feedback_given: {
-      type: Boolean,
-      "default": false
-    },
     migrated: {
       type: Boolean,
       "default": true
+    },
+    feedback_given: {
+      type: Boolean,
+      "default": false
     },
     updated: {
       type: Date,
@@ -252,7 +252,6 @@
         }, cb);
       };
       if (nuke) {
-        console.log("Herp derp");
         return async.parallel([
           function(callback) {
             return Course.where('owner', token.username).remove(callback);

@@ -175,6 +175,7 @@
         });
       } else {
         req.session.token = response.token;
+        console.log(response);
         if (response.account.is_new) {
           return res.redirect("/setup");
         } else if (!response.account.migrated) {

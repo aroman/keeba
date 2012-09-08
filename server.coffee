@@ -127,6 +127,7 @@ app.post "/", (req, res) ->
         email: email
     else
       req.session.token = response.token
+      console.log response
       if response.account.is_new
         res.redirect "/setup"
       else if !response.account.migrated

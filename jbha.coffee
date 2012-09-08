@@ -218,6 +218,7 @@ Jbha.Client =
       Account.update _id: token.username,
         migrated: true,
         cb
+        
     if nuke
       console.log "Herp derp"
       async.parallel [

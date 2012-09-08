@@ -125,8 +125,8 @@
   };
 
   ensureSession = function(req, res, next) {
-    req.token = req.session.token;
-    if (!req.token) {
+    console.log(req.session);
+    if (!req.session.token) {
       console.log("No token");
       return res.redirect("/?whence=" + req.url);
     } else {

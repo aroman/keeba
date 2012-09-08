@@ -125,9 +125,8 @@
   };
 
   ensureSession = function(req, res, next) {
-    console.log(req.session);
-    if (!req.session.token) {
-      console.log("No token");
+    req.token = req.session.token;
+    if (!req.token) {
       return res.redirect("/?whence=" + req.url);
     } else {
       return next();
@@ -175,14 +174,13 @@
         });
       } else {
         req.session.token = response.token;
-        console.log(response);
+        console.log(req.session.token);
         if (response.account.is_new) {
           return res.redirect("/setup");
         } else if (!response.account.migrated) {
           return res.redirect("/migrate");
         } else {
           if (whence) {
-            console.log("Whencing");
             return res.redirect(whence);
           } else {
             return res.redirect("/app");

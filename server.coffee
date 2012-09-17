@@ -10,6 +10,7 @@ express    = require "express"
 socketio   = require "socket.io"
 hbpc       = require "handlebars-precompiler"
 MongoStore = require("connect-mongo")(express)
+RedisStore = require("connect-redis")(express)
 
 jbha       = require "./jbha"
 logging    = require "./logging"
@@ -45,14 +46,24 @@ app.configure 'production', ->
 
 logger.info "Using database: #{mongo_uri}"
 
-sessionStore = new MongoStore
-  db: 'keeba'
-  url: mongo_uri
-  stringify: false
-  clear_interval: 60 * 60 * 5, # Every 5 hours
-  () ->
-    app.listen port
-    logger.info "Keeba #{package_info.version} serving in #{mode[color]} mode on port #{port.toString().bold}."
+# sessionStore = new MongoStore
+#   db: 'keeba'
+#   url: mongo_uri
+#   stringify: false
+#   clear_interval: 60 * 60 * 5, # Every 5 hours
+#   () ->
+#     app.listen port
+#     logger.info "Keeba #{package_info.version} serving in #{mode[color]} mode on port #{port.toString().bold}."
+
+sessionStore = new RedisStore
+  db: 'aviromanoff'
+  port: 9306
+  pass: 'de93b2b1ea63993ee21dbcdb330a7a4a'
+  host: 'fish.redistogo.com'
+  ttl: 60
+
+app.listen port
+logger.info "Keeba #{package_info.version} serving in #{mode[color]} mode on port #{port.toString().bold}."
 
 app.configure ->
   app.use express.cookieParser()

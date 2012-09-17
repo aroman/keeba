@@ -49,7 +49,7 @@ sessionStore = new MongoStore
   db: 'keeba'
   url: mongo_uri
   stringify: false
-  clear_interval: 432000, # 5 days
+  clear_interval: 60 * 60 * 5, # Every 5 hours
   () ->
     app.listen port
     logger.info "Keeba #{package_info.version} serving in #{mode[color]} mode on port #{port.toString().bold}."

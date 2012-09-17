@@ -33,7 +33,7 @@ app.configure 'development', ->
   mongo_uri = secrets.MONGO_STAGING_URI
   io.set "log level", 3
   io.set "logger", new logging.Logger "SIO"
-  app.use express.logger()
+  # app.use express.logger()
   app.set 'view options', pretty: true
 
 app.configure 'production', ->
@@ -90,6 +90,8 @@ browserCheck = (req, res, next) ->
   next()
 
 ensureSession = (req, res, next) ->
+  console.log express.session.store
+  console.log express.session.session
   console.log req.session
   if not req.session.token
     res.redirect "/?whence=#{req.url}"
@@ -97,7 +99,7 @@ ensureSession = (req, res, next) ->
     next()
 
 hydrateSettings = (req, res, next) ->
-  jbha.Client.read_settings req.token, (err, settings) ->
+  jbha.Client.read_settings req.session.token, (err, settings) ->
     req.settings = settings
     if not settings
       req.session.destroy()
@@ -105,9 +107,8 @@ hydrateSettings = (req, res, next) ->
     next()
 
 app.get "/", browserCheck, (req, res) ->
-  token = req.session.token
-  if token
-    jbha.Client.read_settings token, (err, settings) ->
+  if req.session.token
+    jbha.Client.read_settings req.session.token, (err, settings) ->
       res.redirect "/app"
   else
     res.render "index"
@@ -175,7 +176,7 @@ app.post "/migrate", ensureSession, hydrateSettings, (req, res) ->
   if req.settings.migrated 
     res.redirect "/app"
   else
-    jbha.Client.migrate req.token, req.query.nuke, () ->
+    jbha.Client.migrate req.session.token, req.query.nuke, () ->
       res.redirect "/app"
 
 app.get "/setup", ensureSession, hydrateSettings, (req, res) ->
@@ -192,12 +193,12 @@ app.post "/setup", ensureSession, hydrateSettings, (req, res) ->
 
   if req.body.nickname
     settings.nickname = req.body.nickname
-  jbha.Client.update_settings req.token, settings, ->
+  jbha.Client.update_settings req.session.token, settings, ->
     res.redirect "/app"
 
 app.get "/app*", ensureSession, hydrateSettings, (req, res) ->
-  console.log "Iin the /app* handler"
-  jbha.Client.by_course req.token, (err, courses) ->
+  console.log "In the /app* handler"
+  jbha.Client.by_course req.session.token, (err, courses) ->
     if !req.settings || req.settings.is_new
       res.redirect "/setup"
     else if !req.settings.migrated

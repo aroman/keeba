@@ -9,7 +9,7 @@ connect    = require "connect"
 express    = require "express"
 socketio   = require "socket.io"
 hbpc       = require "handlebars-precompiler"
-MongoStore = require("connect-mongo")(express)
+# MongoStore = require("connect-mongo")(express)
 RedisStore = require("connect-redis")(express)
 
 jbha       = require "./jbha"

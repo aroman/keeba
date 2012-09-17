@@ -90,8 +90,6 @@ browserCheck = (req, res, next) ->
   next()
 
 ensureSession = (req, res, next) ->
-  console.log express.session.store
-  console.log express.session.session
   console.log req.session
   if not req.session.token
     res.redirect "/?whence=#{req.url}"
@@ -128,6 +126,8 @@ app.post "/", (req, res) ->
         email: email
     else
       req.session.token = response.token
+      req.session.foo = "bar"
+      console.log req.session
       if response.account.is_new
         console.log "In POST / handler, response.account.is_new"
         res.redirect "/setup"

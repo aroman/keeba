@@ -126,8 +126,6 @@
   };
 
   ensureSession = function(req, res, next) {
-    console.log(express.session.store);
-    console.log(express.session.session);
     console.log(req.session);
     if (!req.session.token) {
       return res.redirect("/?whence=" + req.url);
@@ -175,6 +173,8 @@
         });
       } else {
         req.session.token = response.token;
+        req.session.foo = "bar";
+        console.log(req.session);
         if (response.account.is_new) {
           console.log("In POST / handler, response.account.is_new");
           return res.redirect("/setup");

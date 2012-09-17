@@ -53,7 +53,6 @@
     mongo_uri = secrets.MONGO_STAGING_URI;
     io.set("log level", 3);
     io.set("logger", new logging.Logger("SIO"));
-    app.use(express.logger());
     return app.set('view options', {
       pretty: true
     });
@@ -127,6 +126,8 @@
   };
 
   ensureSession = function(req, res, next) {
+    console.log(express.session.store);
+    console.log(express.session.session);
     console.log(req.session);
     if (!req.session.token) {
       return res.redirect("/?whence=" + req.url);
@@ -136,7 +137,7 @@
   };
 
   hydrateSettings = function(req, res, next) {
-    return jbha.Client.read_settings(req.token, function(err, settings) {
+    return jbha.Client.read_settings(req.session.token, function(err, settings) {
       req.settings = settings;
       if (!settings) {
         req.session.destroy();
@@ -147,10 +148,8 @@
   };
 
   app.get("/", browserCheck, function(req, res) {
-    var token;
-    token = req.session.token;
-    if (token) {
-      return jbha.Client.read_settings(token, function(err, settings) {
+    if (req.session.token) {
+      return jbha.Client.read_settings(req.session.token, function(err, settings) {
         return res.redirect("/app");
       });
     } else {
@@ -242,7 +241,7 @@
     if (req.settings.migrated) {
       return res.redirect("/app");
     } else {
-      return jbha.Client.migrate(req.token, req.query.nuke, function() {
+      return jbha.Client.migrate(req.session.token, req.query.nuke, function() {
         return res.redirect("/app");
       });
     }
@@ -266,14 +265,14 @@
     if (req.body.nickname) {
       settings.nickname = req.body.nickname;
     }
-    return jbha.Client.update_settings(req.token, settings, function() {
+    return jbha.Client.update_settings(req.session.token, settings, function() {
       return res.redirect("/app");
     });
   });
 
   app.get("/app*", ensureSession, hydrateSettings, function(req, res) {
-    console.log("Iin the /app* handler");
-    return jbha.Client.by_course(req.token, function(err, courses) {
+    console.log("In the /app* handler");
+    return jbha.Client.by_course(req.session.token, function(err, courses) {
       if (!req.settings || req.settings.is_new) {
         return res.redirect("/setup");
       } else if (!req.settings.migrated) {

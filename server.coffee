@@ -90,8 +90,8 @@ browserCheck = (req, res, next) ->
   next()
 
 ensureSession = (req, res, next) ->
-  req.token = req.session.token
-  if not req.token
+  console.log req.session
+  if not req.session.token
     res.redirect "/?whence=#{req.url}"
   else
     next()
@@ -128,13 +128,17 @@ app.post "/", (req, res) ->
     else
       req.session.token = response.token
       if response.account.is_new
+        console.log "In POST / handler, response.account.is_new"
         res.redirect "/setup"
       else if !response.account.migrated
+        console.log "In POST / handler, !response.account.migrated"
         res.redirect "/migrate"
       else
         if whence
+          console.log "In POST / handler, whence == true; redirecting."
           res.redirect whence
         else
+          console.log "In POST / handler, whence == false; redirecting."
           res.redirect "/app"
  
 app.get "/about", (req, res) ->
@@ -192,6 +196,7 @@ app.post "/setup", ensureSession, hydrateSettings, (req, res) ->
     res.redirect "/app"
 
 app.get "/app*", ensureSession, hydrateSettings, (req, res) ->
+  console.log "Iin the /app* handler"
   jbha.Client.by_course req.token, (err, courses) ->
     if !req.settings || req.settings.is_new
       res.redirect "/setup"

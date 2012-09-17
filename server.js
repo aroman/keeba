@@ -127,8 +127,8 @@
   };
 
   ensureSession = function(req, res, next) {
-    req.token = req.session.token;
-    if (!req.token) {
+    console.log(req.session);
+    if (!req.session.token) {
       return res.redirect("/?whence=" + req.url);
     } else {
       return next();
@@ -177,13 +177,17 @@
       } else {
         req.session.token = response.token;
         if (response.account.is_new) {
+          console.log("In POST / handler, response.account.is_new");
           return res.redirect("/setup");
         } else if (!response.account.migrated) {
+          console.log("In POST / handler, !response.account.migrated");
           return res.redirect("/migrate");
         } else {
           if (whence) {
+            console.log("In POST / handler, whence == true; redirecting.");
             return res.redirect(whence);
           } else {
+            console.log("In POST / handler, whence == false; redirecting.");
             return res.redirect("/app");
           }
         }
@@ -268,6 +272,7 @@
   });
 
   app.get("/app*", ensureSession, hydrateSettings, function(req, res) {
+    console.log("Iin the /app* handler");
     return jbha.Client.by_course(req.token, function(err, courses) {
       if (!req.settings || req.settings.is_new) {
         return res.redirect("/setup");

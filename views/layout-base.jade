@@ -13,6 +13,7 @@ html(lang='en')
     link(rel='stylesheet', href='/css/bootstrap-datepicker.css')
     link(rel='stylesheet', href='/css/app.css')
     link(rel='stylesheet', href='/css/bootstrap-responsive.css')
+    block styles
     script(type="text/javascript")
       var _gaq = _gaq || [];
       _gaq.push(['_setAccount', 'UA-30720266-1']);
@@ -44,62 +45,15 @@ html(lang='en')
                 a(target="_self", href="/help", data-bypass) Help
               li.nav-link
                 a(target="_blank", href="http://keeba-blog.tumblr.com", data-bypass) News + Blog 
-            if appmode
-              ul.nav.pull-right
-                li.dropdown(data-dropdown='dropdown')
-                  a#sort-dropdown.dropdown-toggle(target='_self', data-toggle="dropdown", data-bypass, href='#')
-                    | Options
-                    b.caret
-                  ul.dropdown-menu
-                    li
-                      a#toggle-archived(target='_self', href="") Show archived
-                    li
-                      a#toggle-details(target='_self', href="") Show details
-                    li.divider
-                    li
-                      a#settings(href="settings", data-bypass) 
-                        i.icon-wrench
-                        |  Settings
-                    li
-                      a#shortcuts(href="shortcuts", data-bypass) 
-                        i.icon-list-alt
-                        |  Shortcuts
-                    li
-                      a#force-refresh(target='_self', href="", data-bypass)
-                        i.icon-refresh
-                        |  Refresh
-                    li.divider
-                    li
-                      a#logout(target='_self', href='/logout', data-bypass)
-                        i.icon-off
-                        |  Log out
+            block navbar
     
     script(src='/js/lib/jquery.js')
     script(src='/js/lib/jquery-ui.min.js')
     script(src='/js/lib/bootstrap.js')
-    script(src='/js/lib/bootstrap-datepicker.js')
     
-    if appmode
-      // Rather than changing all of the homework HTML links to 
-         `_blank` with a regex (which would be pretty messy), I 
-         cheat by defaulting to `_blank` and special-casing the 
-         site's legitamite, same-page links with `_self`. 
-      base(target='_blank')
-
-      // Libraries
-      script(src='/socket.io/socket.io.js')
-      script(src='/js/lib/moment.js')
-      script(src='/js/lib/keymaster.js')
-      script(src='/js/lib/underscore.js')
-      script(src='/js/lib/backbone.js')
-      script(src='/js/lib/backbone-relational.js')
-      script(src='/js/lib/backbone-query.js')
-      script(src='/js/lib/backbone-iobind.js')
-      script(src='/js/lib/backbone-iosync.js')
-      script(src='/js/lib/handlebars.runtime.js')
-      script(src='/js/templates.min.js')
-      include modals
-    !{body}
+    block scripts
+    
+    block content
     include footer
 
 script(type="text/javascript")

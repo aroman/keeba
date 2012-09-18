@@ -1,108 +1,111 @@
-.container
-  .hero-unit(style="text-align:center")
-    h1 I make homework fun.
-    br
-    p
-      | Okay, not really. But I do make it about 42 billion times easier to deal with.
+extends layout-base
+
+block content
+  .container
+    .hero-unit(style="text-align:center")
+      h1 I make homework fun.
       br
-      | How? Glad you asked.
-  #ad.modal.hide.fade
-      iframe(src="http://www.youtube.com/embed/AeKnnZhkTQI?fmt=22", style="margin-bottom: -5px", width=560, height=480, frameborder=0, allowfullscreen)
-  .centex
-   .btn.btn-large.btn-inverse(style="margin-bottom: 30px", data-toggle="modal", href="#ad") Watch the ad &raquo;
-  .row
-    .span6
-      img.block-icon(src="/img/glyph/zap-glyph.png")
-      h2 Simplify homework.
       p
-        | Homework comes at you from all directions.
-        | Keeping up with the online assignments,
-        | your planner, email, and extracurriculars can
-        | become frustrating and time-consuming.
-        | I hold 
-        b everything in one place 
-        | so you know exactly
-        | what you need to do and when you need to do it.
+        | Okay, not really. But I do make it about 42 billion times easier to deal with.
         br
-        br
-        | No need to log in every 20 minutes and refresh three times
-        | a night or flip through planner pages &mdash; I've got you covered.
-    .span6
-      img.block-icon(src="/img/glyph/todo.png")
-      h2 Prioritize your workload.
-      p
-        | Don't just look at your homework, 
-        i do 
-        | it. History paper done? Check it off.
-        | Math test postponed to Thursday? Move it.
-        | JS teacher emailed you some homework?
-        | Add it in. Want to keep track of work for clubs?
-        | Just add a new course.
-        br
-        br
-        | I let you 
-        b spend less time 
-        | finding and managing
-        | your homework so you can focus on actually doing it.
-  br
-  .row
-    .span12(style="text-align:center")
-      img(src="/img/screenshot.png")
-  br
-  .row
-    .span6
-      img.block-icon(src="/img/glyph/bow.png")
-      h2 Plan your attack.
-      p
-        | Having a good grasp of the day, week, or month
-        | ahead is essential in keeping yourself organized.
-        | I let you 
-        b organize your work 
-        | the way you find best
-        | &mdash; by course or by date.
-        br
-        br
-        | See what's due tomorrow, due next week, or overdue
-        | instantly, without resorting to sticky notes or
-        | clunky software.
-    .span6
-      img.block-icon(src="/img/glyph/stopwatch.png")
-      h2 Get work done faster.
-      p
-        | With the tools to edit, organize, and sort your
-        | homework at your fingertips, you'll be more efficient
-        | than ever before. Changes are applied in 
-        b real time 
-        | to every device you're on.
-        br
-        br
-        | So when you come home after working at school, I'm
-        | up-to-date and ready to go. And you can get
-        | back to doing what 
-        i you 
-        | want to do.
-  br
-  .row
-    .span12(style="text-align:center")
-      h1 Testimonials
-  br
-  .row
-    .span12(style="text-align:center")
-      h3 "I thought ShamWow! was cool... until I tried Keeba."
-      p
-      img.about-image(src="/img/shamwow.jpg")
-      blockquote
+        | How? Glad you asked.
+    #ad.modal.hide.fade
+        iframe(src="http://www.youtube.com/embed/AeKnnZhkTQI?fmt=22", style="margin-bottom: -5px", width=560, height=480, frameborder=0, allowfullscreen)
+    .centex
+     .btn.btn-large.btn-inverse(style="margin-bottom: 30px", data-toggle="modal", href="#ad") Watch the ad &raquo;
+    .row
+      .span6
+        img.block-icon(src="/img/glyph/zap-glyph.png")
+        h2 Simplify homework.
         p
-        small Vince "The ShamWow Guy" Offer *
-  br
-  div(style="text-align:center")
-    a.btn.btn-primary.btn-large(href="/")
-      i.icon-ok.icon-white
-      |  Alright, I'm sold.
+          | Homework comes at you from all directions.
+          | Keeping up with the online assignments,
+          | your planner, email, and extracurriculars can
+          | become frustrating and time-consuming.
+          | I hold 
+          b everything in one place 
+          | so you know exactly
+          | what you need to do and when you need to do it.
+          br
+          br
+          | No need to log in every 20 minutes and refresh three times
+          | a night or flip through planner pages &mdash; I've got you covered.
+      .span6
+        img.block-icon(src="/img/glyph/todo.png")
+        h2 Prioritize your workload.
+        p
+          | Don't just look at your homework, 
+          i do 
+          | it. History paper done? Check it off.
+          | Math test postponed to Thursday? Move it.
+          | JS teacher emailed you some homework?
+          | Add it in. Want to keep track of work for clubs?
+          | Just add a new course.
+          br
+          br
+          | I let you 
+          b spend less time 
+          | finding and managing
+          | your homework so you can focus on actually doing it.
     br
-    small
-      | (Back to the home page)
-  br
-  br
-  small(style="color:gray")
-    | * Okay he didn't actually say this. Please don't sue me :)
+    .row
+      .span12(style="text-align:center")
+        img(src="/img/screenshot.png")
+    br
+    .row
+      .span6
+        img.block-icon(src="/img/glyph/bow.png")
+        h2 Plan your attack.
+        p
+          | Having a good grasp of the day, week, or month
+          | ahead is essential in keeping yourself organized.
+          | I let you 
+          b organize your work 
+          | the way you find best
+          | &mdash; by course or by date.
+          br
+          br
+          | See what's due tomorrow, due next week, or overdue
+          | instantly, without resorting to sticky notes or
+          | clunky software.
+      .span6
+        img.block-icon(src="/img/glyph/stopwatch.png")
+        h2 Get work done faster.
+        p
+          | With the tools to edit, organize, and sort your
+          | homework at your fingertips, you'll be more efficient
+          | than ever before. Changes are applied in 
+          b real time 
+          | to every device you're on.
+          br
+          br
+          | So when you come home after working at school, I'm
+          | up-to-date and ready to go. And you can get
+          | back to doing what 
+          i you 
+          | want to do.
+    br
+    .row
+      .span12(style="text-align:center")
+        h1 Testimonials
+    br
+    .row
+      .span12(style="text-align:center")
+        h3 "I thought ShamWow! was cool... until I tried Keeba."
+        p
+        img.about-image(src="/img/shamwow.jpg")
+        blockquote
+          p
+          small Vince "The ShamWow Guy" Offer *
+    br
+    div(style="text-align:center")
+      a.btn.btn-primary.btn-large(href="/")
+        i.icon-ok.icon-white
+        |  Alright, I'm sold.
+      br
+      small
+        | (Back to the home page)
+    br
+    br
+    small(style="color:gray")
+      | * Okay he didn't actually say this. Please don't sue me :)

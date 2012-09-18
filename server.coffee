@@ -1,26 +1,33 @@
 # Copyright (C) 2012 Avi Romanoff <aviromanoff at gmail.com>
 
-_          = require "underscore"
+# Node modules
 fs         = require "fs"
 os         = require "os"
 cp         = require "child_process"
+http       = require "http"
+
+# 3rd party modules
+_          = require "underscore"
+hbpc       = require "handlebars-precompiler"
 colors     = require "colors"
 connect    = require "connect"
 express    = require "express"
+ssockets   = require "session.socket.io"
 socketio   = require "socket.io"
-hbpc       = require "handlebars-precompiler"
-# MongoStore = require("connect-mongo")(express)
-RedisStore = require("connect-redis")(express)
+MongoStore = require("connect-mongo")(express)
 
+# Internal modules
 jbha       = require "./jbha"
 logging    = require "./logging"
 secrets    = require "./secrets"
 
+# Create machinery
+app = express()
+server = http.createServer app
+io = socketio.listen server, log: false
+ss = new ssockets io, sessionStore, express.cookieParser
 logger = new logging.Logger "SRV"
 package_info = JSON.parse(fs.readFileSync "#{__dirname}/package.json", "utf-8")
-
-app = express.createServer()
-io = socketio.listen app, log: false
 
 mode = null
 port = null
@@ -35,7 +42,7 @@ app.configure 'development', ->
   io.set "log level", 3
   io.set "logger", new logging.Logger "SIO"
   # app.use express.logger()
-  app.set 'view options', pretty: true
+  app.locals.pretty = true # Enable Jade pretty-printing
 
 app.configure 'production', ->
   mode = 'production'
@@ -44,34 +51,21 @@ app.configure 'production', ->
   mongo_uri = secrets.MONGO_PRODUCTION_URI
   app.set 'view options', pretty: false
 
-logger.info "Using database: #{mongo_uri}"
-
-# sessionStore = new MongoStore
-#   db: 'keeba'
-#   url: mongo_uri
-#   stringify: false
-#   clear_interval: 60 * 60 * 5, # Every 5 hours
-#   () ->
-#     app.listen port
-#     logger.info "Keeba #{package_info.version} serving in #{mode[color]} mode on port #{port.toString().bold}."
-
-sessionStore = new RedisStore
-  db: 'aviromanoff'
-  port: 9306
-  pass: 'de93b2b1ea63993ee21dbcdb330a7a4a'
-  host: 'fish.redistogo.com'
-  ttl: 60
-
-app.listen port
-logger.info "Keeba #{package_info.version} serving in #{mode[color]} mode on port #{port.toString().bold}."
+sessionStore = new MongoStore
+  db: 'keeba'
+  url: mongo_uri
+  stringify: false
+  clear_interval: 60 * 60 * 5, # Every 5 hours
+  () ->
+    server.listen port
+    logger.info "Keeba #{package_info.version} serving in #{mode[color]} mode on port #{port.toString().bold}."
 
 app.configure ->
-  app.use express.cookieParser()
+  app.use express.cookieParser secrets.SESSION_SECRET
   app.use express.bodyParser()
   hbpc.watchDir "#{__dirname}/views/templates", "#{__dirname}/static/js/templates.min.js", ['handlebars']
   app.use express.session
     store: sessionStore
-    secret: secrets.SESSION_SECRET
     key: "express.sid"
   app.use app.router
   app.use express.static "#{__dirname}/static"
@@ -79,14 +73,10 @@ app.configure ->
   app.set 'view engine', 'jade'
   app.set 'views', "#{__dirname}/views"
 
-app.dynamicHelpers
-  version: (req, res) ->
-    return package_info.version
-  development_build: (req, res) ->
-    if mode is 'development'
-      return true
-    else
-      return false
+logger.info "Using database: #{mongo_uri}"
+
+app.locals.version = package_info.version
+app.locals.development_build = mode is 'development'
 
 # Redirect requests coming from
 # unsupported browsers to landing
@@ -224,34 +214,9 @@ app.get "/app*", ensureSession, hydrateSettings, (req, res) ->
         settings: JSON.stringify req.settings
         info: package_info
 
-# Never allow WebSockets
-io.set 'transports', [
-  'xhr-polling'
-  'jsonp-polling'
-  'htmlfile'
-]
-
-# Bridge express and socket.io sessions
-io.set "authorization", (data, accept) ->
-  if data.headers.cookie
-    data.cookie = connect.utils.parseCookie data.headers.cookie
-    data.sessionID = data.cookie['express.sid']
-    data.sessionStore = sessionStore
-    sessionStore.get data.sessionID, (err, session) ->
-      if err
-        accept err.message.toString(), false
-      else
-        data.session = new connect.middleware.session.Session data, session
-        if not data.session.token
-          accept "No session token", false
-        else
-          accept null, true
-  else
-    accept "No cookie transmitted.", false
-
 workers = {}
 
-io.sockets.on "connection", (socket) ->
+ss.on "connection", (socket) ->
   token = socket.handshake.session.token
   socket.join token.username
 

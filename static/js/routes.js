@@ -10,6 +10,7 @@ var KeebaRouter = Backbone.Router.extend({
 
   home: function () {
     $("#content").html(Handlebars.templates.home());
+    window.document.title = "Keeba";
   },
 
   course: function (id) {
@@ -25,6 +26,7 @@ var KeebaRouter = Backbone.Router.extend({
 
     this.current_view = new SectionView({model: course});
 
+    window.document.title = course.get('title');
     $("#content").html(this.current_view.render().el);
     this.trigger("highlight");
   },
@@ -46,6 +48,7 @@ var KeebaRouter = Backbone.Router.extend({
       range: {start: date.start, end: date.end}
     });
 
+    window.document.title = date.name;
     $("#content").html(this.current_view.render().el);
     this.trigger("highlight");
   }

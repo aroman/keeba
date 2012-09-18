@@ -25,9 +25,15 @@ secrets    = require "./secrets"
 app = express()
 server = http.createServer app
 io = socketio.listen server, log: false
-ss = new ssockets io, sessionStore, express.cookieParser
 logger = new logging.Logger "SRV"
 package_info = JSON.parse(fs.readFileSync "#{__dirname}/package.json", "utf-8")
+
+# Never allow WebSockets
+io.set 'transports', [
+  'xhr-polling'
+  'jsonp-polling'
+  'htmlfile'
+]
 
 mode = null
 port = null
@@ -60,13 +66,14 @@ sessionStore = new MongoStore
     server.listen port
     logger.info "Keeba #{package_info.version} serving in #{mode[color]} mode on port #{port.toString().bold}."
 
+cookie_parser = express.cookieParser secrets.SESSION_SECRET
+ss = new ssockets io, sessionStore, cookie_parser
+
 app.configure ->
-  app.use express.cookieParser secrets.SESSION_SECRET
+  app.use cookie_parser
   app.use express.bodyParser()
   hbpc.watchDir "#{__dirname}/views/templates", "#{__dirname}/static/js/templates.min.js", ['handlebars']
-  app.use express.session
-    store: sessionStore
-    key: "express.sid"
+  app.use express.session(store: sessionStore)
   app.use app.router
   app.use express.static "#{__dirname}/static"
   app.use express.errorHandler(dumpExceptions: true, showStack: true)
@@ -91,7 +98,6 @@ browserCheck = (req, res, next) ->
   next()
 
 ensureSession = (req, res, next) ->
-  console.log req.session
   if not req.session.token
     res.redirect "/?whence=#{req.url}"
   else
@@ -127,20 +133,14 @@ app.post "/", (req, res) ->
         email: email
     else
       req.session.token = response.token
-      req.session.foo = "bar"
-      console.log req.session
       if response.account.is_new
-        console.log "In POST / handler, response.account.is_new"
         res.redirect "/setup"
       else if !response.account.migrated
-        console.log "In POST / handler, !response.account.migrated"
         res.redirect "/migrate"
       else
         if whence
-          console.log "In POST / handler, whence == true; redirecting."
           res.redirect whence
         else
-          console.log "In POST / handler, whence == false; redirecting."
           res.redirect "/app"
  
 app.get "/about", (req, res) ->
@@ -198,7 +198,6 @@ app.post "/setup", ensureSession, hydrateSettings, (req, res) ->
     res.redirect "/app"
 
 app.get "/app*", ensureSession, hydrateSettings, (req, res) ->
-  console.log "In the /app* handler"
   jbha.Client.by_course req.session.token, (err, courses) ->
     if !req.settings || req.settings.is_new
       res.redirect "/setup"
@@ -216,8 +215,8 @@ app.get "/app*", ensureSession, hydrateSettings, (req, res) ->
 
 workers = {}
 
-ss.on "connection", (socket) ->
-  token = socket.handshake.session.token
+ss.on "connection", (err, socket, session) ->
+  token = session.token
   socket.join token.username
 
   L = (message, urgency="debug") ->

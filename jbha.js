@@ -154,6 +154,7 @@
         Passwd: password,
         Action: "login"
       });
+      console.log(post_data);
       options = {
         host: "www.jbha.org",
         path: "/students/index.php",

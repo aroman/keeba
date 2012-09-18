@@ -127,6 +127,8 @@ Jbha.Client =
       Email: "#{username}@jbha.org"
       Passwd: password
       Action: "login"
+      
+    console.log post_data
 
     options =
       host: "www.jbha.org"

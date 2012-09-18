@@ -74,7 +74,7 @@ UPCOMING_DATES = [
   {
     name: "All Assignments",
     link: "all",
-    start: today.valueOf(),
+    start: big_bang.valueOf(),
     end: doomsday.valueOf()
   }
 ];

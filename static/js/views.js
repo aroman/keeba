@@ -436,7 +436,7 @@ AssignmentView = Backbone.View.extend({
     // Set the `course` field to be the course's
     // title, not it's _id.
     context.course = this.model.get('course').get('title');
-
+    
     // Render the template
     this.$el.html(this.template(context));
 

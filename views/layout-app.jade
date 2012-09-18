@@ -1,0 +1,53 @@
+extends layout-base
+
+block navbar
+  ul.nav.pull-right
+    li.dropdown(data-dropdown='dropdown')
+      a#sort-dropdown.dropdown-toggle(target='_self', data-toggle="dropdown", data-bypass, href='#')
+        | Options
+        b.caret
+      ul.dropdown-menu
+        li
+          a#toggle-archived(target='_self', href="") Show archived
+        li
+          a#toggle-details(target='_self', href="") Show details
+        li.divider
+        li
+          a#settings(href="settings", data-bypass) 
+            i.icon-wrench
+            |  Settings
+        li
+          a#shortcuts(href="shortcuts", data-bypass) 
+            i.icon-list-alt
+            |  Shortcuts
+        li
+          a#force-refresh(target='_self', href="", data-bypass)
+            i.icon-refresh
+            |  Refresh
+        li.divider
+        li
+          a#logout(target='_self', href='/logout', data-bypass)
+            i.icon-off
+            |  Log out
+
+block scripts
+  // Rather than changing all of the homework HTML links to 
+     `_blank` with a regex (which would be pretty messy), I 
+     cheat by defaulting to `_blank` and special-casing the 
+     site's legitamite, same-page links with `_self`. 
+  base(target='_blank')
+
+  // Libraries
+  script(src='/socket.io/socket.io.js')
+  script(src='/js/lib/moment.js')
+  script(src='/js/lib/keymaster.js')
+  script(src='/js/lib/underscore.js')
+  script(src='/js/lib/backbone.js')
+  script(src='/js/lib/backbone-relational.js')
+  script(src='/js/lib/backbone-query.js')
+  script(src='/js/lib/backbone-iobind.js')
+  script(src='/js/lib/backbone-iosync.js')
+  script(src='/js/lib/handlebars.runtime.js')
+  script(src='/js/lib/bootstrap-datepicker.js')
+  script(src='/js/templates.min.js')
+  include modals

@@ -1,53 +1,56 @@
-.container-fluid
-  #status
-  .row-fluid
-    .span3
-      .well.sidebar-nav
-        ul#sidebar-upcoming.nav.nav-list
-      .well.sidebar-nav
-        ul#sidebar-courses.nav.nav-list
-    .span9
-      #content
-        .hero-unit.well(style="margin-top:30px; text-align:center;")
-          if firstrun
-            h1#welcome-message Your turn, #{nickname}.
-            br
-            p To get started, just click on a link to the left.
-          else
-            h1#welcome-message Miss me?
-            br
-            p.hidden-phone You know the drill #{nickname}, just click on a link to the left.
-            p.visible-phone You know the drill #{nickname}, just click on a link above.
-          h1.hidden-phone &larr;
-          h1.visible-phone &uarr;
+extends layout-app
 
-// App
-script(src='/js/helpers.js')
-script(src='/js/routes.js')
-script(src='/js/models.js')
-script(src='/js/views.js')
-script
-  window.router = new KeebaRouter ();
+block append scripts
+  script(src='/js/helpers.js')
+  script(src='/js/routes.js')
+  script(src='/js/models.js')
+  script(src='/js/views.js')
 
-  window.socket = io.connect('', {
-    'max reconnection attempts': 5,
-    'reconnection delay': 1000, 
-    'connect timeout': 5000
-  });
+block content
+  .container-fluid
+    #status
+    .row-fluid
+      .span3
+        .well.sidebar-nav
+          ul#sidebar-upcoming.nav.nav-list
+        .well.sidebar-nav
+          ul#sidebar-courses.nav.nav-list
+      .span9
+        #content
+          .hero-unit.well(style="margin-top:30px; text-align:center;")
+            if firstrun
+              h1#welcome-message Your turn, #{nickname}.
+              br
+              p To get started, just click on a link to the left.
+            else
+              h1#welcome-message Miss me?
+              br
+              p.hidden-phone You know the drill #{nickname}, just click on a link to the left.
+              p.visible-phone You know the drill #{nickname}, just click on a link above.
+            h1.hidden-phone &larr;
+            h1.visible-phone &uarr;
+  script
+    window.router = new KeebaRouter ();
 
-  window.courses = new CourseCollection;
-  window.app = new AppView ();
+    window.socket = io.connect('', {
+      'max reconnection attempts': 5,
+      'reconnection delay': 1000, 
+      'connect timeout': 5000
+    });
 
-  window.settings.set(!{settings});
-  window.courses.reset(!{courses});
+    window.courses = new CourseCollection;
+    window.app = new AppView ();
 
-  window.app.updateUpcoming();
-  window.app.updateCourses();
+    window.settings.set(!{settings});
+    window.courses.reset(!{courses});
 
-  if (settings.get('details') === true) {
-    window.app.showDetails()
-  }
+    window.app.updateUpcoming();
+    window.app.updateCourses();
 
-  window.feedbackview = new FeedbackView ();
+    if (settings.get('details') === true) {
+      window.app.showDetails()
+    }
 
-  Backbone.history.start({pushState: true, root: "/app/"});
+    window.feedbackview = new FeedbackView ();
+
+    Backbone.history.start({pushState: true, root: "/app/"});

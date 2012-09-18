@@ -13,7 +13,7 @@
   },
   "subdomain": "keeba",
   "dependencies": {
-    "async": "0.1.21",
+    "async": "0.1.22",
     "chai": "1.0.4",
     "cheerio": "0.7.0",
     "coffee-script": "1.3.3",
@@ -24,7 +24,7 @@
     "handlebars-precompiler": "1.0.0beta",
     "jade": "0.27.2",
     "markdown": "0.3.1",
-    "mongoose": "3.1.1",
+    "mongoose": "3.1.2",
     "moment": "1.7.0",
     "optimist": "0.3.4",
     "session.socket.io": "0.1.0",

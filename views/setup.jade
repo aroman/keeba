@@ -1,60 +1,64 @@
+extends layout-base
+
 block title
   | Setup
 
-.container
-  #setup
-  p
-    .page-header 
-      h1 Success! You're in.
-      span I'll need a few moments to do some 
-        b one-time-only 
-        | setting up.
-  #status(style="margin-top: -10px")
-  form.well(method="POST", target="_self")
-    legend#form-header While we wait, you can set up your account below.
-    h4.control-label Nickname
-    input#nickname.input-large(type="text", size=30, name="nickname", placeholder="Dr. Rabeeya?")
-    p.help-block
-      | anything you want &mdash; it's what i'll call you from now on
-    h4.control-label Terms of Service (please read them)
-    pre
-      :markdown
-        1. **Keeba is not an excuse**
-        While Keeba can be a very helpful and useful tool for managing your school life,
-        that doesn't mean you can blame it for not being responsible with assignments.
-        Your homework is YOUR responsibilty.
+block scripts
+  // Libraries
+  script(src='/socket.io/socket.io.js')
+  script(src='/js/lib/moment.js')
+  script(src='/js/lib/underscore.js')
+  script(src='/js/lib/backbone.js')
+  script(src='/js/lib/backbone-relational.js')
+  script(src='/js/lib/backbone-iobind.js')
+  script(src='/js/lib/backbone-iosync.js')
+  script(src='/js/lib/backbone-query.js')
+  script(src='/js/lib/handlebars.runtime.js')
+  script(src='/js/templates.min.js')
 
-        2. **Keeba is not a replacement**
-        Your planner might not be as interactive and fun as Keeba, but it's still an essential tool. Use it!
+  // App
+  script(src='/js/helpers.js')
+  script(src='/js/models.js')
+  script(src='/js/views.js')
 
-        3. **Keeba is not perfect**
-        Keeba is very stable, but it's still new and might goof up.
-        Please check the [Help section](/help) first if you run into a problem.
-        If you're still having trouble, [let Avi know](mailto:avi.romanoff@jbha.org) and I'll try to help you out if I can.
-    p.help-block
-      | that wasn't so bad, was it?
-    input#gobutton.btn.btn-success(type="submit", value="I agree to the terms. Let's go!", disabled)
+block content
+  .container
+    #setup
+    p
+      .page-header 
+        h1 Success! You're in.
+        span I'll need a few moments to do some 
+          b one-time-only 
+          | setting up.
+    #status(style="margin-top: -10px")
+    form.well(method="POST", target="_self")
+      legend#form-header While we wait, you can set up your account below.
+      h4.control-label Nickname
+      input#nickname.input-large(type="text", size=30, name="nickname", placeholder="Dr. Rabeeya?")
+      p.help-block
+        | anything you want &mdash; it's what i'll call you from now on
+      h4.control-label Terms of Service (please read them)
+      pre
+        :markdown
+          1. **Keeba is not an excuse**
+          While Keeba can be a very helpful and useful tool for managing your school life,
+          that doesn't mean you can blame it for not being responsible with assignments.
+          Your homework is YOUR responsibilty.
 
-// Libraries
-script(src='/socket.io/socket.io.js')
-script(src='/js/lib/moment.js')
-script(src='/js/lib/underscore.js')
-script(src='/js/lib/backbone.js')
-script(src='/js/lib/backbone-relational.js')
-script(src='/js/lib/backbone-iobind.js')
-script(src='/js/lib/backbone-iosync.js')
-script(src='/js/lib/backbone-query.js')
-script(src='/js/lib/handlebars.runtime.js')
-script(src='/js/templates.min.js')
+          2. **Keeba is not a replacement**
+          Your planner might not be as interactive and fun as Keeba, but it's still an essential tool. Use it!
 
-// App
-script(src='/js/helpers.js')
-script(src='/js/models.js')
-script(src='/js/views.js')
+          3. **Keeba is not perfect**
+          Keeba is very stable, but it's still new and might goof up.
+          Please check the [Help section](/help) first if you run into a problem.
+          If you're still having trouble, [let Avi know](mailto:avi.romanoff@jbha.org) and I'll try to help you out if I can.
+      p.help-block
+        | that wasn't so bad, was it?
+      input#gobutton.btn.btn-success(type="submit", value="I agree to the terms. Let's go!", disabled)
 
-script
-  window.socket = io.connect('', {reconnect: false});
-  // Create models & collections.
-  window.settings = new Settings;
-  window.settings.set(!{settings});
-  window.app = new SetupView({model: window.settings});
+  script
+    window.socket = io.connect('', {reconnect: false});
+    // Create models & collections.
+    window.settings = new Settings;
+    window.settings.set(!{settings});
+    window.app = new SetupView({model: window.settings});

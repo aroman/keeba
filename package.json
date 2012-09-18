@@ -19,7 +19,7 @@
     "coffee-script": "1.3.3",
     "colors": "0.6.0-1",
     "connect": "1.9.x",
-    "connect-redis": "*",
+    "connect-mongo": "1.2.0",
     "express": "3.0.0rc4",
     "handlebars-precompiler": "1.0.0beta",
     "jade": "0.27.2",

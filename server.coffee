@@ -135,7 +135,7 @@ app.post "/", (req, res) ->
       req.session.token = response.token
       if response.account.is_new
         res.redirect "/setup"
-      else if !response.account.migrated
+      else if response.account.migrate
         res.redirect "/migrate"
       else
         if whence
@@ -166,7 +166,7 @@ app.get "/logout", (req, res) ->
   res.redirect "/"
 
 app.get "/migrate", ensureSession, hydrateSettings, (req, res) ->
-  if req.settings.migrated
+  if !req.settings.migrate
     res.redirect "/"
   else
     res.render "migrate"
@@ -174,7 +174,7 @@ app.get "/migrate", ensureSession, hydrateSettings, (req, res) ->
       nickname: req.settings.nickname
 
 app.post "/migrate", ensureSession, hydrateSettings, (req, res) ->
-  if req.settings.migrated 
+  if !req.settings.migrate
     res.redirect "/app"
   else
     jbha.Client.migrate req.session.token, req.query.nuke, () ->
@@ -201,7 +201,7 @@ app.get "/app*", ensureSession, hydrateSettings, (req, res) ->
   jbha.Client.by_course req.session.token, (err, courses) ->
     if !req.settings || req.settings.is_new
       res.redirect "/setup"
-    else if !req.settings.migrated
+    else if req.settings.migrate
       res.redirect "/migrate"
     else
       res.render "app"

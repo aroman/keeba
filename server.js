@@ -173,7 +173,7 @@
         req.session.token = response.token;
         if (response.account.is_new) {
           return res.redirect("/setup");
-        } else if (!response.account.migrated) {
+        } else if (response.account.migrate) {
           return res.redirect("/migrate");
         } else {
           if (whence) {
@@ -219,7 +219,7 @@
   });
 
   app.get("/migrate", ensureSession, hydrateSettings, function(req, res) {
-    if (req.settings.migrated) {
+    if (!req.settings.migrate) {
       return res.redirect("/");
     } else {
       return res.render("migrate", {
@@ -230,7 +230,7 @@
   });
 
   app.post("/migrate", ensureSession, hydrateSettings, function(req, res) {
-    if (req.settings.migrated) {
+    if (!req.settings.migrate) {
       return res.redirect("/app");
     } else {
       return jbha.Client.migrate(req.session.token, req.query.nuke, function() {
@@ -266,7 +266,7 @@
     return jbha.Client.by_course(req.session.token, function(err, courses) {
       if (!req.settings || req.settings.is_new) {
         return res.redirect("/setup");
-      } else if (!req.settings.migrated) {
+      } else if (req.settings.migrate) {
         return res.redirect("/migrate");
       } else {
         return res.render("app", {

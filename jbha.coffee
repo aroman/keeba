@@ -18,7 +18,7 @@ else
   mongo_uri = secrets.MONGO_STAGING_URI
 
 mongoose.connect mongo_uri, () ->
-  console.log "Connection established"
+  # console.log "Connection established"
 
 String::capitalize = ->
   @charAt(0).toUpperCase() + @slice 1
@@ -41,9 +41,9 @@ AccountSchema = new mongoose.Schema
   details:
     type: Boolean
     default: true
-  migrated:
+  migrate:
     type: Boolean
-    default: true
+    default: false
   feedback_given:
     type: Boolean
     default: false
@@ -128,7 +128,7 @@ Jbha.Client =
       Passwd: password
       Action: "login"
       
-    console.log post_data
+    # console.log post_data
 
     options =
       host: "www.jbha.org"
@@ -191,7 +191,7 @@ Jbha.Client =
     Account
       .findOne()
       .where('_id', token.username)
-      .select('nickname details is_new firstrun updated migrated feedback_given')
+      .select('nickname details is_new firstrun updated migrate feedback_given')
       .exec cb
 
   update_settings: (token, settings, cb) ->
@@ -199,7 +199,7 @@ Jbha.Client =
       nickname: settings.nickname
       details: settings.details
       firstrun: settings.firstrun
-      migrated: settings.migrated,
+      migrate: settings.migrate,
       cb
 
   _delete_account: (token, account, cb) ->
@@ -221,7 +221,7 @@ Jbha.Client =
   migrate: (token, nuke, cb) ->
     finish = () ->
       Account.update _id: token.username,
-        migrated: true,
+        migrate: false,
         cb
 
     if nuke
@@ -551,6 +551,15 @@ Jbha.Client =
       func err
       return true
 
+  _migrationize: (date, callback) ->
+    Account
+      .update {updated: {$lt: moment(date).toDate()}},
+        {migrate: true},
+        {multi: true},
+        (err, numAffected) ->
+          unless @_call_if_truthy err, callback
+            callback null, numAffected
+      
   _stats: (num_shown=Infinity, callback) ->
     Account
       .find()

@@ -555,6 +555,7 @@
       }
     },
     _migrationize: function(date, callback) {
+      var _this = this;
       return Account.update({
         updated: {
           $lt: moment(date).toDate()
@@ -564,9 +565,10 @@
       }, {
         multi: true
       }, function(err, numAffected) {
-        if (!this._call_if_truthy(err, callback)) {
-          return callback(null, numAffected);
+        if (_this._call_if_truthy(err, callback)) {
+          return;
         }
+        return callback(null, numAffected);
       });
     },
     _stats: function(num_shown, callback) {

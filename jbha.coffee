@@ -556,9 +556,9 @@ Jbha.Client =
       .update {updated: {$lt: moment(date).toDate()}},
         {migrate: true},
         {multi: true},
-        (err, numAffected) ->
-          unless @_call_if_truthy err, callback
-            callback null, numAffected
+        (err, numAffected) =>
+          return if @_call_if_truthy err, callback
+          callback null, numAffected
       
   _stats: (num_shown=Infinity, callback) ->
     Account

@@ -1,3 +1,5 @@
+# (C) 2012 Avi Romanoff <aviromanoff at gmail.com> 
+
 sys = require "sys"
 
 argv = require("optimist")

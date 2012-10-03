@@ -57,6 +57,18 @@ html(lang='en')
     
     block content
     include footer
+    script(type="text/javascript")
+      var _gauges = _gauges || [];
+      (function() {
+        var t   = document.createElement('script');
+        t.type  = 'text/javascript';
+        t.async = true;
+        t.id    = 'gauges-tracker';
+        t.setAttribute('data-site-id', '506c350ff5a1f506ce000049');
+        t.src = '//secure.gaug.es/track.js';
+        var s = document.getElementsByTagName('script')[0];
+        s.parentNode.insertBefore(t, s);
+      })();
 
 script(type="text/javascript")
   // Single-page routing + template inheritance == sadface?

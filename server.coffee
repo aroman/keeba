@@ -132,6 +132,7 @@ app.post "/", (req, res) ->
         appmode: false
         email: email
     else
+      console.log response
       req.session.token = response.token
       if response.account.is_new
         res.redirect "/setup"

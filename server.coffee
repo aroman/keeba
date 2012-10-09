@@ -1,7 +1,6 @@
 # Copyright (C) 2012 Avi Romanoff <aviromanoff at gmail.com>
 
 # Node modules
-fs         = require "fs"
 os         = require "os"
 cp         = require "child_process"
 http       = require "http"
@@ -20,13 +19,13 @@ MongoStore = require("connect-mongo")(express)
 jbha       = require "./jbha"
 logging    = require "./logging"
 secrets    = require "./secrets"
+pkg_info = require "./package.json"
 
 # Create machinery
 app = express()
 server = http.createServer app
 io = socketio.listen server, log: false
 logger = new logging.Logger "SRV"
-package_info = JSON.parse(fs.readFileSync "#{__dirname}/package.json", "utf-8")
 
 # Never allow WebSockets
 io.set 'transports', [
@@ -64,7 +63,7 @@ sessionStore = new MongoStore
   clear_interval: 60 * 60 * 5, # Every 5 hours
   () ->
     server.listen port
-    logger.info "Keeba #{package_info.version} serving in #{mode[color]} mode on port #{port.toString().bold}."
+    logger.info "Keeba #{pkg_info.version} serving in #{mode[color]} mode on port #{port.toString().bold}."
 
 cookie_parser = express.cookieParser secrets.SESSION_SECRET
 ss = new ssockets io, sessionStore, cookie_parser
@@ -82,7 +81,7 @@ app.configure ->
 
 logger.info "Using database: #{mongo_uri}"
 
-app.locals.version = package_info.version
+app.locals.version = pkg_info.version
 app.locals.development_build = mode is 'development'
 
 # Redirect requests coming from
@@ -132,7 +131,6 @@ app.post "/", (req, res) ->
         appmode: false
         email: email
     else
-      console.log response
       req.session.token = response.token
       if response.account.is_new
         res.redirect "/setup"
@@ -212,7 +210,7 @@ app.get "/app*", ensureSession, hydrateSettings, (req, res) ->
         feedback_given: req.settings.feedback_given
         nickname: req.settings.nickname
         settings: JSON.stringify req.settings
-        info: package_info
+        info: pkg_info
 
 workers = {}
 

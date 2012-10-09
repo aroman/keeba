@@ -266,7 +266,7 @@ Jbha.Client =
           wf_callback err, course, assignment
 
       (course, assignment, wf_callback) ->
-        course.assignments.push assignment
+        course.assignments.addToSet assignment
         course.save (err) ->
           wf_callback err, course, assignment
 
@@ -296,8 +296,7 @@ Jbha.Client =
           .where('_id', assignment.course)
           .exec wf_callback
       (course, wf_callback) ->
-
-        course.assignments.push assignment._id
+        course.assignments.addToSet assignment._id
         course.save wf_callback
     ], (err) ->
       Assignment.update {

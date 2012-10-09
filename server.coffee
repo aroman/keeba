@@ -3,6 +3,7 @@
 # Node modules
 os         = require "os"
 cp         = require "child_process"
+url        = require "url"
 http       = require "http"
 
 # 3rd party modules
@@ -13,6 +14,8 @@ connect    = require "connect"
 express    = require "express"
 ssockets   = require "session.socket.io"
 socketio   = require "socket.io"
+redis      = require "socket.io/node_modules/redis"
+RedisStore = require "socket.io/lib/stores/redis"
 MongoStore = require("connect-mongo")(express)
 
 # Internal modules
@@ -33,6 +36,21 @@ io.set 'transports', [
   'jsonp-polling'
   'htmlfile'
 ]
+
+redis_url = url.parse process.env.REDISTOGO_URL
+redis_pass = redis_url.auth.split(":")[1]
+pub = redis.createClient redis_url.port, redis_url.hostname
+sub = redis.createClient redis_url.port, redis_url.hostname
+store = redis.createClient redis_url.port, redis_url.hostname
+pub.auth redis_pass, -> console.log "Pub UP!"
+sub.auth redis_pass, -> console.log "Sub UP!"
+store.auth redis_pass, -> console.log "Store UP!"
+
+# Use redis
+io.set 'store', new RedisStore
+  redisPub: pub
+  redisSub: sub
+  redisClient: store
 
 mode = null
 port = null
@@ -61,7 +79,7 @@ sessionStore = new MongoStore
   url: mongo_uri
   stringify: false
   clear_interval: 60 * 60 * 5, # Every 5 hours
-  () ->
+  ->
     server.listen port
     logger.info "Keeba #{pkg_info.version} serving in #{mode[color]} mode on port #{port.toString().bold}."
 
@@ -318,15 +336,15 @@ ss.on "connection", (err, socket, session) ->
 
   socket.on "course:update", (data, cb) ->
     return unless _.isFunction cb
-    jbha.Client.update_course token, data, (err) ->
-      sync "course", "update", data
-      cb null
+    jbha.Client.update_course token, data, ->
+    sync "course", "update", data
+    cb null
 
   socket.on "course:delete", (data, cb) ->
     return unless _.isFunction cb
-    jbha.Client.delete_course token, data, (err) ->
-      sync "course", "delete", data
-      cb null
+    jbha.Client.delete_course token, data, ->
+    sync "course", "delete", data
+    cb null
       
   socket.on "assignments:create", (data, cb) ->
     return unless _.isFunction cb
@@ -335,15 +353,15 @@ ss.on "connection", (err, socket, session) ->
       cb null, assignment
 
   socket.on "assignments:update", (data, cb) ->
-    jbha.Client.update_assignment token, data, (err) ->
-      sync "assignments", "update", data
-      cb null if _.isFunction cb
+    jbha.Client.update_assignment token, data, ->
+    sync "assignments", "update", data
+    cb null if _.isFunction cb
 
   socket.on "assignments:delete", (data, cb) ->
     return unless _.isFunction cb
-    jbha.Client.delete_assignment token, data, (err) ->
-      sync "assignments", "delete", data
-      cb null
+    jbha.Client.delete_assignment token, data, ->
+    sync "assignments", "delete", data
+    cb null
 
   socket.on "feedback", (message, cb) ->
     return unless _.isFunction cb
@@ -359,5 +377,5 @@ ss.on "connection", (err, socket, session) ->
     return unless _.isFunction cb
     cb
       loadavg: os.loadavg()
-      totalmem: os.totalmem() / 1048576
-      free: os.freemem() / 1048576
+      totalmem: os.totalmem()
+      free: os.freemem()

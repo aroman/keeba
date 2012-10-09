@@ -287,7 +287,7 @@
             return wf_callback(err, course, assignment);
           });
         }, function(course, assignment, wf_callback) {
-          course.assignments.push(assignment);
+          course.assignments.addToSet(assignment);
           return course.save(function(err) {
             return wf_callback(err, course, assignment);
           });
@@ -312,7 +312,7 @@
         }, function(wf_callback) {
           return Course.findOne().where('owner', token.username).where('_id', assignment.course).exec(wf_callback);
         }, function(course, wf_callback) {
-          course.assignments.push(assignment._id);
+          course.assignments.addToSet(assignment._id);
           return course.save(wf_callback);
         }
       ], function(err) {

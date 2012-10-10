@@ -50,6 +50,11 @@
 
   io.set('transports', ['xhr-polling', 'jsonp-polling', 'htmlfile']);
 
+  if (!process.env.REDISTOGO_URL) {
+    console.log("REDISTOGO_URL".bold + " environment variable missing!");
+    process.exit(1);
+  }
+
   redis_url = url.parse(process.env.REDISTOGO_URL);
 
   redis_pass = redis_url.auth.split(":")[1];
@@ -88,7 +93,7 @@
 
   app.configure('development', function() {
     mode = 'development';
-    port = process.env.PORT || 9999;
+    port = process.env.PORT || 8888;
     color = 'magenta';
     mongo_uri = secrets.MONGO_STAGING_URI;
     io.set("log level", 3);

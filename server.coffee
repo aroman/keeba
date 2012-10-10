@@ -37,6 +37,10 @@ io.set 'transports', [
   'htmlfile'
 ]
 
+if not process.env.REDISTOGO_URL
+  console.log "REDISTOGO_URL".bold + " environment variable missing!"
+  process.exit(1)
+
 redis_url = url.parse process.env.REDISTOGO_URL
 redis_pass = redis_url.auth.split(":")[1]
 pub = redis.createClient redis_url.port, redis_url.hostname

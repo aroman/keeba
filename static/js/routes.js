@@ -33,7 +33,6 @@ var KeebaRouter = Backbone.Router.extend({
 
     this.current_view.model.on('change:title', function (model) {
       window.document.title = model.get('title');
-      console.log("Hello there.")
     });
 
     window.document.title = course.get('title');

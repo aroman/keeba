@@ -57,7 +57,7 @@ Account = mongoose.model 'account', AccountSchema
 # jbha_id is the content id for a course
 # or assignment on the jbha.org website's
 # database. It is used as a unique index
-# to ensure that doing a fetch does not 
+# to ensure that doing a fetch does not
 # result in duplicates being stored.
 CourseSchema = new mongoose.Schema
   owner: String
@@ -276,7 +276,7 @@ Jbha.Client =
   update_assignment: (token, assignment, cb) ->
     # Pull the assignment from the current course,
     # push it onto the new one, save it,
-    # and finally update the assignment fields. 
+    # and finally update the assignment fields.
     async.waterfall [
       (wf_callback) ->
         Course.update {
@@ -428,7 +428,7 @@ Jbha.Client =
                   # there are relevant assignment details and sanitize them.
                   if $("#toggle-cont-#{assignment_id}").text()
                     # These regexes are sanitizers that:
-                    # 
+                    #
                     # - Strip all header elements.
                     # - Strip all in-line element styles.
                     regexes = [/\<h\d{1}\>/gi, /\<\/h\d{1}\>/gi, /style="(.*?)"/gi]
@@ -540,7 +540,7 @@ Jbha.Client =
             id: course_id
         fe_callback null
 
-      # Any link that has a href containing the 
+      # Any link that has a href containing the
       # substring ``?course_id=`` in it.
       async.forEach $('a[href*="?course_id="]'), parse_course, (err) ->
         callback courses

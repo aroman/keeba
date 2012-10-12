@@ -114,7 +114,7 @@ browserCheck = (req, res, next) ->
   if ua.indexOf("MSIE") isnt -1
     regex = /MSIE\s(\d{1,2}\.\d)/.exec(ua)
     version = Number(regex[1])
-    if version < 9
+    if version < 10
       return res.redirect "/unsupported"
   next()
 

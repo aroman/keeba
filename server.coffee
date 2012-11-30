@@ -13,13 +13,13 @@ connect    = require "connect"
 express    = require "express"
 ssockets   = require "session.socket.io"
 socketio   = require "socket.io"
+execSync   = require "exec-sync"
 MongoStore = require("connect-mongo")(express)
 
 # Internal modules
 jbha       = require "./jbha"
 logging    = require "./logging"
 secrets    = require "./secrets"
-pkg_info = require "./package.json"
 
 # Create machinery
 app = express()
@@ -63,7 +63,8 @@ sessionStore = new MongoStore
   clear_interval: 60 * 60 * 5, # Every 5 hours
   () ->
     server.listen port
-    logger.info "Keeba #{pkg_info.version} serving in #{mode[color]} mode on port #{port.toString().bold}."
+    logger.info "Running in #{mode[color]} mode on port #{port.toString().bold}."
+    logger.info "Rav Keeba has taken the bima . . .  "
 
 cookie_parser = express.cookieParser secrets.SESSION_SECRET
 ss = new ssockets io, sessionStore, cookie_parser
@@ -81,7 +82,7 @@ app.configure ->
 
 logger.info "Using database: #{mongo_uri}"
 
-app.locals.version = pkg_info.version
+app.locals.revision = execSync 'git rev-parse --short HEAD'
 app.locals.development_build = mode is 'development'
 
 # Redirect requests coming from
@@ -210,7 +211,6 @@ app.get "/app*", ensureSession, hydrateSettings, (req, res) ->
         feedback_given: req.settings.feedback_given
         nickname: req.settings.nickname
         settings: JSON.stringify req.settings
-        info: pkg_info
 
 workers = {}
 

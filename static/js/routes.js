@@ -8,13 +8,6 @@ var KeebaRouter = Backbone.Router.extend({
     "dates/:name":       "date",
   },
 
-  _killZombies: function () {
-    if (!_.isNull(this.current_view)) {
-      this.current_view.remove();
-      this.current_view.model.off();
-    }
-  },
-
   home: function () {
     $("#content").html(Handlebars.templates.home());
     window.document.title = "Keeba";
@@ -27,16 +20,17 @@ var KeebaRouter = Backbone.Router.extend({
       return this.navigate ('', true);
     }
 
-    this._killZombies();
+    if (!_.isNull(this.current_view)) {
+      this.current_view.remove();
+    }
 
     this.current_view = new SectionView({model: course});
 
     this.current_view.model.on('change:title', function (model) {
       window.document.title = model.get('title');
     });
-
+    
     window.document.title = course.get('title');
-
     $("#content").html(this.current_view.render().el);
     this.trigger("highlight");
   },
@@ -48,7 +42,9 @@ var KeebaRouter = Backbone.Router.extend({
       return this.navigate ('', true);
     }
 
-    this._killZombies();
+    if (!_.isNull(this.current_view)) {
+      this.current_view.remove();
+    }
 
     this.current_view = new DatesView({
       template: Handlebars.templates.dates,

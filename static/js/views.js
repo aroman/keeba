@@ -516,6 +516,7 @@ DatesView = Backbone.View.extend({
   },
 
   render: _.throttle(function () {
+    console.log("render DateView");
     this.removeChildren();
 
     this.models = courses.get_assignments(this.range.start, this.range.end, "any");
@@ -610,6 +611,7 @@ DatesView = Backbone.View.extend({
   // the archive button.
   updateArchivable: _.throttle(function () {
     if (!app.showing_archived) {
+      console.log("updateArchivable")
       var any_done = _.any(_.filter(this.models, function (assignment) {
         return assignment.get('done') && !assignment.get('archived');
       }));
@@ -676,6 +678,7 @@ SectionView = Backbone.View.extend({
     // Remove child views previously added
     this.removeChildren();
 
+    console.log('render SectionView')
     var assignments = this.model.get('assignments');
 
     var num_archived = assignments.filter(function (assignment) {
@@ -779,6 +782,7 @@ SectionView = Backbone.View.extend({
   // and unarchived, enable the archive button.
   updateArchivable: _.throttle(function () {
     if (!app.showing_archived) {
+      console.log('updateArchivable');
       var done_and_unarchived = this.model.get('assignments').where({
         done: true,
         archived: false

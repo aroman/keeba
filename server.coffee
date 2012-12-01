@@ -1,7 +1,6 @@
 # Copyright (C) 2012 Avi Romanoff <aviromanoff at gmail.com>
 
 # Node modules
-os         = require "os"
 cp         = require "child_process"
 http       = require "http"
 
@@ -111,12 +110,10 @@ hydrateSettings = (req, res, next) ->
 
 app.get "/", browserCheck, (req, res) ->
   if req.session.token
-    jbha.Client.read_settings req.session.token, (err, settings) ->
-      res.redirect "/app"
+    res.redirect "/app"
   else
     res.render "index"
       failed: false
-      appmode: false
       email: null
 
 app.post "/", (req, res) ->
@@ -127,7 +124,6 @@ app.post "/", (req, res) ->
     if err
       res.render "index"
         failed: true
-        appmode: false
         email: email
     else
       req.session.token = response.token
@@ -143,21 +139,17 @@ app.post "/", (req, res) ->
  
 app.get "/about", (req, res) ->
   res.render "about"
-    appmode: false
 
 app.get "/help", (req, res) ->
   res.render "help"
-    appmode: false
 
 app.get "/unsupported", (req, res) ->
   res.render "unsupported"
-    appmode: false
 
 app.get "/feedback", (req, res) ->
   jbha.Client.read_feedbacks (err, feedbacks) ->
     res.render "feedback"
       feedbacks: feedbacks
-      appmode: false
 
 app.get "/logout", (req, res) ->
   req.session.destroy()
@@ -168,7 +160,6 @@ app.get "/migrate", ensureSession, hydrateSettings, (req, res) ->
     res.redirect "/"
   else
     res.render "migrate"
-      appmode: false
       nickname: req.settings.nickname
 
 app.post "/migrate", ensureSession, hydrateSettings, (req, res) ->
@@ -181,7 +172,6 @@ app.post "/migrate", ensureSession, hydrateSettings, (req, res) ->
 app.get "/setup", ensureSession, hydrateSettings, (req, res) ->
   if req.settings.is_new
     res.render "setup"
-      appmode: false
       settings: JSON.stringify req.settings
   else
     res.redirect "/"
@@ -203,7 +193,6 @@ app.get "/app*", ensureSession, hydrateSettings, (req, res) ->
       res.redirect "/migrate"
     else
       res.render "app"
-        appmode: true
         courses: JSON.stringify courses
         firstrun: req.settings.firstrun
         feedback_given: req.settings.feedback_given
@@ -352,10 +341,3 @@ ss.on "connection", (err, socket, session) ->
     return cb null unless token.username is "avi.romanoff"
     jbha.Client._delete_account token, account, (err) ->
       cb null
-
-  socket.on "stats", (cb) ->
-    return unless _.isFunction cb
-    cb
-      loadavg: os.loadavg()
-      totalmem: os.totalmem() / 1048576
-      free: os.freemem() / 1048576

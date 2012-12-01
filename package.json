@@ -3,13 +3,13 @@
   "description": "Homework, simplified.",
   "author": "Avi Romanoff <aviromanoff@gmail.com>",
   "main": "server.js",
-  "version": "3.3.1",
+  "version": "3.4.0",
   "scripts": {
     "start": "server.js"
   },
   "engines": {
-    "node": "0.8.7",
-    "npm":  "1.1.49"
+    "node": "0.8.14",
+    "npm":  "1.1.65"
   },
   "subdomain": "keeba",
   "dependencies": {
@@ -21,17 +21,17 @@
     "connect": "1.9.x",
     "connect-mongo": "0.2.0",
     "docco": "0.4.0",
-    "express": "3.0.0rc4",
+    "express": "3.0.3",
     "handlebars": "1.0.7",
-    "jade": "0.27.2",
+    "jade": "0.27.7",
     "markdown": "0.3.1",
-    "mocha": "1.6.0",
+    "mocha": "1.7.3",
     "mongoose": "3.1.2",
-    "moment": "1.7.0",
-    "optimist": "0.3.4",
+    "moment": "1.7.2",
+    "optimist": "0.3.5",
     "session.socket.io": "0.1.0",
     "socket.io": "0.9.10",
     "socket.io-client": "0.9.10",
-    "underscore": "1.3.3"
+    "underscore": "1.4.2"
   }
 }

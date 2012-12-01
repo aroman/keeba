@@ -82,6 +82,10 @@ logger.info "Using database: #{mongo_uri}"
 app.locals.revision = execSync 'git rev-parse --short HEAD'
 app.locals.development_build = mode is 'development'
 
+app.use (err, req, res, next) ->
+  console.error err.stack
+  res.send 500, "Yikes! Something broke."
+
 # Redirect requests coming from
 # unsupported browsers to landing
 # page for old browsers.
@@ -145,11 +149,6 @@ app.get "/help", (req, res) ->
 
 app.get "/unsupported", (req, res) ->
   res.render "unsupported"
-
-app.get "/feedback", (req, res) ->
-  jbha.Client.read_feedbacks (err, feedbacks) ->
-    res.render "feedback"
-      feedbacks: feedbacks
 
 app.get "/logout", (req, res) ->
   req.session.destroy()
@@ -331,10 +330,6 @@ ss.on "connection", (err, socket, session) ->
     jbha.Client.delete_assignment token, data, (err) ->
       sync "assignments", "delete", data
       cb null
-
-  socket.on "feedback", (message, cb) ->
-    return unless _.isFunction cb
-    jbha.Client.create_feedback token, message, cb
 
   socket.on "d/a", (account, cb) ->
     return unless _.isFunction cb

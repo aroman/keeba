@@ -7,7 +7,6 @@ http       = require "http"
 
 # 3rd party modules
 _          = require "underscore"
-hbpc       = require "handlebars-precompiler"
 colors     = require "colors"
 connect    = require "connect"
 express    = require "express"
@@ -72,7 +71,6 @@ ss = new ssockets io, sessionStore, cookie_parser
 app.configure ->
   app.use cookie_parser
   app.use express.bodyParser()
-  hbpc.watchDir "#{__dirname}/views/templates", "#{__dirname}/static/js/templates.min.js", ['handlebars']
   app.use express.session(store: sessionStore)
   app.use app.router
   app.use express.static "#{__dirname}/static"

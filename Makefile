@@ -15,7 +15,8 @@ test:
 	 --reporter $(REPORTER)
 
 build:
-	@coffee --compile *.coffee && coffeelint *.coffee
+	@coffee --compile *.coffee
+	@handlebars views/templates --min --output static/js/templates.min.js
 
 clean:
 	@rm *.js

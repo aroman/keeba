@@ -11,7 +11,6 @@ connect    = require "connect"
 express    = require "express"
 ssockets   = require "session.socket.io"
 socketio   = require "socket.io"
-execSync   = require "exec-sync"
 MongoStore = require("connect-mongo")(express)
 
 # Internal modules
@@ -79,7 +78,7 @@ app.configure ->
 
 logger.info "Using database: #{mongo_uri}"
 
-app.locals.revision = execSync 'git rev-parse --short HEAD'
+app.locals.revision = process.ENV.GIT_REV
 app.locals.development_build = mode is 'development'
 
 app.use (err, req, res, next) ->

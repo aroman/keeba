@@ -1,6 +1,6 @@
 REPORTER = list
 
-serve:
+serve: build
 	@node server.js
 
 docs: clean-docs
@@ -20,5 +20,9 @@ build:
 
 clean:
 	@rm *.js
+
+deploy-staging: test
+	@git push staging
+	@heroku config:set GIT_REV=`git rev-parse --short HEAD` --app keeba-staging
 
 .PHONY: build clean serve test docs clean-docs

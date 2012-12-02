@@ -21,7 +21,6 @@
     "connect": "1.9.x",
     "connect-mongo": "0.2.0",
     "docco": "0.4.0",
-    "exec-sync": "0.1.5",
     "express": "3.0.3",
     "handlebars": "1.0.7",
     "jade": "0.27.7",
@@ -32,7 +31,7 @@
     "optimist": "0.3.5",
     "session.socket.io": "0.1.0",
     "socket.io": "0.9.10",
-    "socket.io-client": "0.9.10",
+    "socket.io-client": "0.9.11",
     "underscore": "1.4.2"
   }
 }

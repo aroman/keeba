@@ -91,15 +91,6 @@ AssignmentSchema = new mongoose.Schema
 
 Assignment = mongoose.model 'assignment', AssignmentSchema
 
-FeedbackSchema = new mongoose.Schema
-  _id: String
-  message: String
-
-FeedbackSchema.path('message').validate (v) ->
-  return v.length < 5000
-
-Feedback = mongoose.model 'feedback', FeedbackSchema
-
 logger = new logging.Logger "API"
 
 Jbha = exports

@@ -21,7 +21,9 @@ build:
 clean:
 	@rm *.js
 
-deploy-staging: test
+deploy-staging: test push-staging
+
+push-staging:
 	@git push staging
 	@heroku config:set GIT_REV=`git rev-parse --short HEAD` --app keeba-staging
 

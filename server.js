@@ -99,7 +99,7 @@
 
   logger.info("Using database: " + mongo_uri);
 
-  app.locals.revision = process.ENV.GIT_REV;
+  app.locals.revision = process.env.GIT_REV;
 
   app.locals.development_build = mode === 'development';
 

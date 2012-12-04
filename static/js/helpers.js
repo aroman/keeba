@@ -125,6 +125,7 @@ Handlebars.registerHelper('remaining', function (start, end) {
 
 Handlebars.registerHelper('format_date', function (epoch) {
   var date = moment.utc(epoch);
+  console.log(date.format("LLLL ZZ"))
   var str = "";
 
   if (date.valueOf() < yesterday.valueOf()) {

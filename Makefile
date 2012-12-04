@@ -1,6 +1,7 @@
 REPORTER = list
 
 serve: build
+	@export GIT_REV=`git rev-parse --short HEAD`
 	@node server.js
 
 docs: clean-docs
@@ -21,9 +22,7 @@ build:
 clean:
 	@rm *.js
 
-deploy-staging: test push-staging
-
-push-staging:
+deploy-staging: build test
 	@git push staging
 	@heroku config:set GIT_REV=`git rev-parse --short HEAD` --app keeba-staging
 

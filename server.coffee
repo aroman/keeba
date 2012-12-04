@@ -203,6 +203,9 @@ ss.on "connection", (err, socket, session) ->
   token = session.token
   socket.join token.username
 
+  saveSession = (cb) ->
+    sessionStore.set socket.handshake.signedCookies['connect.sid'], session, cb
+
   L = (message, urgency="debug") ->
     logger[urgency] "#{token.username.underline} :: #{message}"
 
@@ -216,19 +219,6 @@ ss.on "connection", (err, socket, session) ->
   # INCLUDING the one that initiated the message.
   broadcast = (message, data) ->
     io.sockets.in(token.username).emit(message, data)
-
-  keepAlive = () ->
-    jbha.Client.keep_alive token, (err) ->
-      L "Kept remote session alive", "info"
-
-  # Poll the school server every 25 minutes so
-  # they don't drop our session due to inactivity.
-  keep_alive_id = setInterval(keepAlive, 1500000)
-
-  # Stop polling after the socket disconnects.
-  # This does not happen automatically.
-  socket.on "disconnect", () ->
-    clearInterval(keep_alive_id)
 
   # Spawn a new node instance to handle a refresh
   # request. It's CPU-bound, so it blocks this thread.
@@ -255,10 +245,15 @@ ss.on "connection", (err, socket, session) ->
     , 30000
 
     worker.on "message", (message) ->
+      # In case we got re-auth'd during the refresh
+      # process, use the token we get back and update
+      # ours.
+      session.token = token = message[1]
+      saveSession()
       # Let connected clients know a refresh ended 
       broadcast "refresh:end", 
         err: message[0]
-        res: message[1]
+        res: message[2]
 
     worker.on "exit", (code, signal) ->
       delete workers[token.username]

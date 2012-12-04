@@ -164,7 +164,8 @@
               res = {
                 token: {
                   cookie: cookie,
-                  username: username
+                  username: username,
+                  password: password
                 },
                 account: account
               };
@@ -372,18 +373,15 @@
         }
       });
     },
-    keep_alive: function(token, cb) {
-      return this._authenticated_request(token.cookie, "homework.php", function(err, $) {
-        return cb(err);
-      });
-    },
     refresh: function(token, options, cb) {
       var _this = this;
-      return this._parse_courses(token.cookie, function(courses) {
+      return this._parse_courses(token, function(new_token, courses) {
         var new_assignments, parse_course;
+        token = new_token;
         new_assignments = 0;
         parse_course = function(course_data, course_callback) {
-          return _this._authenticated_request(token.cookie, "course-detail.php?course_id=" + course_data.id, function(err, $) {
+          return _this._authenticated_request(token, "course-detail.php?course_id=" + course_data.id, function(err, new_token, $) {
+            token = new_token;
             return async.waterfall([
               function(wf_callback) {
                 return Course.findOne().where('owner', token.username).where('jbha_id', course_data.id).populate('assignments').exec(wf_callback);
@@ -481,15 +479,17 @@
             updated: Date.now(),
             is_new: false
           }, function(err) {
-            return cb(err, {
+            return cb(err, token, {
               new_assignments: new_assignments
             });
           });
         });
       });
     },
-    _authenticated_request: function(cookie, resource, callback) {
-      var options, req;
+    _authenticated_request: function(token, resource, callback) {
+      var cookie, options, req,
+        _this = this;
+      cookie = token.cookie;
       if (!cookie) {
         callback("Authentication error: No session cookie");
       }
@@ -508,7 +508,18 @@
           return body += chunk;
         });
         return res.on('end', function() {
-          return callback(null, cheerio.load(body));
+          var $;
+          $ = cheerio.load(body);
+          if ($('a[href="/students/?Action=logout"]').length === 0) {
+            L(token.username, "Session expired; re-authenticating", "warn");
+            return _this.authenticate(token.username, token.password, function(err, res) {
+              token = res.token;
+              console.log("NEW TOKEN: " + token);
+              return callback(null, token, $);
+            });
+          } else {
+            return callback(null, token, $);
+          }
         });
       });
       req.on('error', function(err) {
@@ -516,9 +527,10 @@
       });
       return req.end();
     },
-    _parse_courses: function(cookie, callback) {
-      return this._authenticated_request(cookie, "homework.php", function(err, $) {
+    _parse_courses: function(token, callback) {
+      return this._authenticated_request(token, "homework.php", function(err, new_token, $) {
         var blacklist, courses, parse_course;
+        token = new_token;
         courses = [];
         blacklist = ['433', '665'];
         parse_course = function(element, fe_callback) {
@@ -533,7 +545,7 @@
           return fe_callback(null);
         };
         return async.forEach($('a[href*="?course_id="]'), parse_course, function(err) {
-          return callback(courses);
+          return callback(token, courses);
         });
       });
     },

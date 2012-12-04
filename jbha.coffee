@@ -23,12 +23,6 @@ mongoose.connect mongo_uri, () ->
 String::capitalize = ->
   @charAt(0).toUpperCase() + @slice 1
 
-# [18:46] <timoxley> UserSchema.namedScope('forAccount', function (account) {
-# [18:46] <timoxley>   return this.find({accountId: account})
-# [18:46] <timoxley> })
-# [18:47] <timoxley> then I say User.forAccount(currentAccount._id).find(…)
-# [18:47] <timoxley> which scopes the find() query to the current "Account"
-
 AccountSchema = new mongoose.Schema
   _id: String
   nickname: String
@@ -141,12 +135,12 @@ Jbha.Client =
             .exec (err, account_from_db) =>
               return if @_call_if_truthy err, cb
               cookie = res.headers['set-cookie'][1].split(';')[0]
-
               account = account_from_db or new Account()
               res =
                 token:
                   cookie: cookie
                   username: username
+                  password: password
                 account: account
               if account_from_db
                 cb null, res
@@ -356,21 +350,18 @@ Jbha.Client =
       else
         cb null, feedbacks
 
-  keep_alive: (token, cb) ->
-    @_authenticated_request token.cookie, "homework.php", (err, $) ->
-      cb err
-
   refresh: (token, options, cb) ->
 
-    @_parse_courses token.cookie, (courses) =>
-
+    @_parse_courses token, (new_token, courses) =>
+      token = new_token
       # Counter for the number of assignments that were
       # added that didn't exist in the database before.
       new_assignments = 0
 
       parse_course = (course_data, course_callback) =>
         # Get the DOM of the course webpage
-        @_authenticated_request token.cookie, "course-detail.php?course_id=#{course_data.id}", (err, $) =>
+        @_authenticated_request token, "course-detail.php?course_id=#{course_data.id}", (err, new_token, $) =>
+          token = new_token
           async.waterfall [
 
             # Query the database for the course
@@ -491,10 +482,11 @@ Jbha.Client =
           updated: Date.now()
           is_new: false
           (err) =>
-            cb err, new_assignments: new_assignments
+            cb err, token, new_assignments: new_assignments
 
-  _authenticated_request: (cookie, resource, callback) ->
+  _authenticated_request: (token, resource, callback) ->
 
+    cookie = token.cookie
     if not cookie
       callback "Authentication error: No session cookie"
 
@@ -505,20 +497,30 @@ Jbha.Client =
       headers:
         'Cookie': cookie
 
-    req = http.request options, (res) ->
+    req = http.request options, (res) =>
       body = null
       res.on 'data', (chunk) ->
         body += chunk
-      res.on 'end', ->
-        callback null, cheerio.load(body)
+      res.on 'end', =>
+        $ = cheerio.load(body)
+        # Handle re-authing if we've been logged out
+        if $('a[href="/students/?Action=logout"]').length is 0
+          L token.username, "Session expired; re-authenticating", "warn"
+          @authenticate token.username, token.password, (err, res) ->
+            token = res.token
+            console.log "NEW TOKEN: #{token}"
+            callback null, token, $
+        else
+          callback null, token, $
 
     req.on 'error', (err) ->
       callback err
 
     req.end()
 
-  _parse_courses: (cookie, callback) ->
-    @_authenticated_request cookie, "homework.php", (err, $) ->
+  _parse_courses: (token, callback) ->
+    @_authenticated_request token, "homework.php", (err, new_token, $) ->
+      token = new_token
       courses = []
 
       blacklist = ['433', '665']
@@ -534,7 +536,7 @@ Jbha.Client =
       # Any link that has a href containing the
       # substring ``?course_id=`` in it.
       async.forEach $('a[href*="?course_id="]'), parse_course, (err) ->
-        callback courses
+        callback token, courses
 
   _call_if_truthy: (err, func) ->
     if err

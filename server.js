@@ -259,9 +259,12 @@
   workers = {};
 
   ss.on("connection", function(err, socket, session) {
-    var L, broadcast, keepAlive, keep_alive_id, sync, token;
+    var L, broadcast, saveSession, sync, token;
     token = session.token;
     socket.join(token.username);
+    saveSession = function(cb) {
+      return sessionStore.set(socket.handshake.signedCookies['connect.sid'], session, cb);
+    };
     L = function(message, urgency) {
       if (urgency == null) {
         urgency = "debug";
@@ -276,15 +279,6 @@
     broadcast = function(message, data) {
       return io.sockets["in"](token.username).emit(message, data);
     };
-    keepAlive = function() {
-      return jbha.Client.keep_alive(token, function(err) {
-        return L("Kept remote session alive", "info");
-      });
-    };
-    keep_alive_id = setInterval(keepAlive, 1500000);
-    socket.on("disconnect", function() {
-      return clearInterval(keep_alive_id);
-    });
     socket.on("refresh", function(options) {
       var worker;
       worker = workers[token.username];
@@ -306,9 +300,11 @@
         return worker.kill('SIGKILL');
       }, 30000);
       worker.on("message", function(message) {
+        session.token = token = message[1];
+        saveSession();
         return broadcast("refresh:end", {
           err: message[0],
-          res: message[1]
+          res: message[2]
         });
       });
       return worker.on("exit", function(code, signal) {

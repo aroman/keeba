@@ -400,17 +400,8 @@ Jbha.Client =
 
                   splits = text_blob.split ":"
                   assignment_title = splits.slice(1)[0].trim()
-                  # XXX: THIS IS NOT AUTOMATIC
-                  # Force EST timezone and parse their date format
-                  # into a UNIX epoch timestamp.
-                  console.log splits.slice(0, 1)[0]
-                  new_hotness = moment.utc(splits.slice(0, 1)[0], "[Due] MMM DD, YYYY")
-                  old_and_busted = Date.parse(splits.slice(0, 1) + " EST")
-
-                  console.log "Old and busted: " + moment(old_and_busted).format("LLLL ZZ")
-                  console.log "New hotness: " + new_hotness.format("LLLL ZZ")
-
-                  assignment_date = new_hotness.valueOf()
+                  # Parse the date and store it as a UTC UNIX timestamp
+                  assignment_date = moment.utc(splits.slice(0, 1)[0], "[Due] MMM DD, YYYY").valueOf()
                   # Parse the details of the assignment as HTML -- **not** as text.
                   assignment_details = $("#toggle-cont-#{assignment_id}").html()
 

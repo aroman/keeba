@@ -400,18 +400,13 @@
               }, function(course, wf_callback) {
                 var parse_assignment;
                 parse_assignment = function(element, assignment_callback) {
-                  var assignment, assignment_date, assignment_details, assignment_from_db, assignment_id, assignment_title, moved, new_hotness, old_and_busted, regex, regexes, splits, text_blob, _i, _len;
+                  var assignment, assignment_date, assignment_details, assignment_from_db, assignment_id, assignment_title, moved, regex, regexes, splits, text_blob, _i, _len;
                   text_blob = $(element).text();
                   if (text_blob.match(/Due \w{3} \d{1,2}\, \d{4}:/)) {
                     assignment_id = $(element).attr('href').match(/\d+/)[0];
                     splits = text_blob.split(":");
                     assignment_title = splits.slice(1)[0].trim();
-                    console.log(splits.slice(0, 1)[0]);
-                    new_hotness = moment.utc(splits.slice(0, 1)[0], "[Due] MMM DD, YYYY");
-                    old_and_busted = Date.parse(splits.slice(0, 1) + " EST");
-                    console.log("Old and busted: " + moment(old_and_busted).format("LLLL ZZ"));
-                    console.log("New hotness: " + new_hotness.format("LLLL ZZ"));
-                    assignment_date = new_hotness.valueOf();
+                    assignment_date = moment.utc(splits.slice(0, 1)[0], "[Due] MMM DD, YYYY").valueOf();
                     assignment_details = $("#toggle-cont-" + assignment_id).html();
                     if ($("#toggle-cont-" + assignment_id).text()) {
                       regexes = [/\<h\d{1}\>/gi, /\<\/h\d{1}\>/gi, /style="(.*?)"/gi];

@@ -124,7 +124,7 @@ Handlebars.registerHelper('remaining', function (start, end) {
 });
 
 Handlebars.registerHelper('format_date', function (epoch) {
-  var date = moment(epoch);
+  var date = moment.utc(epoch);
   var str = "";
 
   if (date.valueOf() < yesterday.valueOf()) {

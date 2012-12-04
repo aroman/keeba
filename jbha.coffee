@@ -403,7 +403,14 @@ Jbha.Client =
                   # XXX: THIS IS NOT AUTOMATIC
                   # Force EST timezone and parse their date format
                   # into a UNIX epoch timestamp.
-                  assignment_date = Date.parse(splits.slice(0, 1) + " EST")
+                  console.log splits.slice(0, 1)[0]
+                  new_hotness = moment(splits.slice(0, 1)[0], "[Due] MMM DD, YYYY").valueOf()
+                  old_and_busted = Date.parse(splits.slice(0, 1) + " EST")
+
+                  console.log moment(old_and_busted).toString()
+                  console.log moment(new_hotness).toString()
+
+                  assignment_date = new_hotness
                   # Parse the details of the assignment as HTML -- **not** as text.
                   assignment_details = $("#toggle-cont-#{assignment_id}").html()
 

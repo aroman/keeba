@@ -400,9 +400,10 @@ Jbha.Client =
 
                   splits = text_blob.split ":"
                   assignment_title = splits.slice(1)[0].trim()
-                  # Force EDT timezone and parse their date format
+                  # XXX: THIS IS NOT AUTOMATIC
+                  # Force EST timezone and parse their date format
                   # into a UNIX epoch timestamp.
-                  assignment_date = Date.parse(splits.slice(0, 1) + " EDT")
+                  assignment_date = Date.parse(splits.slice(0, 1) + " EST")
                   # Parse the details of the assignment as HTML -- **not** as text.
                   assignment_details = $("#toggle-cont-#{assignment_id}").html()
 

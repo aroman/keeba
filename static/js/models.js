@@ -20,7 +20,7 @@ CourseAssignment = Backbone.RelationalModel.extend({
     return {
       title: "",
       details: "",
-      date: moment().valueOf(),
+      date: moment().utc().valueOf(),
       done: false,
       archived: false
     };
@@ -226,7 +226,7 @@ Settings = Backbone.Model.extend({
   },
 
   getUpdatedAt: function () {
-    return moment(settings.get('updated'));
+    return moment.utc(settings.get('updated'));
   },
 
   defaults: function () {

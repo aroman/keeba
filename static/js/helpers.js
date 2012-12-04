@@ -1,13 +1,12 @@
 // Pre-compile dates.
 function compileDateConstants () {
-  _now = moment();
-  today = moment([_now.year(), _now.month(), _now.date()]);
+  today = moment().utc().startOf('day');
   yesterday = moment(today).subtract('days', 1);
   tomorrow = moment(today).add('days', 1);
   in_a_week = moment(today).add('weeks', 1);
   in_two_weeks = moment(today).add('weeks', 2);
-  big_bang = moment(0); // Actually 1970
-  doomsday = moment(9999999999999); // Year 2286 lol
+  big_bang = moment(0).utc(); // Actually 1970
+  doomsday = moment(9999999999999).utc(); // Year 2286 lol
 }
 
 compileDateConstants();
@@ -153,7 +152,7 @@ Handlebars.registerHelper('editable_date', function (epoch) {
     return epoch;
   }
 
-  return moment(epoch).format(DATE_EDIT_FORMAT);
+  return moment.utc(epoch).format(DATE_EDIT_FORMAT);
 });
 
 Handlebars.registerHelper('range_date', function (ranges) {
@@ -163,14 +162,14 @@ Handlebars.registerHelper('range_date', function (ranges) {
 
   if (start === end) {
     // Only one day
-    str += moment(start).format(DATE_RANGE_FORMAT);
+    str += moment.utc(start).format(DATE_RANGE_FORMAT);
   } else {
     if (start === big_bang.valueOf()) {
       // No (real) start date
       str += "The Big Bang"
     } else {
       // Specific start date
-      str += moment(start).format(DATE_RANGE_FORMAT);
+      str += moment.utc(start).format(DATE_RANGE_FORMAT);
     }
     str += " to "
     if (end === doomsday.valueOf()) {
@@ -178,7 +177,7 @@ Handlebars.registerHelper('range_date', function (ranges) {
       str += "Doomsday";
     } else {
       // Specific end date
-      str += moment(end).format(DATE_RANGE_FORMAT);
+      str += moment.utc(end).format(DATE_RANGE_FORMAT);
     }
   }
 

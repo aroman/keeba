@@ -404,13 +404,13 @@ Jbha.Client =
                   # Force EST timezone and parse their date format
                   # into a UNIX epoch timestamp.
                   console.log splits.slice(0, 1)[0]
-                  new_hotness = moment(splits.slice(0, 1)[0], "[Due] MMM DD, YYYY").valueOf()
+                  new_hotness = moment.utc(splits.slice(0, 1)[0], "[Due] MMM DD, YYYY")
                   old_and_busted = Date.parse(splits.slice(0, 1) + " EST")
 
-                  console.log moment(old_and_busted).toString()
-                  console.log moment(new_hotness).toString()
+                  console.log "Old and busted: " + moment(old_and_busted).format("LLLL ZZ")
+                  console.log "New hotness: " + new_hotness.format("LLLL ZZ")
 
-                  assignment_date = new_hotness
+                  assignment_date = new_hotness.valueOf()
                   # Parse the details of the assignment as HTML -- **not** as text.
                   assignment_details = $("#toggle-cont-#{assignment_id}").html()
 
@@ -516,7 +516,6 @@ Jbha.Client =
           L token.username, "Session expired; re-authenticating", "warn"
           @authenticate token.username, token.password, (err, res) ->
             token = res.token
-            console.log "NEW TOKEN: #{token}"
             callback null, token, $
         else
           callback null, token, $

@@ -136,7 +136,7 @@ AddAssignmentView = Backbone.View.extend({
     // validation mark it as missing.
     var date = this.$("#date").val();
     if (date) {
-      date = moment(date, DATE_EDIT_FORMAT).valueOf();
+      date = moment.utc(date, DATE_EDIT_FORMAT).valueOf();
     }
 
     var course_id = this.parent_course || this.$("#course").val();
@@ -214,7 +214,7 @@ EditAssignmentView = Backbone.View.extend({
     // If it is, just leave it false-y and let
     // validation mark it as missing.
     if (date) {
-      date = moment(date, DATE_EDIT_FORMAT).valueOf();
+      date = moment.utc(date, DATE_EDIT_FORMAT).valueOf();
     }
 
     this.model.save({
@@ -853,7 +853,7 @@ AppView = Backbone.View.extend({
        settings.save({firstrun: false});
       }
       // Cache has expired
-      else if ((moment() - settings.getUpdatedAt()) > CACHE_TTL) {
+      else if ((moment().utc() - settings.getUpdatedAt()) > CACHE_TTL) {
         that.refresh();
       } else {
         that.updateUpdatedAt();
@@ -925,7 +925,7 @@ AppView = Backbone.View.extend({
   updateUpdatedAt: function () {
     app_status.set({
       heading: "",
-      message: "Last checked for new homework: " + settings.getUpdatedAt().from(moment()) + ".",
+      message: "Last checked for new homework: " + settings.getUpdatedAt().from(moment().utc()) + ".",
       kind: "info"
     });
   },

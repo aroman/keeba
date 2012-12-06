@@ -516,7 +516,6 @@ DatesView = Backbone.View.extend({
   },
 
   render: _.throttle(function () {
-    console.log("render DateView");
     this.removeChildren();
 
     this.models = courses.get_assignments(this.range.start, this.range.end, "any");
@@ -569,6 +568,11 @@ DatesView = Backbone.View.extend({
     courses.sort();
     window.app.updateCourses();
 
+    // If we're offline, make sure the controls are disabled.
+    if (app.offline) {
+      app.disableControls();
+    }
+
     return this;
   }, 100),
 
@@ -611,7 +615,6 @@ DatesView = Backbone.View.extend({
   // the archive button.
   updateArchivable: _.throttle(function () {
     if (!app.showing_archived) {
-      console.log("updateArchivable")
       var any_done = _.any(_.filter(this.models, function (assignment) {
         return assignment.get('done') && !assignment.get('archived');
       }));
@@ -678,7 +681,6 @@ SectionView = Backbone.View.extend({
     // Remove child views previously added
     this.removeChildren();
 
-    console.log('render SectionView')
     var assignments = this.model.get('assignments');
 
     var num_archived = assignments.filter(function (assignment) {
@@ -729,6 +731,11 @@ SectionView = Backbone.View.extend({
     // the sidebar,
     courses.sort();
     window.app.updateCourses();
+
+    // If we're offline, make sure the controls are disabled.
+    if (app.offline) {
+      app.disableControls();
+    }
 
     return this;
   }, 100),
@@ -782,7 +789,6 @@ SectionView = Backbone.View.extend({
   // and unarchived, enable the archive button.
   updateArchivable: _.throttle(function () {
     if (!app.showing_archived) {
-      console.log('updateArchivable');
       var done_and_unarchived = this.model.get('assignments').where({
         done: true,
         archived: false
@@ -821,6 +827,7 @@ AppView = Backbone.View.extend({
 
   el: $("body"),
   showing_archived: false,
+  offline: false,
   update_timer: null,
   num_new: 0,
 
@@ -843,6 +850,7 @@ AppView = Backbone.View.extend({
     window.status_view = new StatusView({model: app_status});
 
     socket.on('connect', function () {
+      console.log ("socket just emitted `connect` event")
       // First log in
       if (settings.get('firstrun')) {
        app_status.set({
@@ -854,26 +862,44 @@ AppView = Backbone.View.extend({
       }
       // Cache has expired
       else if ((moment().utc() - settings.getUpdatedAt()) > CACHE_TTL) {
-        that.refresh();
+        // XXX: This hack needed because the server won't see our event
+        // otherwise...
+        _.delay(that.refresh, 1000)
+        // that.refresh();
       } else {
         that.updateUpdatedAt();
       }
       that.update_timer = setInterval(that.updateUpdatedAt, 20000);
     });
 
-    socket.on('reconnecting', function (timeout, attempt_num) {
-      if (attempt_num === 5) {
-        // Close any and all open modals.
-        $(".modal, .modal-backdrop").not("#failure-modal").remove();
-        $("#failure-modal").modal({
-          backdrop: 'static',
-          keyboard: false
-        });
-        // If you try to reconnect, don't. For whatever reason
-        // the socket will still try even after the attempt_num
-        // is at it's max.
-        socket.on('reconnecting', socket.disconnect);
-      }
+    socket.on('reconnect', function (transport_type, attempts) {
+      console.log ("CONNECTION RE-ESTABLISHED!");
+      app.offline = false;
+    });
+
+    socket.on('reconnecting', function (delay, attempts) {
+      console.log (delay)
+      app.offline = true;
+      that.disableControls();
+      clearInterval(that.update_timer);
+      app_status.set({
+        heading: "Connection lost!",
+        message: "Make sure you're on the Internet. Until the connection is re-established, you can't make changes to your homework, but you can look at it.",
+        kind: "error"
+      });
+
+      // if (attempt_num === 5) {
+      //   // Close any and all open modals.
+      //   $(".modal, .modal-backdrop").not("#failure-modal").remove();
+      //   $("#failure-modal").modal({
+      //     backdrop: 'static',
+      //     keyboard: false
+      //   });
+      //   // If you try to reconnect, don't. For whatever reason
+      //   // the socket will still try even after the attempt_num
+      //   // is at it's max.
+      //   socket.on('reconnecting', socket.disconnect);
+      // }
     });
 
     socket.on('refresh:start', this.handleRemoteRefreshStart);
@@ -885,7 +911,12 @@ AppView = Backbone.View.extend({
     this.bindShortcuts();
   },
 
+  disableControls: function () {
+    this.$(".btn, input[type='checkbox']").not('.details-show').prop('disabled', true);
+  },
+
   refresh: function () {
+    console.log ("refresh()");
     socket.emit('refresh');
   },
 
@@ -923,6 +954,7 @@ AppView = Backbone.View.extend({
   },
 
   updateUpdatedAt: function () {
+    console.log ("updateUpdatedAt()");
     app_status.set({
       heading: "",
       message: "Last checked for new homework: " + settings.getUpdatedAt().from(moment().utc()) + ".",

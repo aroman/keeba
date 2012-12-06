@@ -24,12 +24,12 @@ server = http.createServer app
 io = socketio.listen server, log: false
 logger = new logging.Logger "SRV"
 
-# Never allow WebSockets
-io.set 'transports', [
-  'xhr-polling'
-  'jsonp-polling'
-  'htmlfile'
-]
+# # Never allow WebSockets
+# io.set 'transports', [
+#   'xhr-polling'
+#   'jsonp-polling'
+#   'htmlfile'
+# ]
 
 mode = null
 port = null
@@ -224,6 +224,7 @@ ss.on "connection", (err, socket, session) ->
   # request. It's CPU-bound, so it blocks this thread.
   # Only allow one worker per global username presence.
   socket.on "refresh", (options) ->
+    console.log "refresh()"
     worker = workers[token.username]
     if worker
       L "Worker with pid #{worker.pid} replaced", 'warn'

@@ -33,9 +33,7 @@ block content
     window.router = new KeebaRouter ();
 
     window.socket = io.connect('', {
-      'max reconnection attempts': 5,
-      'reconnection delay': 1000, 
-      'connect timeout': 5000
+      'max reconnection attempts': 10,
     });
 
     window.courses = new CourseCollection;

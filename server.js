@@ -36,8 +36,6 @@
 
   logger = new logging.Logger("SRV");
 
-  io.set('transports', ['xhr-polling', 'jsonp-polling', 'htmlfile']);
-
   mode = null;
 
   port = null;
@@ -281,6 +279,7 @@
     };
     socket.on("refresh", function(options) {
       var worker;
+      console.log("refresh()");
       worker = workers[token.username];
       if (worker) {
         L("Worker with pid " + worker.pid + " replaced", 'warn');

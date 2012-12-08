@@ -10,7 +10,7 @@ clean-docs:
 	@rm -rf docs
 
 test:
-	@./node_modules/mocha/bin/mocha --timeout 15000 \
+	@./node_modules/mocha/bin/mocha \
 	 --compilers coffee:coffee-script \
 	 --reporter $(REPORTER)
 
@@ -24,5 +24,9 @@ clean:
 deploy-staging: build test
 	@git push staging
 	@heroku config:set GIT_REV=`git rev-parse --short HEAD` --app keeba-staging
+
+deploy-production: build test
+	@git push production
+	@heroku config:set GIT_REV=`git rev-parse --short HEAD` --app keeba
 
 .PHONY: build clean serve test docs clean-docs

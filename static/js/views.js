@@ -409,6 +409,7 @@ AssignmentView = Backbone.View.extend({
   tagName: 'tr',
   className: 'assignment',
   template: undefined,
+  showing_details: null, // Whether this assignment specficially is showing details
 
   events: {
     "click td.done-toggle": "toggleDone",
@@ -450,8 +451,13 @@ AssignmentView = Backbone.View.extend({
       this.$el.removeClass("done");
     }
 
-    if (settings.get('details')) {
-      this.showDetails();
+    // Only show details if we should be
+    if (this.showing_details !== null) {
+      if (this.showing_details === true) {
+        this.showDetails();
+      }
+    } else if (settings.get('details') || app.showing_details) {
+        this.showDetails();
     }
 
     return this;
@@ -471,6 +477,7 @@ AssignmentView = Backbone.View.extend({
       .addClass("details-hide")
       .text("Hide details");
     this.$(".details-content").show();
+    this.showing_details = true;
   },
 
   hideDetails: function (event) {
@@ -479,6 +486,7 @@ AssignmentView = Backbone.View.extend({
       .addClass("details-show")
       .text("Show details");
     this.$(".details-content").hide();
+    this.showing_details = false;
   },
 
   toggleDone: function (event) {
@@ -901,6 +909,7 @@ AppView = Backbone.View.extend({
           message: "Looks like you're offline. Until you reconnect to the Internet, you can't make changes to your homework, but you can view it.",
           kind: "error"
         });
+        status_view.alert();
       }
     });
 

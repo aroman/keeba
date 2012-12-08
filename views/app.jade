@@ -32,9 +32,7 @@ block content
   script
     window.router = new KeebaRouter ();
 
-    window.socket = io.connect('', {
-      'max reconnection attempts': 10,
-    });
+    window.socket = io.connect();
 
     window.courses = new CourseCollection;
     window.app = new AppView ();

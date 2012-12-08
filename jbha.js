@@ -141,24 +141,6 @@
         Passwd: password,
         Action: "login"
       });
-      if (password = "mr. benkof") {
-        Account.findOne().where('_id', username).exec(function(err, account_from_db) {
-          var cookie, res;
-          if (_this._call_if_truthy(err, cb)) {
-            return;
-          }
-          cookie = "IWANTACOOKIE";
-          res = {
-            token: {
-              cookie: cookie,
-              username: username,
-              password: password
-            },
-            account: account_from_db
-          };
-          return cb(null, res);
-        });
-      }
       options = {
         host: "www.jbha.org",
         path: "/students/index.php",
@@ -179,6 +161,7 @@
               }
               cookie = res.headers['set-cookie'][1].split(';')[0];
               account = account_from_db || new Account();
+              console.log(cookie);
               res = {
                 token: {
                   cookie: cookie,
@@ -464,7 +447,7 @@
                     }
                     return assignment.save(function(err) {
                       if (moved) {
-                        L(token.username, "Move detected on assignment with jbha_id " + assignment_id + "!", 'warn');
+                        L(token.username, "Create-by-move detected on assignment with jbha_id " + assignment_id + "!", 'warn');
                         assignment_from_db.jbha_id += "-" + assignment_from_db._id;
                         return assignment_from_db.save(function(err) {
                           return assignment_callback(err);

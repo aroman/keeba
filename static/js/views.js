@@ -34,8 +34,10 @@ StatusView = Backbone.View.extend({
     // pull from the server
     courses.fetch({success: function () {
       // Re-render the current view (it will be destroyed
-      // when fetch()ing the CourseCollection).
-      router.current_view.render();
+      // when fetch()ing the CourseCollection), if there is one.
+      if (router.current_view) {
+        router.current_view.render();
+      }
       that.model.set({addable: false});
       app.num_new = 0;
       document.title = "Keeba";
@@ -480,6 +482,12 @@ AssignmentView = Backbone.View.extend({
   },
 
   toggleDone: function (event) {
+    // We don't want this working if we're offline,
+    // since this circumvents the standard input
+    // `disabled` flag that we set in AppView.disableControls()
+    if (app.offline) {
+      return;
+    }
     this.model.set({
       done: !this.model.get('done'),
       archived: false
@@ -826,10 +834,10 @@ SectionView = Backbone.View.extend({
 AppView = Backbone.View.extend({
 
   el: $("body"),
-  showing_archived: false,
-  offline: false,
-  update_timer: null,
-  num_new: 0,
+  showing_archived: false, // Whether the app is currently showing archived assignments
+  offline: false, // Whether the app is currently in offline mode
+  update_timer: null, // The JavaScript timer ID used to call updateUpdatedAt() periodically
+  num_new: 0, // The number of new assignments that were retreived from the last sync
 
   events: {
     "click #toggle-details": "toggleDetails",
@@ -843,14 +851,13 @@ AppView = Backbone.View.extend({
 
   initialize: function () {
     var that = this;
-    // Create models & collections.
+    // Create models & collections
     window.settings = new Settings;
     window.settings_view = new SettingsView({model: settings});
     window.app_status = new Status;
     window.status_view = new StatusView({model: app_status});
 
     socket.on('connect', function () {
-      console.log ("socket just emitted `connect` event")
       // First log in
       if (settings.get('firstrun')) {
        app_status.set({
@@ -873,33 +880,28 @@ AppView = Backbone.View.extend({
     });
 
     socket.on('reconnect', function (transport_type, attempts) {
-      console.log ("CONNECTION RE-ESTABLISHED!");
       app.offline = false;
+      that.enableControls();
     });
 
     socket.on('reconnecting', function (delay, attempts) {
-      console.log (delay)
-      app.offline = true;
-      that.disableControls();
-      clearInterval(that.update_timer);
-      app_status.set({
-        heading: "Connection lost!",
-        message: "Make sure you're on the Internet. Until the connection is re-established, you can't make changes to your homework, but you can look at it.",
-        kind: "error"
-      });
+      // XXX: Hack to disable finite exponential back-off
+      socket.socket.reconnectionAttempts = 1
+      socket.socket.reconnectionDelay = 1500 // (This is doubled in reality)
 
-      // if (attempt_num === 5) {
-      //   // Close any and all open modals.
-      //   $(".modal, .modal-backdrop").not("#failure-modal").remove();
-      //   $("#failure-modal").modal({
-      //     backdrop: 'static',
-      //     keyboard: false
-      //   });
-      //   // If you try to reconnect, don't. For whatever reason
-      //   // the socket will still try even after the attempt_num
-      //   // is at it's max.
-      //   socket.on('reconnecting', socket.disconnect);
-      // }
+      // This gets called every time we try to reconnect,
+      // so only change to an offline state if we weren't 
+      // before.
+      if (!app.offline) {
+        app.offline = true;
+        that.disableControls();
+        clearInterval(that.update_timer);
+        app_status.set({
+          heading: "Connection lost!",
+          message: "Looks like you're offline. Until you reconnect to the Internet, you can't make changes to your homework, but you can view it.",
+          kind: "error"
+        });
+      }
     });
 
     socket.on('refresh:start', this.handleRemoteRefreshStart);
@@ -911,12 +913,29 @@ AppView = Backbone.View.extend({
     this.bindShortcuts();
   },
 
+  // REFACTOR: Have this share a common ancestor with enableControls()
   disableControls: function () {
-    this.$(".btn, input[type='checkbox']").not('.details-show').prop('disabled', true);
+    // Make sure we're updating the DOM & rendering before
+    // trying to disable the controls.
+    _.defer(function () {
+      $(".btn, input[type='checkbox']").not('.details-show').prop('disabled', true);
+    });
+    $("#force-refresh, #settings, #logout").addClass('disabled-dropdown-item');
+  },
+
+  enableControls: function () {
+    // Make sure we're updating the DOM & rendering before
+    // trying to disable the controls.
+    _.defer(function () {
+      $(".btn, input[type='checkbox']").not('.details-show').prop('disabled', false);
+    });
+    $("#force-refresh, #settings, #logout").removeClass('disabled-dropdown-item');
   },
 
   refresh: function () {
-    console.log ("refresh()");
+    if (app.offline) {
+      return;
+    }
     socket.emit('refresh');
   },
 
@@ -954,7 +973,6 @@ AppView = Backbone.View.extend({
   },
 
   updateUpdatedAt: function () {
-    console.log ("updateUpdatedAt()");
     app_status.set({
       heading: "",
       message: "Last checked for new homework: " + settings.getUpdatedAt().from(moment().utc()) + ".",

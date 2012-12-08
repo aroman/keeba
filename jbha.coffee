@@ -506,8 +506,12 @@ Jbha.Client =
         if $('a[href="/students/?Action=logout"]').length is 0
           L token.username, "Session expired; re-authenticating", "warn"
           @authenticate token.username, token.password, (err, res) =>
-            # Now that we're re-auth'd, repeat the request
-            @_authenticated_request res.token, resource, callback
+            if err
+              # Auth failed
+              callback err
+            else
+              # Now that we're re-auth'd, repeat the request
+              @_authenticated_request res.token, resource, callback
         else
           callback null, token, $
 

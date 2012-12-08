@@ -513,7 +513,11 @@
           if ($('a[href="/students/?Action=logout"]').length === 0) {
             L(token.username, "Session expired; re-authenticating", "warn");
             return _this.authenticate(token.username, token.password, function(err, res) {
-              return _this._authenticated_request(res.token, resource, callback);
+              if (err) {
+                return callback(err);
+              } else {
+                return _this._authenticated_request(res.token, resource, callback);
+              }
             });
           } else {
             return callback(null, token, $);

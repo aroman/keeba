@@ -1117,6 +1117,13 @@ AppView = Backbone.View.extend({
 
   updateCourses: _.throttle(function () {
     $("#sidebar-courses").html(Handlebars.templates.sidebar_courses({courses: courses.toJSON()}));
+    // XXX: Hacky
+    // We need to manually disable the add-course button in here
+    // since this function is throttle'd and will call itself
+    // even after disableControls() runs.
+    if (app.offline) {
+      $("#add-course").prop('disabled', true);
+    }
     app.highlightSidebar();
   }, 100),
 

@@ -161,7 +161,6 @@
               }
               cookie = res.headers['set-cookie'][1].split(';')[0];
               account = account_from_db || new Account();
-              console.log(cookie);
               res = {
                 token: {
                   cookie: cookie,
@@ -491,7 +490,6 @@
       var cookie, options, req,
         _this = this;
       cookie = token.cookie;
-      console.log("_authenticated_request called with cookie " + cookie);
       if (!cookie) {
         callback("Authentication error: No session cookie");
       }
@@ -515,7 +513,6 @@
           if ($('a[href="/students/?Action=logout"]').length === 0) {
             L(token.username, "Session expired; re-authenticating", "warn");
             return _this.authenticate(token.username, token.password, function(err, res) {
-              console.log("In closure callback for authenticate()!");
               return _this._authenticated_request(res.token, resource, callback);
             });
           } else {
@@ -531,7 +528,6 @@
     _parse_courses: function(token, callback) {
       return this._authenticated_request(token, "homework.php", function(err, new_token, $) {
         var blacklist, courses, parse_course;
-        console.log("In closure callback for _authenticated_request() in _parse_courses!!");
         token = new_token;
         courses = [];
         blacklist = ['433', '665'];

@@ -1,7 +1,6 @@
 REPORTER = list
 
 serve: build
-	@export GIT_REV=`git rev-parse --short HEAD`
 	@node server.js
 
 docs: clean-docs

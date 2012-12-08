@@ -136,7 +136,6 @@ Jbha.Client =
               return if @_call_if_truthy err, cb
               cookie = res.headers['set-cookie'][1].split(';')[0]
               account = account_from_db or new Account()
-              console.log cookie
               res =
                 token:
                   cookie: cookie
@@ -506,9 +505,9 @@ Jbha.Client =
         # Handle re-authing if we've been logged out
         if $('a[href="/students/?Action=logout"]').length is 0
           L token.username, "Session expired; re-authenticating", "warn"
-          @authenticate token.username, token.password, (err, res) ->
-            token = res.token
-            callback null, token, $
+          @authenticate token.username, token.password, (err, res) =>
+            # Now that we're re-auth'd, repeat the request
+            @_authenticated_request res.token, resource, callback
         else
           callback null, token, $
 

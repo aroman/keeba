@@ -1186,7 +1186,9 @@ SetupView = Backbone.View.extend({
 
     socket.on('connect', function () {
       $("#nickname").focus();
-      socket.emit('refresh', {archive_if_old: true});
+      _.delay(function () {
+        socket.emit('refresh', {archive_if_old: true});
+      }, 1000);
     });
 
     socket.on('refresh:start', this.handleRemoteRefreshStart);

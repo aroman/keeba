@@ -1,6 +1,9 @@
 // Pre-compile dates.
 function compileDateConstants () {
-  today = moment().utc().startOf('day');
+  // XXX: HACK! Fix this and grab a coffee.
+  // today = moment().utc().startOf('day');
+  _now = moment();
+  today = moment.utc([_now.year(), _now.month(), _now.date()]);
   yesterday = moment(today).subtract('days', 1);
   tomorrow = moment(today).add('days', 1);
   in_a_week = moment(today).add('weeks', 1);
@@ -126,6 +129,8 @@ Handlebars.registerHelper('remaining', function (start, end) {
 Handlebars.registerHelper('format_date', function (epoch) {
   var date = moment.utc(epoch);
   var str = "";
+
+  // console.log(date.format('LLLL ZZ  ') + date.valueOf());
 
   if (date.valueOf() < yesterday.valueOf()) {
     str = '<span class="overdue">' + date.format(DATE_FORMAT) + '</span>';

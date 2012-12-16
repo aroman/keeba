@@ -1,7 +1,6 @@
 REPORTER = list
 
 serve: build
-	@source setenv.sh
 	@node server.js
 
 docs: clean-docs

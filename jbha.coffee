@@ -399,7 +399,7 @@ Jbha.Client =
                   assignment_id = $(element).attr('href').match(/\d+/)[0]
 
                   splits = text_blob.split ":"
-                  assignment_title = "".concat(splits.slice(1)).trim()
+                  assignment_title = splits.slice(1)[0].trim()
                   # Parse the date and store it as a UTC UNIX timestamp
                   assignment_date = moment.utc(splits.slice(0, 1)[0], "[Due] MMM DD, YYYY").valueOf()
                   # Parse the details of the assignment as HTML -- **not** as text.
@@ -430,7 +430,7 @@ Jbha.Client =
                     # Heuristic for assuming that an assignment has been "created-by-move".
                     # See #25
                     moved = assignment_from_db.date.valueOf() isnt assignment_date and
-                        (assignment_from_db.title isnt assignment_title) or (assignment_from_db.details isnt assignment_details)
+                        assignment_from_db.title isnt assignment_title
                     if not moved
                       assignment_callback null
                       return

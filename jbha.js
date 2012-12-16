@@ -405,7 +405,7 @@
                   if (text_blob.match(/Due \w{3} \d{1,2}\, \d{4}:/)) {
                     assignment_id = $(element).attr('href').match(/\d+/)[0];
                     splits = text_blob.split(":");
-                    assignment_title = "".concat(splits.slice(1)).trim();
+                    assignment_title = splits.slice(1)[0].trim();
                     assignment_date = moment.utc(splits.slice(0, 1)[0], "[Due] MMM DD, YYYY").valueOf();
                     assignment_details = $("#toggle-cont-" + assignment_id).html();
                     if ($("#toggle-cont-" + assignment_id).text()) {
@@ -424,7 +424,7 @@
                       }
                     });
                     if (assignment_from_db) {
-                      moved = assignment_from_db.date.valueOf() !== assignment_date && (assignment_from_db.title !== assignment_title) || (assignment_from_db.details !== assignment_details);
+                      moved = assignment_from_db.date.valueOf() !== assignment_date && assignment_from_db.title !== assignment_title;
                       if (!moved) {
                         assignment_callback(null);
                         return;

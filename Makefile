@@ -1,7 +1,6 @@
 REPORTER = list
 
 serve: build
-	@source setenv.sh
 	@node server.js
 
 docs: clean-docs
@@ -24,10 +23,10 @@ clean:
 
 deploy-staging: build test
 	@git push staging
-	@heroku run source setenv.sh --app keeba-staging
+	@heroku config:set GIT_REV=`git rev-parse --short HEAD` --app keeba-staging
 
 deploy-production: build test
 	@git push production
-	@heroku run source setenv.sh --app keeba
+	@heroku config:set GIT_REV=`git rev-parse --short HEAD` --app keeba
 
 .PHONY: build clean serve test docs clean-docs

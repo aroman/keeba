@@ -429,9 +429,9 @@
                     if (assignment_from_db) {
                       moved = assignment_from_db.date.valueOf() !== assignment_date && assignment_from_db.title !== assignment_title;
                       if (!moved) {
-                        if (assignment_title_old_algo !== assignment_title) {
+                        if (assignment_from_db.title === assignment_title_old_algo && assignment_title_old_algo !== assignment_title) {
                           assignment_from_db.title = assignment_title;
-                          console.log("Fixing bum parse job on title: " + assignment_title);
+                          L(token.username, "Fixing bum parse job on title: " + assignment_title, 'warn');
                           return assignment_from_db.save(function(err) {
                             return assignment_callback(err);
                           });

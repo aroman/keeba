@@ -439,11 +439,12 @@ Jbha.Client =
                         assignment_from_db.title isnt assignment_title
                     if not moved
                       # DEPRECATE: Silently bump parsing mistakes if needed
-                      if assignment_title_old_algo != assignment_title
-                        assignment_from_db.title = assignment_title
-                        console.log "Fixing bum parse job on title: " + assignment_title
-                        return assignment_from_db.save (err) ->
-                          assignment_callback err
+                      if assignment_from_db.title == assignment_title_old_algo &&
+                        assignment_title_old_algo != assignment_title
+                          assignment_from_db.title = assignment_title
+                          L token.username, "Fixing bum parse job on title: " + assignment_title, 'warn'
+                          return assignment_from_db.save (err) ->
+                            assignment_callback err
                       else
                         assignment_callback null
                         return

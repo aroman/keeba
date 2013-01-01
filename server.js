@@ -305,7 +305,7 @@
       broadcast("refresh:start");
       setTimeout(function() {
         return worker.kill('SIGKILL');
-      }, 30000);
+      }, 40000);
       worker.on("message", function(message) {
         session.token = token = message[1];
         saveSession();

@@ -249,7 +249,7 @@ ss.on "connection", (err, socket, session) ->
 
     setTimeout () ->
       worker.kill('SIGKILL')
-    , 30000
+    , 40000
 
     worker.on "message", (message) ->
       # In case we got re-auth'd during the refresh

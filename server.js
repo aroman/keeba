@@ -53,6 +53,7 @@
     mongo_uri = secrets.MONGO_STAGING_URI;
     io.set("log level", 3);
     io.set("logger", new logging.Logger("SIO"));
+    app.use(express.logger('dev'));
     return app.locals.pretty = true;
   });
 
@@ -69,9 +70,9 @@
   sessionStore = new MongoStore({
     db: 'keeba',
     url: mongo_uri,
-    stringify: false,
-    clear_interval: 60 * 60 * 5
+    stringify: false
   }, function() {
+    logger.debug("Connected to database");
     server.listen(port);
     logger.info("Running in " + mode[color] + " mode on port " + (port.toString().bold) + ".");
     return logger.info("Rav Keeba has taken the bima . . .  ");
@@ -85,6 +86,9 @@
     app.use(cookie_parser);
     app.use(express.bodyParser());
     app.use(express.session({
+      cookie: {
+        maxAge: 604800000
+      },
       store: sessionStore
     }));
     app.use(app.router);
@@ -260,6 +264,9 @@
 
   ss.on("connection", function(err, socket, session) {
     var L, broadcast, saveSession, sync, token;
+    if (!session) {
+      return socket.disconnect();
+    }
     token = session.token;
     socket.join(token.username);
     saveSession = function(cb) {

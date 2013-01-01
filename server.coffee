@@ -43,7 +43,7 @@ app.configure 'development', ->
   mongo_uri = secrets.MONGO_STAGING_URI
   io.set "log level", 3
   io.set "logger", new logging.Logger "SIO"
-  # app.use express.logger()
+  app.use express.logger('dev')
   app.locals.pretty = true # Enable Jade pretty-printing
 
 app.configure 'production', ->
@@ -57,8 +57,8 @@ sessionStore = new MongoStore
   db: 'keeba'
   url: mongo_uri
   stringify: false
-  clear_interval: 60 * 60 * 5, # Every 5 hours
-  () ->
+  ->
+    logger.debug "Connected to database"
     server.listen port
     logger.info "Running in #{mode[color]} mode on port #{port.toString().bold}."
     logger.info "Rav Keeba has taken the bima . . .  "
@@ -69,7 +69,10 @@ ss = new ssockets io, sessionStore, cookie_parser
 app.configure ->
   app.use cookie_parser
   app.use express.bodyParser()
-  app.use express.session(store: sessionStore)
+  app.use express.session(
+    cookie: {maxAge: 604800000}, # One week
+    store: sessionStore
+  )
   app.use app.router
   app.use express.static "#{__dirname}/static"
   app.use express.errorHandler(dumpExceptions: true, showStack: true)

@@ -19,7 +19,7 @@
     "coffee-script": "1.4.0",
     "colors": "0.6.0-1",
     "connect": "1.9.x",
-    "connect-mongo": "0.2.0",
+    "connect-mongo": "git://github.com/aroman/connect-mongo.git#master",
     "docco": "0.4.0",
     "express": "3.0.3",
     "handlebars": "1.0.7",

@@ -399,12 +399,11 @@ Jbha.Client =
                   assignment_id = $(element).attr('href').match(/\d+/)[0]
 
                   splits = text_blob.split ":"
-                  # XXX: We need to treat both the current and old (wrong)
-                  # assignment title as being equivalent so as not
-                  # to think that existing assignments under the old
-                  # system are actually changed.
-                  assignment_title_old_algo = splits.slice(1)[0].trim()
                   assignment_title = splits.slice(1).join(":").trim()
+                  # DEPRECATE: Silently update assignment titles
+                  # that were created under the old (wrong) parsing
+                  # scheme if they differ.
+                  assignment_title_old_algo = splits.slice(1)[0].trim()
                   # Parse the date and store it as a UTC UNIX timestamp
                   assignment_date = moment.utc(splits.slice(0, 1)[0], "[Due] MMM DD, YYYY").valueOf()
                   # Parse the details of the assignment as HTML -- **not** as text.
@@ -431,14 +430,24 @@ Jbha.Client =
                   assignment_from_db = _.find course.assignments, (assignment) ->
                     true if assignment.jbha_id is assignment_id
 
+                  # If the assignment was already downloaded (at some point)
+                  # to this account.
                   if assignment_from_db
                     # Heuristic for assuming that an assignment has been "created-by-move".
-                    # See #25
+                    # See #25 on GitHub
                     moved = assignment_from_db.date.valueOf() isnt assignment_date and
                         assignment_from_db.title isnt assignment_title
                     if not moved
-                      assignment_callback null
-                      return
+                      # DEPRECATE: Silently bump parsing mistakes if needed
+                      if assignment_title_old_algo != assignment_title
+                        assignment_from_db.title = assignment_title
+                        console.log "Fixing bum parse job on title: " + assignment_title
+                        return assignment_from_db.save (err) ->
+                          assignment_callback err
+                      else
+                        assignment_callback null
+                        return
+
 
                   assignment = new Assignment()
                   assignment.owner = token.username

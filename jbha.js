@@ -402,12 +402,13 @@
               }, function(course, wf_callback) {
                 var parse_assignment;
                 parse_assignment = function(element, assignment_callback) {
-                  var assignment, assignment_date, assignment_details, assignment_from_db, assignment_id, assignment_title, moved, regex, regexes, splits, text_blob, _i, _len;
+                  var assignment, assignment_date, assignment_details, assignment_from_db, assignment_id, assignment_title, assignment_title_old_algo, moved, regex, regexes, splits, text_blob, _i, _len;
                   text_blob = $(element).text();
                   if (text_blob.match(/Due \w{3} \d{1,2}\, \d{4}:/)) {
                     assignment_id = $(element).attr('href').match(/\d+/)[0];
                     splits = text_blob.split(":");
                     assignment_title = splits.slice(1).join(":").trim();
+                    assignment_title_old_algo = splits.slice(1)[0].trim();
                     assignment_date = moment.utc(splits.slice(0, 1)[0], "[Due] MMM DD, YYYY").valueOf();
                     assignment_details = $("#toggle-cont-" + assignment_id).html();
                     if ($("#toggle-cont-" + assignment_id).text()) {
@@ -428,8 +429,16 @@
                     if (assignment_from_db) {
                       moved = assignment_from_db.date.valueOf() !== assignment_date && assignment_from_db.title !== assignment_title;
                       if (!moved) {
-                        assignment_callback(null);
-                        return;
+                        if (assignment_title_old_algo !== assignment_title) {
+                          assignment_from_db.title = assignment_title;
+                          console.log("Fixing bum parse job on title: " + assignment_title);
+                          return assignment_from_db.save(function(err) {
+                            return assignment_callback(err);
+                          });
+                        } else {
+                          assignment_callback(null);
+                          return;
+                        }
                       }
                     }
                     assignment = new Assignment();

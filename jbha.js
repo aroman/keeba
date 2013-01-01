@@ -29,7 +29,9 @@
     mongo_uri = secrets.MONGO_STAGING_URI;
   }
 
-  mongoose.connect(mongo_uri, function() {});
+  mongoose.connect(mongo_uri, function() {
+    return console.log("Connection to MongoDB established in jbha module.");
+  });
 
   String.prototype.capitalize = function() {
     return this.charAt(0).toUpperCase() + this.slice(1);
@@ -405,7 +407,7 @@
                   if (text_blob.match(/Due \w{3} \d{1,2}\, \d{4}:/)) {
                     assignment_id = $(element).attr('href').match(/\d+/)[0];
                     splits = text_blob.split(":");
-                    assignment_title = splits.slice(1)[0].trim();
+                    assignment_title = splits.slice(1).join(":").trim();
                     assignment_date = moment.utc(splits.slice(0, 1)[0], "[Due] MMM DD, YYYY").valueOf();
                     assignment_details = $("#toggle-cont-" + assignment_id).html();
                     if ($("#toggle-cont-" + assignment_id).text()) {

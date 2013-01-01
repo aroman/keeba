@@ -264,6 +264,9 @@
 
   ss.on("connection", function(err, socket, session) {
     var L, broadcast, saveSession, sync, token;
+    if (!session) {
+      return socket.disconnect();
+    }
     token = session.token;
     socket.join(token.username);
     saveSession = function(cb) {

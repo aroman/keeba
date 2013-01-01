@@ -203,6 +203,10 @@ app.get "/app*", ensureSession, hydrateSettings, (req, res) ->
 workers = {}
 
 ss.on "connection", (err, socket, session) ->
+  # Make sure we've got an actual session.
+  # And if we don't, tell the client to
+  # reconnect.
+  return socket.disconnect() unless session
   token = session.token
   socket.join token.username
 

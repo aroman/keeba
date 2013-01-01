@@ -17,8 +17,8 @@ if process.env.NODE_ENV is "production"
 else
   mongo_uri = secrets.MONGO_STAGING_URI
 
-mongoose.connect mongo_uri, () ->
-  # console.log "Connection established"
+mongoose.connect mongo_uri, ->
+  console.log "Connection to MongoDB established in jbha module."
 
 String::capitalize = ->
   @charAt(0).toUpperCase() + @slice 1
@@ -399,7 +399,12 @@ Jbha.Client =
                   assignment_id = $(element).attr('href').match(/\d+/)[0]
 
                   splits = text_blob.split ":"
-                  assignment_title = splits.slice(1)[0].trim()
+                  # XXX: We need to treat both the current and old (wrong)
+                  # assignment title as being equivalent so as not
+                  # to think that existing assignments under the old
+                  # system are actually changed.
+                  assignment_title_old_algo = splits.slice(1)[0].trim()
+                  assignment_title = splits.slice(1).join(":").trim()
                   # Parse the date and store it as a UTC UNIX timestamp
                   assignment_date = moment.utc(splits.slice(0, 1)[0], "[Due] MMM DD, YYYY").valueOf()
                   # Parse the details of the assignment as HTML -- **not** as text.
@@ -443,7 +448,7 @@ Jbha.Client =
                   assignment.date = assignment_date
 
                   # Add the assignment (really just the assignment ObjectId)
-                  # on to the course's assignments array.
+                  # onto the course's assignments array.
                   course.assignments.push assignment
 
                   # Increment the new assignments counter

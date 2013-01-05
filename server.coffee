@@ -6,6 +6,7 @@ http       = require "http"
 
 # 3rd party modules
 _          = require "underscore"
+email      = require "emailjs"
 colors     = require "colors"
 connect    = require "connect"
 express    = require "express"
@@ -22,6 +23,11 @@ secrets    = require "./secrets"
 app = express()
 server = http.createServer app
 io = socketio.listen server, log: false
+email_server = email.server.connect
+  user: secrets.EMAIL_USERNAME
+  password: secrets.EMAIL_PASSWORD
+  host: "smtp.gmail.com"
+  ssl: true
 logger = new logging.Logger "SRV"
 
 # Never allow WebSockets
@@ -51,11 +57,13 @@ app.configure 'production', ->
   port = process.env.PORT || 80
   color = 'green'
   mongo_uri = secrets.MONGO_PRODUCTION_URI
+  app.use express.errorHandler(dumpExceptions: true, showStack: true)
   app.set 'view options', pretty: false
 
 sessionStore = new MongoStore
   db: 'keeba'
   url: mongo_uri
+  # auto_reconnect: true
   stringify: false
   ->
     logger.debug "Connected to database"
@@ -75,7 +83,6 @@ app.configure ->
   )
   app.use app.router
   app.use express.static "#{__dirname}/static"
-  app.use express.errorHandler(dumpExceptions: true, showStack: true)
   app.set 'view engine', 'jade'
   app.set 'views', "#{__dirname}/views"
 
@@ -86,7 +93,15 @@ app.locals.development_build = mode is 'development'
 
 app.use (err, req, res, next) ->
   console.error err.stack
-  res.send 500, "Yikes! Something broke."
+  # XXX: Very lame hack to stop sending emails for
+  # useless 500's
+  if req.path != "/favicon.ico"
+    email_server.send
+      from: "Keeba A.I <keeba.ai@gmail.com>"
+      to: secrets.ADMIN_EMAIL
+      subject: "Keeba crash report"
+      text: "#{req.session?.token?.username} just blew up the server.\n\n" + err.stack
+  res.status(500).render "500", layout: false
 
 # Redirect requests coming from
 # unsupported browsers to landing
@@ -143,6 +158,9 @@ app.post "/", (req, res) ->
         else
           res.redirect "/app"
  
+app.get "/500", (req, res) ->
+  res.status(500).render "500", layout: false
+
 app.get "/about", (req, res) ->
   res.render "about"
 

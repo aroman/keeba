@@ -34,7 +34,7 @@ AccountSchema = new mongoose.Schema
     default: true
   details:
     type: Boolean
-    default: true
+    default: false
   migrate:
     type: Boolean
     default: false
@@ -442,8 +442,8 @@ Jbha.Client =
                       if assignment_from_db.title == assignment_title_old_algo &&
                         assignment_title_old_algo != assignment_title
                           assignment_from_db.title = assignment_title
-                          L token.username, "Fixing bum parse job on title: " + assignment_title, 'warn'
                           return assignment_from_db.save (err) ->
+                            L token.username, "Fixed bum parse job on title: " + assignment_title, 'warn'
                             assignment_callback err
                       else
                         assignment_callback null

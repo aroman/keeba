@@ -1,7 +1,6 @@
 # Copyright (C) 2012 Avi Romanoff <aviromanoff at gmail.com>
 
-mongoose = require('mongoose')
-secrets = require('./secrets')
+mongoose = require 'mongoose'
 
 AccountSchema = new mongoose.Schema
   _id: String
@@ -58,7 +57,4 @@ module.exports =
   Account: mongoose.model 'account', AccountSchema
   Course: mongoose.model 'course', CourseSchema
   Assignment: mongoose.model 'assignment', AssignmentSchema
-  connect: ->
-    mongoose.connect if process.env.NODE_ENV == "production"
-    then secrets.MONGO_PRODUCTION_URI
-    else secrets.MONGO_STAGING_URI
+  connect: (URI) -> mongoose.connect URI

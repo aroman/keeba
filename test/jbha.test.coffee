@@ -3,7 +3,7 @@
 should  = require("chai").should()
 
 jbha    = require "../jbha"
-secrets = require "../secrets"
+config = require "../config"
 
 jbha.silence()
 
@@ -13,7 +13,7 @@ describe "authentication", () ->
 
   describe "valid credentials", () ->
     it 'should succeed', (done) ->
-      jbha.Client.authenticate secrets.VALID_USERNAME, secrets.VALID_PASSWORD, (err, res) ->
+      jbha.Client.authenticate config.VALID_USERNAME, config.VALID_PASSWORD, (err, res) ->
         should.exist res.token
         should.not.exist err
         token = res.token

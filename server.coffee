@@ -15,17 +15,17 @@ socketio   = require "socket.io"
 MongoStore = require("connect-mongo")(express)
 
 # Internal modules
+config     = require "./config"
 jbha       = require "./jbha"
 logging    = require "./logging"
-secrets    = require "./secrets"
 
 # Create machinery
 app = express()
 server = http.createServer app
 io = socketio.listen server, log: false
 email_server = email.server.connect
-  user: secrets.EMAIL_USERNAME
-  password: secrets.EMAIL_PASSWORD
+  user: config.EMAIL_USERNAME
+  password: config.EMAIL_PASSWORD
   host: "smtp.gmail.com"
   ssl: true
 logger = new logging.Logger "SRV"
@@ -40,13 +40,11 @@ io.set 'transports', [
 mode = null
 port = null
 color = null
-mongo_uri = null
 
 app.configure 'development', ->
   mode = 'development'
   port = process.env.PORT || 8888
   color = 'magenta'
-  mongo_uri = secrets.MONGO_STAGING_URI
   io.set "log level", 3
   io.set "logger", new logging.Logger "SIO"
   app.use express.logger('dev')
@@ -56,14 +54,12 @@ app.configure 'production', ->
   mode = 'production'
   port = process.env.PORT || 80
   color = 'green'
-  mongo_uri = secrets.MONGO_PRODUCTION_URI
   app.use express.errorHandler(dumpExceptions: true, showStack: true)
   app.set 'view options', pretty: false
 
 sessionStore = new MongoStore
   db: 'keeba'
-  url: mongo_uri
-  # auto_reconnect: true
+  url: config.MONGO_URI
   stringify: false
   ->
     logger.debug "Connected to database"
@@ -71,7 +67,7 @@ sessionStore = new MongoStore
     logger.info "Running in #{mode[color]} mode on port #{port.toString().bold}."
     logger.info "Rav Keeba has taken the bima . . .  "
 
-cookie_parser = express.cookieParser secrets.SESSION_SECRET
+cookie_parser = express.cookieParser config.SESSION_SECRET
 ss = new ssockets io, sessionStore, cookie_parser
 
 app.configure ->
@@ -86,7 +82,7 @@ app.configure ->
   app.set 'view engine', 'jade'
   app.set 'views', "#{__dirname}/views"
 
-logger.info "Using database: #{mongo_uri}"
+logger.info "Using database: #{config.MONGO_URI}"
 
 app.locals.revision = process.env.GIT_REV
 app.locals.development_build = mode is 'development'
@@ -98,7 +94,7 @@ app.use (err, req, res, next) ->
   if req.path != "/favicon.ico"
     email_server.send
       from: "Keeba A.I <keeba.ai@gmail.com>"
-      to: secrets.ADMIN_EMAIL
+      to: config.ADMIN_EMAIL
       subject: "Keeba crash report"
       text: "#{req.session?.token?.username} just blew up the server.\n\n" + err.stack
   res.status(500).render "500", layout: false

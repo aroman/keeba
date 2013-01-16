@@ -9,15 +9,15 @@ mongoose     = require "mongoose"
 moment       = require "moment"
 querystring  = require "querystring"
 
+config       = require "./config"
 models       = require "./models"
 logging      = require "./logging"
-secrets      = require "./secrets"
 
 Account = models.Account
 Course = models.Course
 Assignment = models.Assignment
 
-models.connect()
+models.connect config.MONGO_URI
 
 String::capitalize = ->
   @charAt(0).toUpperCase() + @slice 1

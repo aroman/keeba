@@ -6,9 +6,9 @@
 
   process.on('message', function(message) {
     if (message.action = "refresh") {
-      return jbha.Client.refresh(message.token, message.options, function(err, new_token, res) {
+      return jbha.refresh(message.token, message.options, function(err, new_token, res) {
         process.send([err, new_token, res]);
-        return process.exit(0);
+        return process.exit();
       });
     }
   });

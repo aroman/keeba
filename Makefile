@@ -1,4 +1,4 @@
-REPORTER = list
+REPORTER = spec
 
 serve: build
 	@node server.js

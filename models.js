@@ -23,10 +23,6 @@
       type: Boolean,
       "default": false
     },
-    feedback_given: {
-      type: Boolean,
-      "default": false
-    },
     updated: {
       type: Date,
       "default": new Date(0)
@@ -79,10 +75,7 @@
   module.exports = {
     Account: mongoose.model('account', AccountSchema),
     Course: mongoose.model('course', CourseSchema),
-    Assignment: mongoose.model('assignment', AssignmentSchema),
-    connect: function(URI) {
-      return mongoose.connect(URI);
-    }
+    Assignment: mongoose.model('assignment', AssignmentSchema)
   };
 
 }).call(this);

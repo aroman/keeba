@@ -1,19 +1,24 @@
 # Copyright (C) 2012 Avi Romanoff <aviromanoff at gmail.com>
 
-should  = require("chai").should()
+should   = require("chai").should()
+mongoose = require "mongoose"
 
-jbha    = require "../jbha"
-config = require "../config"
+jbha     = require "../jbha"
+dal      = require "../dal"
+config   = require "../config"
 
-jbha.silence()
+mongoose.connect config.MONGO_URI
+
+jbha._suppress_logging()
+dal._suppress_logging()
 
 token = null
 
-describe "authentication", () ->
+describe "jbha", () ->
 
   describe "valid credentials", () ->
     it 'should succeed', (done) ->
-      jbha.Client.authenticate config.VALID_USERNAME, config.VALID_PASSWORD, (err, res) ->
+      jbha.authenticate config.VALID_USERNAME, config.VALID_PASSWORD, (err, res) ->
         should.exist res.token
         should.not.exist err
         token = res.token
@@ -21,11 +26,11 @@ describe "authentication", () ->
 
   describe "invalid credentials", () ->
     it 'should fail', (done) ->
-      jbha.Client.authenticate 'joe.biden', 'flobots', (err, res) ->
+      jbha.authenticate 'joe.biden', 'flobots', (err, res) ->
         should.exist err
         done()
 
-describe "accounts", () ->
+describe "dal", () ->
 
   mock_settings =
     _id: String(Math.random())
@@ -35,7 +40,7 @@ describe "accounts", () ->
 
   describe "create", () ->
     it 'should create without error', (done) ->
-      jbha.Client._create_account mock_settings._id, (err, res) ->
+      dal._create_account mock_settings._id, (err, res) ->
         should.not.exist err
         res.account._id.should.equal mock_settings._id
         res.account.is_new.should.equal true
@@ -47,13 +52,13 @@ describe "accounts", () ->
 
   describe "update", () ->
     it 'should update without error', (done) ->
-      jbha.Client.update_settings token, mock_settings, (err) ->
+      dal.update_settings token, mock_settings, (err) ->
         should.not.exist err
         done()
 
   describe "read", () ->
     it 'should read without error', (done) ->
-      jbha.Client.read_settings token, (err, settings) ->
+      dal.read_settings token, (err, settings) ->
         should.not.exist err
         settings.nickname.should.equal mock_settings.nickname
         settings.firstrun.should.equal mock_settings.firstrun
@@ -63,11 +68,9 @@ describe "accounts", () ->
 
   describe "delete", () ->
     it 'should delete without error', (done) ->
-      jbha.Client._delete_account token, mock_settings._id, (err) ->
+      dal._delete_account token, mock_settings._id, (err) ->
         should.not.exist err
         done()
-
-describe "homework", () ->
 
   fixture =
     title: "Counting to " + Math.random()
@@ -81,7 +84,7 @@ describe "homework", () ->
 
   describe "create course", () ->
     it 'should create without error', (done) ->
-      jbha.Client.create_course token, fixture, (err, course) ->
+      dal.create_course token, fixture, (err, course) ->
         should.not.exist err
         course.title.should.equal fixture.title
         course.teacher.should.equal fixture.teacher
@@ -97,7 +100,7 @@ describe "homework", () ->
         title: "Stop sleeping and warn others"
         details: "Eat that ASAP Rocky"
         date: new Date().valueOf()
-      jbha.Client.create_assignment token, assignment_fixture, (err, course, assignment) ->
+      dal.create_assignment token, assignment_fixture, (err, course, assignment) ->
         should.not.exist err
         course.assignments.length.should.equal 1
         assignment.title.should.equal assignment_fixture.title
@@ -112,7 +115,7 @@ describe "homework", () ->
         title: "This is ground control to Major Tom"
         details: null
         date: new Date().valueOf()
-      jbha.Client.create_assignment token, assignment_fixture, (err, course, assignment) ->
+      dal.create_assignment token, assignment_fixture, (err, course, assignment) ->
         should.not.exist err
         course.assignments.length.should.equal 2
         assignment.title.should.equal assignment_fixture.title
@@ -122,7 +125,7 @@ describe "homework", () ->
 
   describe "read courses", () ->
     it 'should read without error', (done) ->
-      jbha.Client.by_course token, (err, courses) ->
+      dal.by_course token, (err, courses) ->
         should.not.exist err
         courses.should.be.an 'array'
         courses.length.should.be.above 0
@@ -130,12 +133,12 @@ describe "homework", () ->
 
   describe "update course", () ->
     it 'should update without error', (done) ->
-      jbha.Client.update_course token, fixture, (err) ->
+      dal.update_course token, fixture, (err) ->
         should.not.exist err
         done()
 
   describe "delete course", () ->
     it 'should delete without error', (done) ->
-      jbha.Client.delete_course token, fixture_updated, (err) ->
+      dal.delete_course token, fixture_updated, (err) ->
         should.not.exist err
         done()

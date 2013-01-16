@@ -17,9 +17,6 @@ AccountSchema = new mongoose.Schema
   migrate:
     type: Boolean
     default: false
-  feedback_given:
-    type: Boolean
-    default: false
   updated: 
     type: Date
     default: new Date 0 # Start off at the beginning of UNIX time so it's initially stale.
@@ -57,4 +54,3 @@ module.exports =
   Account: mongoose.model 'account', AccountSchema
   Course: mongoose.model 'course', CourseSchema
   Assignment: mongoose.model 'assignment', AssignmentSchema
-  connect: (URI) -> mongoose.connect URI

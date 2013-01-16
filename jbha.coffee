@@ -1,38 +1,26 @@
-# Copyright (C) 2012 Avi Romanoff <aviromanoff at gmail.com>
-
 _            = require "underscore"
-async        = require "async"
 http         = require "http"
 colors       = require "colors"
 cheerio      = require "cheerio"
-mongoose     = require "mongoose"
-moment       = require "moment"
 querystring  = require "querystring"
 
 config       = require "./config"
-models       = require "./models"
 logging      = require "./logging"
+models       = require "./models"
 
 Account = models.Account
 Course = models.Course
 Assignment = models.Assignment
 
-models.connect config.MONGO_URI
-
-String::capitalize = ->
-  @charAt(0).toUpperCase() + @slice 1
-
-logger = new logging.Logger "API"
+logger = new logging.Logger "JBHA"
 
 L = (prefix, message, urgency="debug") ->
   logger[urgency] "#{prefix.underline} :: #{message}"
 
-# Used in testing to suppress log output.
-module.exports.silence = ->
-  L = ->
-    # pass
+String::capitalize = ->
+  @charAt(0).toUpperCase() + @slice 1
 
-module.exports.Client =
+module.exports = 
 
   # Logs a user into the homework website.
   # Returns ``true`` to ``cb`` if authentication was successful.
@@ -42,7 +30,8 @@ module.exports.Client =
 
     # Don't let Acquire log in...
     if username is "acquire"
-      @_call_if_truthy "Invalid login", cb
+      cb "Invalid login"
+      return
 
     post_data = querystring.stringify
       Email: "#{username}@jbha.org"
@@ -69,7 +58,9 @@ module.exports.Client =
             .findOne()
             .where('_id', username)
             .exec (err, account_from_db) =>
-              return if @_call_if_truthy err, cb
+              if err
+                cb err
+                return
               cookie = res.headers['set-cookie'][1].split(';')[0]
               account = account_from_db or new Account()
               res =
@@ -84,207 +75,17 @@ module.exports.Client =
                 account.nickname = username.split('.')[0].capitalize()
                 account._id = username
                 account.save (err) =>
-                  return if @_call_if_truthy err, cb
-                  cb null, res
+                  if err
+                    cb err
+                  else
+                    cb null, res
 
         else
           L username, "Remote authentication failed", "warn"
-          @_call_if_truthy "Invalid login", cb
+          cb "Invalid login"
 
     req.write post_data
     req.end()
-
-  # Used ONLY for testing
-  _create_account: (username, cb) ->
-    account = new Account()
-    account._id = username
-    account.nickname = "TestAccount"
-    account.save (err, doc) =>
-      return if @_call_if_truthy err, cb
-      cb null,
-        account:
-          doc
-        token:
-          cookie: "1235TESTCOOKIE54321"
-          username: doc._id
-
-  read_settings: (token, cb) ->
-    Account
-      .findOne()
-      .where('_id', token.username)
-      .select('nickname details is_new firstrun updated migrate feedback_given')
-      .exec cb
-
-  update_settings: (token, settings, cb) ->
-    Account.update _id: token.username,
-      nickname: settings.nickname
-      details: settings.details
-      firstrun: settings.firstrun
-      migrate: settings.migrate,
-      cb
-
-  _delete_account: (token, account, cb) ->
-    async.parallel [
-      (callback) ->
-        Account
-          .where('_id', account)
-          .remove callback
-      (callback) ->
-        Course
-          .where('owner', account)
-          .remove callback
-      (callback) ->
-        Assignment
-          .where('owner', account)
-          .remove callback
-    ], cb
-
-  migrate: (token, nuke, cb) ->
-    finish = () ->
-      Account.update _id: token.username,
-        migrate: false,
-        cb
-
-    if nuke
-      async.parallel [
-        (callback) ->
-          Course
-            .where('owner', token.username)
-            .remove callback
-        (callback) ->
-          Assignment
-            .where('owner', token.username)
-            .remove callback
-      ], finish
-    else
-      finish()
-
-  # JSON-ready dump of an account's courses and assignments
-  by_course: (token, cb) ->
-    Course
-      .where('owner', token.username)
-      .populate('assignments', 'title archived details date done jbha_id')
-      .select('-owner -jbha_id')
-      .exec (err, courses) =>
-        @_call_if_truthy(err, cb)
-        cb err, courses
-
-  create_assignment: (token, data, cb) ->
-    async.waterfall [
-
-      (wf_callback) ->
-        Course
-          .findById(data.course)
-          .exec wf_callback
-
-      (course, wf_callback) ->
-        assignment = new Assignment()
-        assignment.owner = token.username
-        assignment.title = data.title
-        assignment.date = data.date
-        assignment.details = data.details
-        assignment.save (err) ->
-          wf_callback err, course, assignment
-
-      (course, assignment, wf_callback) ->
-        course.assignments.addToSet assignment
-        course.save (err) ->
-          wf_callback err, course, assignment
-
-    ], (err, course, assignment) ->
-      cb err, course, assignment
-
-  update_assignment: (token, assignment, cb) ->
-    # Pull the assignment from the current course,
-    # push it onto the new one, save it,
-    # and finally update the assignment fields.
-    async.waterfall [
-      (wf_callback) ->
-        Course.update {
-          owner: token.username
-          assignments: assignment._id
-        },
-        {
-          $pull: {assignments: assignment._id}
-        },
-        {},
-        (err) ->
-          wf_callback()
-      (wf_callback) ->
-        Course
-          .findOne()
-          .where('owner', token.username)
-          .where('_id', assignment.course)
-          .exec wf_callback
-      (course, wf_callback) ->
-        course.assignments.addToSet assignment._id
-        course.save wf_callback
-    ], (err) ->
-      Assignment.update {
-          owner: token.username
-          _id: assignment._id
-        },
-        {
-          title: assignment.title
-          date: assignment.date
-          details: assignment.details
-          done: assignment.done
-          archived: assignment.archived
-        },
-        {},
-        cb
-
-  delete_assignment: (token, assignment, cb) ->
-    Assignment
-      .where('owner', token.username)
-      .where('_id', assignment._id)
-      .remove cb
-
-  create_course: (token, data, cb) ->
-    course = new Course()
-    course.owner = token.username
-    course.title = data.title
-    course.teacher = data.teacher
-    course.save cb
-
-  update_course: (token, course, cb) ->
-    Course.update {
-        owner: token.username
-        _id: course._id
-      },
-      {
-        title: course.title
-        teacher: course.teacher
-      },
-      (err, numAffected, raw) ->
-        cb err
-
-  delete_course: (token, course, cb) ->
-    Course
-      .where('owner', token.username)
-      .where('_id', course._id)
-      .remove cb
-
-  create_feedback: (token, message, cb) ->
-    feedback = new Feedback()
-    feedback._id = token.username
-    feedback.message = message
-    feedback.save (err) ->
-      return cb err if err
-      Account.update _id: token.username,
-        feedback_given: true,
-        (err) ->
-          return cb err if err
-          cb null
-
-  read_feedbacks: (cb) ->
-    Feedback
-    .find()
-    .exec (err, feedbacks) ->
-      if err
-        cb err.err
-      else
-        cb null, feedbacks
 
   refresh: (token, options, cb) ->
 
@@ -296,7 +97,7 @@ module.exports.Client =
 
       parse_course = (course_data, course_callback) =>
         # Get the DOM of the course webpage
-        @_authenticated_request token, "course-detail.php?course_id=#{course_data.id}", (err, new_token, $) =>
+        @authenticated_request token, "course-detail.php?course_id=#{course_data.id}", (err, new_token, $) =>
           token = new_token
           async.waterfall [
 
@@ -434,7 +235,27 @@ module.exports.Client =
           (err) =>
             cb err, token, new_assignments: new_assignments
 
-  _authenticated_request: (token, resource, callback) ->
+  _parse_courses: (token, callback) ->
+    @authenticated_request token, "homework.php", (err, new_token, $) ->
+      token = new_token
+      courses = []
+
+      blacklist = ['433', '665']
+
+      parse_course = (element, fe_callback) ->
+        course_id = $(element).attr('href').match(/\d+/)[0]
+        if course_id not in blacklist
+          courses.push
+            title: $(element).text()
+            id: course_id
+        fe_callback null
+
+      # Any link that has a href containing the
+      # substring ``?course_id=`` in it.
+      async.forEach $('a[href*="?course_id="]'), parse_course, (err) ->
+        callback token, courses
+
+  authenticated_request: (token, resource, callback) ->
 
     cookie = token.cookie
     if not cookie
@@ -462,7 +283,7 @@ module.exports.Client =
               callback err
             else
               # Now that we're re-auth'd, repeat the request
-              @_authenticated_request res.token, resource, callback
+              @authenticated_request res.token, resource, callback
         else
           callback null, token, $
 
@@ -471,55 +292,6 @@ module.exports.Client =
 
     req.end()
 
-  _parse_courses: (token, callback) ->
-    @_authenticated_request token, "homework.php", (err, new_token, $) ->
-      token = new_token
-      courses = []
-
-      blacklist = ['433', '665']
-
-      parse_course = (element, fe_callback) ->
-        course_id = $(element).attr('href').match(/\d+/)[0]
-        if course_id not in blacklist
-          courses.push
-            title: $(element).text()
-            id: course_id
-        fe_callback null
-
-      # Any link that has a href containing the
-      # substring ``?course_id=`` in it.
-      async.forEach $('a[href*="?course_id="]'), parse_course, (err) ->
-        callback token, courses
-
-  _call_if_truthy: (err, func) ->
-    if err
-      func err
-      return true
-
-  _migrationize: (date, callback) ->
-    Account
-      .update {updated: {$lt: moment(date).toDate()}},
-        {migrate: true},
-        {multi: true},
-        (err, numAffected) =>
-          return if @_call_if_truthy err, callback
-          callback null, numAffected
-      
-  _stats: (num_shown=Infinity, callback) ->
-    Account
-      .find()
-      .sort('-updated')
-      .select('_id updated nickname')
-      .exec (err, docs) ->
-        if docs.length < num_shown
-          showing = docs.length
-        else
-          showing = num_shown
-        console.log "Showing most recently active #{String(showing).red} of #{String(docs.length).red} accounts"
-        for doc in docs[1..num_shown]
-          name = doc._id
-          nickname = doc.nickname
-          date = moment(doc.updated)
-          console.log "\n#{name.bold} (#{nickname})"
-          console.log date.format("» M/D").yellow + " @ " + date.format("h:mm:ss A").cyan + " (#{date.fromNow().green})"
-        callback()
+  # Used in testing to suppress log output.
+  _suppress_logging: ->
+    L = -> # pass

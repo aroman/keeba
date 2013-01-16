@@ -12,11 +12,13 @@ connect    = require "connect"
 express    = require "express"
 ssockets   = require "session.socket.io"
 socketio   = require "socket.io"
+mongoose   = require "mongoose"
 MongoStore = require("connect-mongo")(express)
 
 # Internal modules
 config     = require "./config"
 jbha       = require "./jbha"
+dal        = require "./dal"
 logging    = require "./logging"
 
 # Create machinery
@@ -57,16 +59,17 @@ app.configure 'production', ->
   app.use express.errorHandler(dumpExceptions: true, showStack: true)
   app.set 'view options', pretty: false
 
+conn = mongoose.createConnection config.MONGO_URI
+
+conn.on 'connected', ->
+  logger.debug "Connected to database"
+  server.listen port
+  logger.info "Running in #{mode[color]} mode on port #{port.toString().bold}."
+  logger.info "Rav Keeba has taken the bima . . .  "
+
 sessionStore = new MongoStore
-  db: 'keeba'
   url: config.MONGO_URI
   stringify: false
-  ->
-    logger.debug "Connected to database"
-    server.listen port
-    logger.info "Running in #{mode[color]} mode on port #{port.toString().bold}."
-    logger.info "Rav Keeba has taken the bima . . .  "
-
 
 cookie_parser = express.cookieParser config.SESSION_SECRET
 ss = new ssockets io, sessionStore, cookie_parser
@@ -82,8 +85,6 @@ app.configure ->
   app.use express.static "#{__dirname}/static"
   app.set 'view engine', 'jade'
   app.set 'views', "#{__dirname}/views"
-
-logger.debug "Using session database: #{config.MONGO_URI}"
 
 app.locals.revision = process.env.GIT_REV
 app.locals.development_build = mode is 'development'
@@ -119,7 +120,7 @@ ensureSession = (req, res, next) ->
     next()
 
 hydrateSettings = (req, res, next) ->
-  jbha.Client.read_settings req.session.token, (err, settings) ->
+  dal.read_settings req.session.token, (err, settings) ->
     req.settings = settings
     if not settings
       req.session.destroy()
@@ -138,7 +139,7 @@ app.post "/", (req, res) ->
   email = req.body.email
   password = req.body.password
   whence = req.query.whence
-  jbha.Client.authenticate email, password, (err, response) ->
+  jbha.authenticate email, password, (err, response) ->
     if err
       res.render "index"
         failed: true
@@ -182,7 +183,7 @@ app.post "/migrate", ensureSession, hydrateSettings, (req, res) ->
   if !req.settings.migrate
     res.redirect "/app"
   else
-    jbha.Client.migrate req.session.token, req.query.nuke, () ->
+    dal.migrate req.session.token, req.query.nuke, () ->
       res.redirect "/app"
 
 app.get "/setup", ensureSession, hydrateSettings, (req, res) ->
@@ -198,11 +199,11 @@ app.post "/setup", ensureSession, hydrateSettings, (req, res) ->
 
   if req.body.nickname
     settings.nickname = req.body.nickname
-  jbha.Client.update_settings req.session.token, settings, ->
+  dal.update_settings req.session.token, settings, ->
     res.redirect "/app"
 
 app.get "/app*", ensureSession, hydrateSettings, (req, res) ->
-  jbha.Client.by_course req.session.token, (err, courses) ->
+  dal.by_course req.session.token, (err, courses) ->
     if !req.settings || req.settings.is_new
       res.redirect "/setup"
     else if req.settings.migrate
@@ -211,7 +212,6 @@ app.get "/app*", ensureSession, hydrateSettings, (req, res) ->
       res.render "app"
         courses: JSON.stringify courses
         firstrun: req.settings.firstrun
-        feedback_given: req.settings.feedback_given
         nickname: req.settings.nickname
         settings: JSON.stringify req.settings
 
@@ -244,10 +244,10 @@ ss.on "connection", (err, socket, session) ->
 
   # Spawn a new node instance to handle a refresh
   # request. It's CPU-bound, so it blocks this thread.
-  # Only allow one worker per global username presence.
   socket.on "refresh", (options) ->
     worker = workers[token.username]
-    if worker
+    # Only allow one worker per global username presence.
+    if worker 
       L "Worker with pid #{worker.pid} replaced", 'warn'
       worker.kill('SIGHUP')
     worker = workers[token.username] = cp.fork "#{__dirname}/worker.js", [], env: process.env
@@ -283,7 +283,9 @@ ss.on "connection", (err, socket, session) ->
       # Obsoleted by new process
       return if signal is 'SIGHUP'
 
-      if code isnt 0
+      if code is 0
+        L "Worker with pid #{worker.pid} exited successfully", 'debug'
+      else
         if signal is 'SIGKILL'
           L "Worker with pid #{worker.pid} timed out and was killed", 'error'
           broadcast "refresh:end",
@@ -292,63 +294,61 @@ ss.on "connection", (err, socket, session) ->
           L "Worker with pid #{worker.pid} crashed", 'error'
           broadcast "refresh:end",
             err: "Worker crashed"
-      else
-        L "Worker with pid #{worker.pid} exited successfully", 'debug'
 
   socket.on "settings:read", (data, cb) ->
     return unless _.isFunction cb
-    jbha.Client.read_settings token, (err, settings) ->
+    dal.read_settings token, (err, settings) ->
       cb null, settings
 
   socket.on "settings:update", (data, cb) ->
     return unless _.isFunction cb
-    jbha.Client.update_settings token, data, ->
+    dal.update_settings token, data, ->
       # Hardcode the 0 for a singleton pattern. (See client model).
       socket.broadcast.to(token.username).emit("settings/0:update", data)
       cb null
 
   socket.on "course:create", (data, cb) ->
     return unless _.isFunction cb
-    jbha.Client.create_course token, data, (err, course) ->
+    dal.create_course token, data, (err, course) ->
       socket.broadcast.to(token.username).emit("courses:create", course)
       cb null, course
 
   socket.on "courses:read", (data, cb) ->
     return unless _.isFunction cb
-    jbha.Client.by_course token, (err, courses) ->
+    dal.by_course token, (err, courses) ->
       cb null, courses
 
   socket.on "course:update", (data, cb) ->
     return unless _.isFunction cb
-    jbha.Client.update_course token, data, (err) ->
+    dal.update_course token, data, (err) ->
       sync "course", "update", data
       cb null
 
   socket.on "course:delete", (data, cb) ->
     return unless _.isFunction cb
-    jbha.Client.delete_course token, data, (err) ->
+    dal.delete_course token, data, (err) ->
       sync "course", "delete", data
       cb null
       
   socket.on "assignments:create", (data, cb) ->
     return unless _.isFunction cb
-    jbha.Client.create_assignment token, data, (err, course, assignment) ->
+    dal.create_assignment token, data, (err, course, assignment) ->
       socket.broadcast.to(token.username).emit("course/#{course._id}:create", assignment)
       cb null, assignment
 
   socket.on "assignments:update", (data, cb) ->
-    jbha.Client.update_assignment token, data, (err) ->
+    dal.update_assignment token, data, (err) ->
       sync "assignments", "update", data
       cb null if _.isFunction cb
 
   socket.on "assignments:delete", (data, cb) ->
     return unless _.isFunction cb
-    jbha.Client.delete_assignment token, data, (err) ->
+    dal.delete_assignment token, data, (err) ->
       sync "assignments", "delete", data
       cb null
 
   socket.on "d/a", (account, cb) ->
     return unless _.isFunction cb
     return cb null unless token.username is "avi.romanoff"
-    jbha.Client._delete_account token, account, (err) ->
+    dal._delete_account token, account, (err) ->
       cb null

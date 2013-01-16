@@ -9,94 +9,30 @@ mongoose     = require "mongoose"
 moment       = require "moment"
 querystring  = require "querystring"
 
+models       = require "./models"
 logging      = require "./logging"
 secrets      = require "./secrets"
 
-if process.env.NODE_ENV is "production"
-  mongo_uri = secrets.MONGO_PRODUCTION_URI
-else
-  mongo_uri = secrets.MONGO_STAGING_URI
+Account = models.Account
+Course = models.Course
+Assignment = models.Assignment
 
-mongoose.connect mongo_uri, ->
-  console.log "Connection to MongoDB established in jbha module."
+models.connect()
 
 String::capitalize = ->
   @charAt(0).toUpperCase() + @slice 1
 
-AccountSchema = new mongoose.Schema
-  _id: String
-  nickname: String
-  is_new:
-    type: Boolean
-    default: true
-  firstrun:
-    type: Boolean
-    default: true
-  details:
-    type: Boolean
-    default: false
-  migrate:
-    type: Boolean
-    default: false
-  feedback_given:
-    type: Boolean
-    default: false
-  updated: # Start off at the beginning of UNIX time so it's initially stale.
-    type: Date
-    default: new Date 0
-  {strict: true}
-
-Account = mongoose.model 'account', AccountSchema
-
-# jbha_id is the content id for a course
-# or assignment on the jbha.org website's
-# database. It is used as a unique index
-# to ensure that doing a fetch does not
-# result in duplicates being stored.
-CourseSchema = new mongoose.Schema
-  owner: String
-  title: String
-  teacher: String
-  jbha_id:
-    type: String
-    index:
-      unique: false
-      sparse: true
-  assignments: [{ type: mongoose.Schema.ObjectId, ref: 'assignment' }]
-
-Course = mongoose.model 'course', CourseSchema
-
-AssignmentSchema = new mongoose.Schema
-  owner: String
-  date: Number
-  title: String
-  details: String
-  jbha_id:
-    type: String
-    index:
-      unique: false
-      sparse: true
-  archived:
-    type: Boolean
-    default: false
-  done:
-    type: Boolean
-    default: false
-
-Assignment = mongoose.model 'assignment', AssignmentSchema
-
 logger = new logging.Logger "API"
-
-Jbha = exports
 
 L = (prefix, message, urgency="debug") ->
   logger[urgency] "#{prefix.underline} :: #{message}"
 
-exports.silence = () ->
-  L = () ->
+# Used in testing to suppress log output.
+module.exports.silence = ->
+  L = ->
     # pass
 
-Jbha.Client =
+module.exports.Client =
 
   # Logs a user into the homework website.
   # Returns ``true`` to ``cb`` if authentication was successful.

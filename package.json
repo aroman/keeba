@@ -27,7 +27,7 @@
     "jade": "0.27.7",
     "markdown": "0.3.1",
     "mocha": "1.7.3",
-    "mongoose": "3.1.2",
+    "mongoose": "3.5.4",
     "moment": "1.7.2",
     "optimist": "0.3.5",
     "session.socket.io": "0.1.0",

@@ -106,7 +106,7 @@
     return app.set('views', "" + __dirname + "/views");
   });
 
-  logger.info("Using database: " + config.MONGO_URI);
+  logger.debug("Using session database: " + config.MONGO_URI);
 
   app.locals.revision = process.env.GIT_REV;
 

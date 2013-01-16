@@ -67,6 +67,7 @@ sessionStore = new MongoStore
     logger.info "Running in #{mode[color]} mode on port #{port.toString().bold}."
     logger.info "Rav Keeba has taken the bima . . .  "
 
+
 cookie_parser = express.cookieParser config.SESSION_SECRET
 ss = new ssockets io, sessionStore, cookie_parser
 
@@ -82,7 +83,7 @@ app.configure ->
   app.set 'view engine', 'jade'
   app.set 'views', "#{__dirname}/views"
 
-logger.info "Using database: #{config.MONGO_URI}"
+logger.debug "Using session database: #{config.MONGO_URI}"
 
 app.locals.revision = process.env.GIT_REV
 app.locals.development_build = mode is 'development'

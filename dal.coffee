@@ -27,22 +27,20 @@ module.exports =
     account.save (err, doc) =>
       if err
         return cb err
-      cb null,
-        account:
-          doc
-        token:
-          cookie: "1235TESTCOOKIE54321"
-          username: doc._id
+      token =
+        cookie: "1235TESTCOOKIE54321"
+        username: doc._id
+      cb null, doc, token
 
-  read_settings: (token, cb) ->
+  read_settings: (username, cb) ->
     Account
       .findOne()
-      .where('_id', token.username)
+      .where('_id', username)
       .select('nickname details is_new firstrun updated migrate')
       .exec cb
 
-  update_settings: (token, settings, cb) ->
-    Account.update _id: token.username,
+  update_settings: (username, settings, cb) ->
+    Account.update _id: username,
       nickname: settings.nickname
       details: settings.details
       firstrun: settings.firstrun
@@ -50,7 +48,7 @@ module.exports =
       cb
 
   # Used for debugging; currently no public delete function.
-  _delete_account: (token, account, cb) ->
+  _delete_account: (username, account, cb) ->
     async.parallel [
       (callback) ->
         Account
@@ -66,9 +64,9 @@ module.exports =
           .remove callback
     ], cb
 
-  migrate: (token, nuke, cb) ->
+  migrate: (username, nuke, cb) ->
     finish = ->
-      Account.update _id: token.username,
+      Account.update _id: username,
         migrate: false,
         cb
 
@@ -76,20 +74,20 @@ module.exports =
       async.parallel [
         (callback) ->
           Course
-            .where('owner', token.username)
+            .where('owner', username)
             .remove callback
         (callback) ->
           Assignment
-            .where('owner', token.username)
+            .where('owner', username)
             .remove callback
       ], finish
     else
       finish()
 
   # JSON-ready dump of an account's courses and assignments
-  by_course: (token, cb) ->
+  by_course: (username, cb) ->
     Course
-      .where('owner', token.username)
+      .where('owner', username)
       .populate('assignments', 'title archived details date done jbha_id')
       .select('-owner -jbha_id')
       .exec (err, courses) =>
@@ -97,7 +95,7 @@ module.exports =
           return cb err
         cb err, courses
 
-  create_assignment: (token, data, cb) ->
+  create_assignment: (username, data, cb) ->
     async.waterfall [
 
       (wf_callback) ->
@@ -107,7 +105,7 @@ module.exports =
 
       (course, wf_callback) ->
         assignment = new Assignment()
-        assignment.owner = token.username
+        assignment.owner = username
         assignment.title = data.title
         assignment.date = data.date
         assignment.details = data.details
@@ -122,7 +120,7 @@ module.exports =
     ], (err, course, assignment) ->
       cb err, course, assignment
 
-  update_assignment: (token, assignment, cb) ->
+  update_assignment: (username, assignment, cb) ->
     # Pull the assignment from the current course,
     # push it onto the new one, save it,
     # and finally update the assignment fields.
@@ -130,7 +128,7 @@ module.exports =
 
       (wf_callback) ->
         Course.update {
-          owner: token.username
+          owner: username
           assignments: assignment._id
         },
         {
@@ -142,7 +140,7 @@ module.exports =
       (wf_callback) ->
         Course
           .findOne()
-          .where('owner', token.username)
+          .where('owner', username)
           .where('_id', assignment.course)
           .exec wf_callback
 
@@ -154,7 +152,7 @@ module.exports =
       if err
         return cb err
       Assignment.update {
-          owner: token.username
+          owner: username
           _id: assignment._id
         },
         {
@@ -167,22 +165,22 @@ module.exports =
         {},
         cb
 
-  delete_assignment: (token, assignment, cb) ->
+  delete_assignment: (username, assignment, cb) ->
     Assignment
-      .where('owner', token.username)
+      .where('owner', username)
       .where('_id', assignment._id)
       .remove cb
 
-  create_course: (token, data, cb) ->
+  create_course: (username, data, cb) ->
     course = new Course()
-    course.owner = token.username
+    course.owner = username
     course.title = data.title
     course.teacher = data.teacher
     course.save cb
 
-  update_course: (token, course, cb) ->
+  update_course: (username, course, cb) ->
     Course.update {
-        owner: token.username
+        owner: username
         _id: course._id
       },
       {
@@ -194,9 +192,9 @@ module.exports =
       (err, numAffected, raw) ->
         cb err
 
-  delete_course: (token, course, cb) ->
+  delete_course: (username, course, cb) ->
     Course
-      .where('owner', token.username)
+      .where('owner', username)
       .where('_id', course._id)
       .remove cb
 

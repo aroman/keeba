@@ -37,24 +37,23 @@
       account._id = username;
       account.nickname = "TestAccount";
       return account.save(function(err, doc) {
+        var token;
         if (err) {
           return cb(err);
         }
-        return cb(null, {
-          account: doc,
-          token: {
-            cookie: "1235TESTCOOKIE54321",
-            username: doc._id
-          }
-        });
+        token = {
+          cookie: "1235TESTCOOKIE54321",
+          username: doc._id
+        };
+        return cb(null, doc, token);
       });
     },
-    read_settings: function(token, cb) {
-      return Account.findOne().where('_id', token.username).select('nickname details is_new firstrun updated migrate').exec(cb);
+    read_settings: function(username, cb) {
+      return Account.findOne().where('_id', username).select('nickname details is_new firstrun updated migrate').exec(cb);
     },
-    update_settings: function(token, settings, cb) {
+    update_settings: function(username, settings, cb) {
       return Account.update({
-        _id: token.username
+        _id: username
       }, {
         nickname: settings.nickname,
         details: settings.details,
@@ -62,7 +61,7 @@
         migrate: settings.migrate
       }, cb);
     },
-    _delete_account: function(token, account, cb) {
+    _delete_account: function(username, account, cb) {
       return async.parallel([
         function(callback) {
           return Account.where('_id', account).remove(callback);
@@ -73,11 +72,11 @@
         }
       ], cb);
     },
-    migrate: function(token, nuke, cb) {
+    migrate: function(username, nuke, cb) {
       var finish;
       finish = function() {
         return Account.update({
-          _id: token.username
+          _id: username
         }, {
           migrate: false
         }, cb);
@@ -85,32 +84,32 @@
       if (nuke) {
         return async.parallel([
           function(callback) {
-            return Course.where('owner', token.username).remove(callback);
+            return Course.where('owner', username).remove(callback);
           }, function(callback) {
-            return Assignment.where('owner', token.username).remove(callback);
+            return Assignment.where('owner', username).remove(callback);
           }
         ], finish);
       } else {
         return finish();
       }
     },
-    by_course: function(token, cb) {
+    by_course: function(username, cb) {
       var _this = this;
-      return Course.where('owner', token.username).populate('assignments', 'title archived details date done jbha_id').select('-owner -jbha_id').exec(function(err, courses) {
+      return Course.where('owner', username).populate('assignments', 'title archived details date done jbha_id').select('-owner -jbha_id').exec(function(err, courses) {
         if (err) {
           return cb(err);
         }
         return cb(err, courses);
       });
     },
-    create_assignment: function(token, data, cb) {
+    create_assignment: function(username, data, cb) {
       return async.waterfall([
         function(wf_callback) {
           return Course.findById(data.course).exec(wf_callback);
         }, function(course, wf_callback) {
           var assignment;
           assignment = new Assignment();
-          assignment.owner = token.username;
+          assignment.owner = username;
           assignment.title = data.title;
           assignment.date = data.date;
           assignment.details = data.details;
@@ -127,11 +126,11 @@
         return cb(err, course, assignment);
       });
     },
-    update_assignment: function(token, assignment, cb) {
+    update_assignment: function(username, assignment, cb) {
       return async.waterfall([
         function(wf_callback) {
           return Course.update({
-            owner: token.username,
+            owner: username,
             assignments: assignment._id
           }, {
             $pull: {
@@ -139,7 +138,7 @@
             }
           }, {}, wf_callback);
         }, function(wf_callback) {
-          return Course.findOne().where('owner', token.username).where('_id', assignment.course).exec(wf_callback);
+          return Course.findOne().where('owner', username).where('_id', assignment.course).exec(wf_callback);
         }, function(course, wf_callback) {
           course.assignments.addToSet(assignment._id);
           return course.save(wf_callback);
@@ -149,7 +148,7 @@
           return cb(err);
         }
         return Assignment.update({
-          owner: token.username,
+          owner: username,
           _id: assignment._id
         }, {
           title: assignment.title,
@@ -160,20 +159,20 @@
         }, {}, cb);
       });
     },
-    delete_assignment: function(token, assignment, cb) {
-      return Assignment.where('owner', token.username).where('_id', assignment._id).remove(cb);
+    delete_assignment: function(username, assignment, cb) {
+      return Assignment.where('owner', username).where('_id', assignment._id).remove(cb);
     },
-    create_course: function(token, data, cb) {
+    create_course: function(username, data, cb) {
       var course;
       course = new Course();
-      course.owner = token.username;
+      course.owner = username;
       course.title = data.title;
       course.teacher = data.teacher;
       return course.save(cb);
     },
-    update_course: function(token, course, cb) {
+    update_course: function(username, course, cb) {
       return Course.update({
-        owner: token.username,
+        owner: username,
         _id: course._id
       }, {
         title: course.title,
@@ -182,8 +181,8 @@
         return cb(err);
       });
     },
-    delete_course: function(token, course, cb) {
-      return Course.where('owner', token.username).where('_id', course._id).remove(cb);
+    delete_course: function(username, course, cb) {
+      return Course.where('owner', username).where('_id', course._id).remove(cb);
     },
     suppress_logging: function() {
       return L = function() {};

@@ -374,7 +374,7 @@
       if (!_.isFunction(cb)) {
         return;
       }
-      return dal.update_settings(token, data, function() {
+      return dal.update_settings(token.username, data, function() {
         socket.broadcast.to(token.username).emit("settings/0:update", data);
         return cb(null);
       });
@@ -383,7 +383,7 @@
       if (!_.isFunction(cb)) {
         return;
       }
-      return dal.create_course(token, data, function(err, course) {
+      return dal.create_course(token.username, data, function(err, course) {
         socket.broadcast.to(token.username).emit("courses:create", course);
         return cb(null, course);
       });
@@ -400,7 +400,7 @@
       if (!_.isFunction(cb)) {
         return;
       }
-      return dal.update_course(token, data, function(err) {
+      return dal.update_course(token.username, data, function(err) {
         sync("course", "update", data);
         return cb(null);
       });
@@ -409,7 +409,7 @@
       if (!_.isFunction(cb)) {
         return;
       }
-      return dal.delete_course(token, data, function(err) {
+      return dal.delete_course(token.username, data, function(err) {
         sync("course", "delete", data);
         return cb(null);
       });
@@ -418,13 +418,13 @@
       if (!_.isFunction(cb)) {
         return;
       }
-      return dal.create_assignment(token, data, function(err, course, assignment) {
+      return dal.create_assignment(token.username, data, function(err, course, assignment) {
         socket.broadcast.to(token.username).emit("course/" + course._id + ":create", assignment);
         return cb(null, assignment);
       });
     });
     socket.on("assignments:update", function(data, cb) {
-      return dal.update_assignment(token, data, function(err) {
+      return dal.update_assignment(token.username, data, function(err) {
         sync("assignments", "update", data);
         if (_.isFunction(cb)) {
           return cb(null);
@@ -435,7 +435,7 @@
       if (!_.isFunction(cb)) {
         return;
       }
-      return dal.delete_assignment(token, data, function(err) {
+      return dal.delete_assignment(token.username, data, function(err) {
         sync("assignments", "delete", data);
         return cb(null);
       });

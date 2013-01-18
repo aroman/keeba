@@ -302,14 +302,14 @@ ss.on "connection", (err, socket, session) ->
 
   socket.on "settings:update", (data, cb) ->
     return unless _.isFunction cb
-    dal.update_settings token, data, ->
+    dal.update_settings token.username, data, ->
       # Hardcode the 0 for a singleton pattern. (See client model).
       socket.broadcast.to(token.username).emit("settings/0:update", data)
       cb null
 
   socket.on "course:create", (data, cb) ->
     return unless _.isFunction cb
-    dal.create_course token, data, (err, course) ->
+    dal.create_course token.username, data, (err, course) ->
       socket.broadcast.to(token.username).emit("courses:create", course)
       cb null, course
 
@@ -320,30 +320,30 @@ ss.on "connection", (err, socket, session) ->
 
   socket.on "course:update", (data, cb) ->
     return unless _.isFunction cb
-    dal.update_course token, data, (err) ->
+    dal.update_course token.username, data, (err) ->
       sync "course", "update", data
       cb null
 
   socket.on "course:delete", (data, cb) ->
     return unless _.isFunction cb
-    dal.delete_course token, data, (err) ->
+    dal.delete_course token.username, data, (err) ->
       sync "course", "delete", data
       cb null
       
   socket.on "assignments:create", (data, cb) ->
     return unless _.isFunction cb
-    dal.create_assignment token, data, (err, course, assignment) ->
+    dal.create_assignment token.username, data, (err, course, assignment) ->
       socket.broadcast.to(token.username).emit("course/#{course._id}:create", assignment)
       cb null, assignment
 
   socket.on "assignments:update", (data, cb) ->
-    dal.update_assignment token, data, (err) ->
+    dal.update_assignment token.username, data, (err) ->
       sync "assignments", "update", data
       cb null if _.isFunction cb
 
   socket.on "assignments:delete", (data, cb) ->
     return unless _.isFunction cb
-    dal.delete_assignment token, data, (err) ->
+    dal.delete_assignment token.username, data, (err) ->
       sync "assignments", "delete", data
       cb null
 

@@ -12,9 +12,9 @@ mongoose.connect config.MONGO_URI
 jbha.suppress_logging()
 dal.suppress_logging()
 
-token = null
-
 describe "jbha", ->
+
+  token = null
 
   describe "valid credentials", ->
     it 'should succeed', (done) ->
@@ -33,6 +33,8 @@ describe "jbha", ->
 
 describe "dal", ->
 
+  token = null
+
   mock_settings =
     _id: String(Math.random())
     nickname: "Dr. " + Math.random()
@@ -41,25 +43,25 @@ describe "dal", ->
 
   describe "create", ->
     it 'should create without error', (done) ->
-      dal._create_account mock_settings._id, (err, res) ->
+      dal._create_account mock_settings._id, (err, account, _token) ->
         should.not.exist err
-        res.account._id.should.equal mock_settings._id
-        res.account.is_new.should.equal true
-        res.account.firstrun.should.equal true
-        res.token.username.should.equal mock_settings._id
-        should.exist res.token.cookie
-        token = res.token
+        account._id.should.equal mock_settings._id
+        account.is_new.should.equal true
+        account.firstrun.should.equal true
+        _token.username.should.equal mock_settings._id
+        should.exist _token.cookie
+        token = _token
         done()
 
   describe "update", ->
     it 'should update without error', (done) ->
-      dal.update_settings token, mock_settings, (err) ->
+      dal.update_settings token.username, mock_settings, (err) ->
         should.not.exist err
         done()
 
   describe "read", ->
     it 'should read without error', (done) ->
-      dal.read_settings token, (err, settings) ->
+      dal.read_settings token.username, (err, settings) ->
         should.not.exist err
         settings.nickname.should.equal mock_settings.nickname
         settings.firstrun.should.equal mock_settings.firstrun
@@ -69,7 +71,7 @@ describe "dal", ->
 
   describe "delete", ->
     it 'should delete without error', (done) ->
-      dal._delete_account token, mock_settings._id, (err) ->
+      dal._delete_account token.username, mock_settings._id, (err) ->
         should.not.exist err
         done()
 
@@ -85,7 +87,7 @@ describe "dal", ->
 
   describe "create course", ->
     it 'should create without error', (done) ->
-      dal.create_course token, fixture, (err, course) ->
+      dal.create_course token.username, fixture, (err, course) ->
         should.not.exist err
         course.title.should.equal fixture.title
         course.teacher.should.equal fixture.teacher
@@ -101,7 +103,7 @@ describe "dal", ->
         title: "Stop sleeping and warn others"
         details: "Eat that ASAP Rocky"
         date: new Date().valueOf()
-      dal.create_assignment token, assignment_fixture, (err, course, assignment) ->
+      dal.create_assignment token.username, assignment_fixture, (err, course, assignment) ->
         should.not.exist err
         course.assignments.length.should.equal 1
         assignment.title.should.equal assignment_fixture.title
@@ -116,7 +118,7 @@ describe "dal", ->
         title: "This is ground control to Major Tom"
         details: null
         date: new Date().valueOf()
-      dal.create_assignment token, assignment_fixture, (err, course, assignment) ->
+      dal.create_assignment token.username, assignment_fixture, (err, course, assignment) ->
         should.not.exist err
         course.assignments.length.should.equal 2
         assignment.title.should.equal assignment_fixture.title
@@ -126,7 +128,7 @@ describe "dal", ->
 
   describe "read courses", ->
     it 'should read without error', (done) ->
-      dal.by_course token, (err, courses) ->
+      dal.by_course token.username, (err, courses) ->
         should.not.exist err
         courses.should.be.an 'array'
         courses.length.should.be.above 0
@@ -134,12 +136,12 @@ describe "dal", ->
 
   describe "update course", ->
     it 'should update without error', (done) ->
-      dal.update_course token, fixture, (err) ->
+      dal.update_course token.username, fixture, (err) ->
         should.not.exist err
         done()
 
   describe "delete course", ->
     it 'should delete without error', (done) ->
-      dal.delete_course token, fixture_updated, (err) ->
+      dal.delete_course token.username, fixture_updated, (err) ->
         should.not.exist err
         done()

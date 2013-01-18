@@ -155,7 +155,7 @@
   };
 
   hydrateSettings = function(req, res, next) {
-    return dal.read_settings(req.session.token, function(err, settings) {
+    return dal.read_settings(req.session.token.username, function(err, settings) {
       req.settings = settings;
       if (!settings) {
         req.session.destroy();
@@ -241,7 +241,7 @@
     if (!req.settings.migrate) {
       return res.redirect("/app");
     } else {
-      return dal.migrate(req.session.token, req.query.nuke, function() {
+      return dal.migrate(req.session.token.username, req.query.nuke, function() {
         return res.redirect("/app");
       });
     }
@@ -264,13 +264,13 @@
     if (req.body.nickname) {
       settings.nickname = req.body.nickname;
     }
-    return dal.update_settings(req.session.token, settings, function() {
+    return dal.update_settings(req.session.token.username, settings, function() {
       return res.redirect("/app");
     });
   });
 
   app.get("/app*", ensureSession, hydrateSettings, function(req, res) {
-    return dal.by_course(req.session.token, function(err, courses) {
+    return dal.by_course(req.session.token.username, function(err, courses) {
       if (!req.settings || req.settings.is_new) {
         return res.redirect("/setup");
       } else if (req.settings.migrate) {
@@ -366,7 +366,7 @@
       if (!_.isFunction(cb)) {
         return;
       }
-      return dal.read_settings(token, function(err, settings) {
+      return dal.read_settings(token.username, function(err, settings) {
         return cb(null, settings);
       });
     });
@@ -392,7 +392,7 @@
       if (!_.isFunction(cb)) {
         return;
       }
-      return dal.by_course(token, function(err, courses) {
+      return dal.by_course(token.username, function(err, courses) {
         return cb(null, courses);
       });
     });
@@ -447,7 +447,7 @@
       if (token.username !== "avi.romanoff") {
         return cb(null);
       }
-      return dal._delete_account(token, account, function(err) {
+      return dal._delete_account(token.username, account, function(err) {
         return cb(null);
       });
     });

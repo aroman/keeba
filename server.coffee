@@ -120,7 +120,7 @@ ensureSession = (req, res, next) ->
     next()
 
 hydrateSettings = (req, res, next) ->
-  dal.read_settings req.session.token, (err, settings) ->
+  dal.read_settings req.session.token.username, (err, settings) ->
     req.settings = settings
     if not settings
       req.session.destroy()
@@ -183,7 +183,7 @@ app.post "/migrate", ensureSession, hydrateSettings, (req, res) ->
   if !req.settings.migrate
     res.redirect "/app"
   else
-    dal.migrate req.session.token, req.query.nuke, () ->
+    dal.migrate req.session.token.username, req.query.nuke, () ->
       res.redirect "/app"
 
 app.get "/setup", ensureSession, hydrateSettings, (req, res) ->
@@ -199,11 +199,11 @@ app.post "/setup", ensureSession, hydrateSettings, (req, res) ->
 
   if req.body.nickname
     settings.nickname = req.body.nickname
-  dal.update_settings req.session.token, settings, ->
+  dal.update_settings req.session.token.username, settings, ->
     res.redirect "/app"
 
 app.get "/app*", ensureSession, hydrateSettings, (req, res) ->
-  dal.by_course req.session.token, (err, courses) ->
+  dal.by_course req.session.token.username, (err, courses) ->
     if !req.settings || req.settings.is_new
       res.redirect "/setup"
     else if req.settings.migrate
@@ -297,7 +297,7 @@ ss.on "connection", (err, socket, session) ->
 
   socket.on "settings:read", (data, cb) ->
     return unless _.isFunction cb
-    dal.read_settings token, (err, settings) ->
+    dal.read_settings token.username, (err, settings) ->
       cb null, settings
 
   socket.on "settings:update", (data, cb) ->
@@ -315,7 +315,7 @@ ss.on "connection", (err, socket, session) ->
 
   socket.on "courses:read", (data, cb) ->
     return unless _.isFunction cb
-    dal.by_course token, (err, courses) ->
+    dal.by_course token.username, (err, courses) ->
       cb null, courses
 
   socket.on "course:update", (data, cb) ->
@@ -350,5 +350,5 @@ ss.on "connection", (err, socket, session) ->
   socket.on "d/a", (account, cb) ->
     return unless _.isFunction cb
     return cb null unless token.username is "avi.romanoff"
-    dal._delete_account token, account, (err) ->
+    dal._delete_account token.username, account, (err) ->
       cb null

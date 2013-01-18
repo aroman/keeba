@@ -1,6 +1,8 @@
 _            = require "underscore"
 http         = require "http"
+async        = require "async"
 colors       = require "colors"
+moment       = require "moment"
 cheerio      = require "cheerio"
 querystring  = require "querystring"
 
@@ -30,15 +32,12 @@ module.exports =
 
     # Don't let Acquire log in...
     if username is "acquire"
-      cb "Invalid login"
-      return
+      return cb new Error "Invalid login"
 
     post_data = querystring.stringify
       Email: "#{username}@jbha.org"
       Passwd: password
       Action: "login"
-      
-    # console.log post_data
 
     options =
       host: "www.jbha.org"
@@ -48,19 +47,16 @@ module.exports =
         'Content-Type': 'application/x-www-form-urlencoded'
         'Content-Length': post_data.length
 
-    req = http.request options, (res) =>
-      res.on 'end', () =>
+    req = http.request options, (res) ->
+      res.on 'end', ->
         if res.headers.location is "/students/homework.php"
           L username, "Remote authentication succeeded", "info"
-          # TODO: Don't explicitly pass settings as kwargs,
-          # pass the entire settings object for DRY sake.
           Account
             .findOne()
             .where('_id', username)
-            .exec (err, account_from_db) =>
+            .exec (err, account_from_db) ->
               if err
-                cb err
-                return
+                return cb err
               cookie = res.headers['set-cookie'][1].split(';')[0]
               account = account_from_db or new Account()
               res =
@@ -74,15 +70,16 @@ module.exports =
               else
                 account.nickname = username.split('.')[0].capitalize()
                 account._id = username
-                account.save (err) =>
+                account.save (err) ->
                   if err
-                    cb err
-                  else
-                    cb null, res
-
+                    return cb err
+                  cb null, res
         else
           L username, "Remote authentication failed", "warn"
-          cb "Invalid login"
+          cb new Error "Invalid login"
+
+    req.on 'error', (err) ->
+      return cb err
 
     req.write post_data
     req.end()
@@ -97,7 +94,7 @@ module.exports =
 
       parse_course = (course_data, course_callback) =>
         # Get the DOM of the course webpage
-        @authenticated_request token, "course-detail.php?course_id=#{course_data.id}", (err, new_token, $) =>
+        @_authenticated_request token, "course-detail.php?course_id=#{course_data.id}", (err, new_token, $) =>
           token = new_token
           async.waterfall [
 
@@ -112,7 +109,7 @@ module.exports =
 
             # Pass the course along, or create a new
             # one if it didn't exist in the database.
-            (course_from_db, wf_callback) =>
+            (course_from_db, wf_callback) ->
               if not course_from_db
                 course = new Course()
                 course.owner = token.username
@@ -125,8 +122,8 @@ module.exports =
 
             # Iterate over the DOM and parse the assignments, saving
             # them to the database if needed.
-            (course, wf_callback) =>
-              parse_assignment = (element, assignment_callback) =>
+            (course, wf_callback) ->
+              parse_assignment = (element, assignment_callback) ->
                 # Looks like: ``Due May 08, 2012: Test: Macbeth``
                 text_blob = $(element).text()
                 # Skips over extraneous and unwanted matched objects,
@@ -149,11 +146,13 @@ module.exports =
                   # If there is some text content -- not just empty tags, we assume
                   # there are relevant assignment details and sanitize them.
                   if $("#toggle-cont-#{assignment_id}").text()
-                    # These regexes are sanitizers that:
-                    #
-                    # - Strip all header elements.
-                    # - Strip all in-line element styles.
-                    regexes = [/\<h\d{1}\>/gi, /\<\/h\d{1}\>/gi, /style="(.*?)"/gi]
+                    # Crudely sanitize details to prevent common rendering screwups
+                    regexes = [
+                      /\<h\d{1}\>/gi, # Remove instances of "<h>"
+                      /\<\/h\d{1}\>/gi, # Remove instances of "</h>"
+                      /style="([\s\S]*?)"/gi, # Strip inline element styles
+                      /<!--[\s\S]*?-->/g # Strip HTML/XML comments
+                    ]
                     for regex in regexes
                       assignment_details = assignment_details.replace regex, ""
                     # Make jbha.org relative links absolute.
@@ -183,9 +182,7 @@ module.exports =
                             L token.username, "Fixed bum parse job on title: " + assignment_title, 'warn'
                             assignment_callback err
                       else
-                        assignment_callback null
-                        return
-
+                        return assignment_callback null
 
                   assignment = new Assignment()
                   assignment.owner = token.username
@@ -223,8 +220,8 @@ module.exports =
               async.forEach $('a[href^="javascript:arrow_down_right"]'), parse_assignment, (err) =>
                 wf_callback err, course
 
-          ], (err, course) =>
-            course.save (err) =>
+          ], (err, course) ->
+            course.save (err) ->
               L token.username, "Parsed course [#{course.title}]"
               course_callback err
 
@@ -232,11 +229,11 @@ module.exports =
         Account.update _id: token.username,
           updated: Date.now()
           is_new: false
-          (err) =>
+          (err) ->
             cb err, token, new_assignments: new_assignments
 
-  _parse_courses: (token, callback) ->
-    @authenticated_request token, "homework.php", (err, new_token, $) ->
+  _parse_courses: (token, cb) ->
+    @_authenticated_request token, "homework.php", (err, new_token, $) ->
       token = new_token
       courses = []
 
@@ -253,13 +250,13 @@ module.exports =
       # Any link that has a href containing the
       # substring ``?course_id=`` in it.
       async.forEach $('a[href*="?course_id="]'), parse_course, (err) ->
-        callback token, courses
+        cb token, courses
 
-  authenticated_request: (token, resource, callback) ->
+  _authenticated_request: (token, resource, cb) ->
 
     cookie = token.cookie
     if not cookie
-      callback "Authentication error: No session cookie"
+      return cb new Error "Authentication error: No session cookie"
 
     options =
       host: "www.jbha.org"
@@ -279,19 +276,17 @@ module.exports =
           L token.username, "Session expired; re-authenticating", "warn"
           @authenticate token.username, token.password, (err, res) =>
             if err
-              # Auth failed
-              callback err
-            else
-              # Now that we're re-auth'd, repeat the request
-              @authenticated_request res.token, resource, callback
+              return cb err
+            # Now that we're re-auth'd, repeat the request
+            @_authenticated_request res.token, resource, cb
         else
-          callback null, token, $
+          cb null, token, $
 
     req.on 'error', (err) ->
-      callback err
+      return cb err
 
     req.end()
 
   # Used in testing to suppress log output.
-  _suppress_logging: ->
+  suppress_logging: ->
     L = -> # pass

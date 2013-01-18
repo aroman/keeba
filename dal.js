@@ -37,8 +37,8 @@
       account._id = username;
       account.nickname = "TestAccount";
       return account.save(function(err, doc) {
-        if (_this._call_if_truthy(err, cb)) {
-          return;
+        if (err) {
+          return cb(err);
         }
         return cb(null, {
           account: doc,
@@ -97,7 +97,9 @@
     by_course: function(token, cb) {
       var _this = this;
       return Course.where('owner', token.username).populate('assignments', 'title archived details date done jbha_id').select('-owner -jbha_id').exec(function(err, courses) {
-        _this._call_if_truthy(err, cb);
+        if (err) {
+          return cb(err);
+        }
         return cb(err, courses);
       });
     },
@@ -135,9 +137,7 @@
             $pull: {
               assignments: assignment._id
             }
-          }, {}, function(err) {
-            return wf_callback();
-          });
+          }, {}, wf_callback);
         }, function(wf_callback) {
           return Course.findOne().where('owner', token.username).where('_id', assignment.course).exec(wf_callback);
         }, function(course, wf_callback) {
@@ -145,6 +145,9 @@
           return course.save(wf_callback);
         }
       ], function(err) {
+        if (err) {
+          return cb(err);
+        }
         return Assignment.update({
           owner: token.username,
           _id: assignment._id
@@ -182,13 +185,7 @@
     delete_course: function(token, course, cb) {
       return Course.where('owner', token.username).where('_id', course._id).remove(cb);
     },
-    _call_if_truthy: function(err, func) {
-      if (err) {
-        func(err);
-        return true;
-      }
-    },
-    _suppress_logging: function() {
+    suppress_logging: function() {
       return L = function() {};
     }
   };

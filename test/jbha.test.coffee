@@ -9,8 +9,8 @@ config   = require "../config"
 
 mongoose.connect config.MONGO_URI
 
-jbha._suppress_logging()
-dal._suppress_logging()
+jbha.suppress_logging()
+dal.suppress_logging()
 
 token = null
 

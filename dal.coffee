@@ -25,7 +25,8 @@ module.exports =
     account._id = username
     account.nickname = "TestAccount"
     account.save (err, doc) =>
-      return if @_call_if_truthy err, cb
+      if err
+        return cb err
       cb null,
         account:
           doc
@@ -48,6 +49,7 @@ module.exports =
       migrate: settings.migrate,
       cb
 
+  # Used for debugging; currently no public delete function.
   _delete_account: (token, account, cb) ->
     async.parallel [
       (callback) ->
@@ -65,7 +67,7 @@ module.exports =
     ], cb
 
   migrate: (token, nuke, cb) ->
-    finish = () ->
+    finish = ->
       Account.update _id: token.username,
         migrate: false,
         cb
@@ -91,7 +93,8 @@ module.exports =
       .populate('assignments', 'title archived details date done jbha_id')
       .select('-owner -jbha_id')
       .exec (err, courses) =>
-        @_call_if_truthy(err, cb)
+        if err
+          return cb err
         cb err, courses
 
   create_assignment: (token, data, cb) ->
@@ -124,6 +127,7 @@ module.exports =
     # push it onto the new one, save it,
     # and finally update the assignment fields.
     async.waterfall [
+
       (wf_callback) ->
         Course.update {
           owner: token.username
@@ -133,18 +137,22 @@ module.exports =
           $pull: {assignments: assignment._id}
         },
         {},
-        (err) ->
-          wf_callback()
+        wf_callback
+
       (wf_callback) ->
         Course
           .findOne()
           .where('owner', token.username)
           .where('_id', assignment.course)
           .exec wf_callback
+
       (course, wf_callback) ->
         course.assignments.addToSet assignment._id
         course.save wf_callback
+
     ], (err) ->
+      if err
+        return cb err
       Assignment.update {
           owner: token.username
           _id: assignment._id
@@ -181,6 +189,8 @@ module.exports =
         title: course.title
         teacher: course.teacher
       },
+      # Don't pass along numAffected and raw to
+      # the callback -- just return the err argument.
       (err, numAffected, raw) ->
         cb err
 
@@ -190,11 +200,6 @@ module.exports =
       .where('_id', course._id)
       .remove cb
 
-  _call_if_truthy: (err, func) ->
-    if err
-      func err
-      return true
-
   # Used in testing to suppress log output.
-  _suppress_logging: ->
+  suppress_logging: ->
     L = -> # pass

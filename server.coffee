@@ -59,16 +59,16 @@ app.configure 'production', ->
   app.use express.errorHandler(dumpExceptions: true, showStack: true)
   app.set 'view options', pretty: false
 
-conn = mongoose.createConnection config.MONGO_URI
+mongoose.connect config.MONGO_URI
 
-conn.on 'connected', ->
+mongoose.connection.on 'connected', ->
   logger.debug "Connected to database"
   server.listen port
   logger.info "Running in #{mode[color]} mode on port #{port.toString().bold}."
   logger.info "Rav Keeba has taken the bima . . .  "
 
 sessionStore = new MongoStore
-  url: config.MONGO_URI
+  mongoose_connection: mongoose.connection
   stringify: false
 
 cookie_parser = express.cookieParser config.SESSION_SECRET

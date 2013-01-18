@@ -1,6 +1,11 @@
 # Copyright (C) 2012 Avi Romanoff <aviromanoff at gmail.com>
 
-jbha = require "./jbha"
+mongoose = require "mongoose"
+
+jbha   = require "./jbha"
+config = require "./config"
+
+mongoose.connect config.MONGO_URI
 
 process.on 'message', (message) ->
   if message.action = "refresh"

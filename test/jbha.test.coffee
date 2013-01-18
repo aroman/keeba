@@ -14,9 +14,9 @@ dal.suppress_logging()
 
 token = null
 
-describe "jbha", () ->
+describe "jbha", ->
 
-  describe "valid credentials", () ->
+  describe "valid credentials", ->
     it 'should succeed', (done) ->
       jbha.authenticate config.VALID_USERNAME, config.VALID_PASSWORD, (err, account, _token) ->
         should.exist account
@@ -25,13 +25,13 @@ describe "jbha", () ->
         token = _token
         done()
 
-  describe "invalid credentials", () ->
+  describe "invalid credentials", ->
     it 'should fail', (done) ->
       jbha.authenticate 'joe.biden', 'flobots', (err, res) ->
         should.exist err
         done()
 
-describe "dal", () ->
+describe "dal", ->
 
   mock_settings =
     _id: String(Math.random())
@@ -39,7 +39,7 @@ describe "dal", () ->
     firstrun: false
     details: true
 
-  describe "create", () ->
+  describe "create", ->
     it 'should create without error', (done) ->
       dal._create_account mock_settings._id, (err, res) ->
         should.not.exist err
@@ -51,13 +51,13 @@ describe "dal", () ->
         token = res.token
         done()
 
-  describe "update", () ->
+  describe "update", ->
     it 'should update without error', (done) ->
       dal.update_settings token, mock_settings, (err) ->
         should.not.exist err
         done()
 
-  describe "read", () ->
+  describe "read", ->
     it 'should read without error', (done) ->
       dal.read_settings token, (err, settings) ->
         should.not.exist err
@@ -67,7 +67,7 @@ describe "dal", () ->
         settings.is_new.should.equal true
         done()
 
-  describe "delete", () ->
+  describe "delete", ->
     it 'should delete without error', (done) ->
       dal._delete_account token, mock_settings._id, (err) ->
         should.not.exist err
@@ -83,7 +83,7 @@ describe "dal", () ->
     teacher: fixture.teacher + " ***"
     assignments: []
 
-  describe "create course", () ->
+  describe "create course", ->
     it 'should create without error', (done) ->
       dal.create_course token, fixture, (err, course) ->
         should.not.exist err
@@ -94,7 +94,7 @@ describe "dal", () ->
         fixture._id = fixture_updated._id = course._id
         done()
 
-  describe "create assignment with details", () ->
+  describe "create assignment with details", ->
     it 'should be kosher', (done) ->
       assignment_fixture =
         course: fixture._id
@@ -109,7 +109,7 @@ describe "dal", () ->
         assignment.date.should.equal assignment_fixture.date
         done()
 
-  describe "delete assignment without details", () ->
+  describe "delete assignment without details", ->
     it 'should be kosher', (done) ->
       assignment_fixture =
         course: fixture._id
@@ -124,7 +124,7 @@ describe "dal", () ->
         assignment.date.should.equal assignment_fixture.date
         done()
 
-  describe "read courses", () ->
+  describe "read courses", ->
     it 'should read without error', (done) ->
       dal.by_course token, (err, courses) ->
         should.not.exist err
@@ -132,13 +132,13 @@ describe "dal", () ->
         courses.length.should.be.above 0
         done()
 
-  describe "update course", () ->
+  describe "update course", ->
     it 'should update without error', (done) ->
       dal.update_course token, fixture, (err) ->
         should.not.exist err
         done()
 
-  describe "delete course", () ->
+  describe "delete course", ->
     it 'should delete without error', (done) ->
       dal.delete_course token, fixture_updated, (err) ->
         should.not.exist err

@@ -1,3 +1,5 @@
+# Copyright (C) 2013 Avi Romanoff <aviromanoff at gmail.com>
+
 _            = require "underscore"
 http         = require "http"
 async        = require "async"

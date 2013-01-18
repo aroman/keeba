@@ -38,10 +38,6 @@
     return logger[urgency]("" + prefix.underline + " :: " + message);
   };
 
-  String.prototype.capitalize = function() {
-    return this.charAt(0).toUpperCase() + this.slice(1);
-  };
-
   module.exports = {
     authenticate: function(username, password, cb) {
       var options, post_data, req;
@@ -68,30 +64,26 @@
           if (res.headers.location === "/students/homework.php") {
             L(username, "Remote authentication succeeded", "info");
             return Account.findOne().where('_id', username).exec(function(err, account_from_db) {
-              var account, cookie;
+              var account, token;
               if (err) {
                 return cb(err);
               }
-              cookie = res.headers['set-cookie'][1].split(';')[0];
               account = account_from_db || new Account();
-              res = {
-                token: {
-                  cookie: cookie,
-                  username: username,
-                  password: password
-                },
-                account: account
+              token = {
+                cookie: res.headers['set-cookie'][1].split(';')[0],
+                username: username,
+                password: password
               };
               if (account_from_db) {
-                return cb(null, res);
+                return cb(null, account, token);
               } else {
-                account.nickname = username.split('.')[0].capitalize();
+                account.nickname = username.split('.')[0];
                 account._id = username;
                 return account.save(function(err) {
                   if (err) {
                     return cb(err);
                   }
-                  return cb(null, res);
+                  return cb(null, account, token);
                 });
               }
             });
@@ -276,11 +268,11 @@
           $ = cheerio.load(body);
           if ($('a[href="/students/?Action=logout"]').length === 0) {
             L(token.username, "Session expired; re-authenticating", "warn");
-            return _this.authenticate(token.username, token.password, function(err, res) {
+            return _this.authenticate(token.username, token.password, function(err, account, token) {
               if (err) {
                 return cb(err);
               }
-              return _this._authenticated_request(res.token, resource, cb);
+              return _this._authenticated_request(token, resource, cb);
             });
           } else {
             return cb(null, token, $);

@@ -181,17 +181,17 @@
     email = req.body.email;
     password = req.body.password;
     whence = req.query.whence;
-    return jbha.authenticate(email, password, function(err, response) {
+    return jbha.authenticate(email, password, function(err, account, token) {
       if (err) {
         return res.render("index", {
           failed: true,
           email: email
         });
       } else {
-        req.session.token = response.token;
-        if (response.account.is_new) {
+        req.session.token = token;
+        if (account.is_new) {
           return res.redirect("/setup");
-        } else if (response.account.migrate) {
+        } else if (account.migrate) {
           return res.redirect("/migrate");
         } else {
           if (whence) {

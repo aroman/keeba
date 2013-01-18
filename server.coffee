@@ -139,16 +139,16 @@ app.post "/", (req, res) ->
   email = req.body.email
   password = req.body.password
   whence = req.query.whence
-  jbha.authenticate email, password, (err, response) ->
+  jbha.authenticate email, password, (err, account, token) ->
     if err
       res.render "index"
         failed: true
         email: email
     else
-      req.session.token = response.token
-      if response.account.is_new
+      req.session.token = token
+      if account.is_new
         res.redirect "/setup"
-      else if response.account.migrate
+      else if account.migrate
         res.redirect "/migrate"
       else
         if whence

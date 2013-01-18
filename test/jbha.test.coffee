@@ -18,10 +18,11 @@ describe "jbha", () ->
 
   describe "valid credentials", () ->
     it 'should succeed', (done) ->
-      jbha.authenticate config.VALID_USERNAME, config.VALID_PASSWORD, (err, res) ->
-        should.exist res.token
+      jbha.authenticate config.VALID_USERNAME, config.VALID_PASSWORD, (err, account, _token) ->
+        should.exist account
+        should.exist _token
         should.not.exist err
-        token = res.token
+        token = _token
         done()
 
   describe "invalid credentials", () ->

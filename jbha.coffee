@@ -19,9 +19,6 @@ logger = new logging.Logger "JBHA"
 L = (prefix, message, urgency="debug") ->
   logger[urgency] "#{prefix.underline} :: #{message}"
 
-String::capitalize = ->
-  @charAt(0).toUpperCase() + @slice 1
-
 module.exports = 
 
   # Logs a user into the homework website.
@@ -57,23 +54,20 @@ module.exports =
             .exec (err, account_from_db) ->
               if err
                 return cb err
-              cookie = res.headers['set-cookie'][1].split(';')[0]
               account = account_from_db or new Account()
-              res =
-                token:
-                  cookie: cookie
-                  username: username
-                  password: password
-                account: account
+              token =
+                cookie: res.headers['set-cookie'][1].split(';')[0]
+                username: username
+                password: password
               if account_from_db
-                cb null, res
+                cb null, account, token
               else
-                account.nickname = username.split('.')[0].capitalize()
+                account.nickname = username.split('.')[0]
                 account._id = username
                 account.save (err) ->
                   if err
                     return cb err
-                  cb null, res
+                  cb null, account, token
         else
           L username, "Remote authentication failed", "warn"
           cb new Error "Invalid login"
@@ -274,11 +268,11 @@ module.exports =
         # Handle re-authing if we've been logged out
         if $('a[href="/students/?Action=logout"]').length is 0
           L token.username, "Session expired; re-authenticating", "warn"
-          @authenticate token.username, token.password, (err, res) =>
+          @authenticate token.username, token.password, (err, account, token) =>
             if err
               return cb err
             # Now that we're re-auth'd, repeat the request
-            @_authenticated_request res.token, resource, cb
+            @_authenticated_request token, resource, cb
         else
           cb null, token, $
 

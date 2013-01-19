@@ -1,6 +1,29 @@
-# Keeba
+# Keeba: Homework, simplified.
 
-  Homework, simplified.
+## What is this?
+This is a homework management web app for students that can sync 1-directionally with an existing homework portal, such as a school's official one.
+
+Therefore, it can easily integrate into an existing school system because it does not require the replacement of existing homework management software. All you one need do is build a custom adapter module for their school website (see `jbha.coffee`), add water, and *viola* -- your school's crappy custom/PowerSchool/whatever enterprise homework portal is souped up with the latest web goodness.
+
+It is built with node.js/express on the backend, and Backbone/Bootstrap on the frontend. It uses MongoDB (via Mongoose) for persistence.
+
+## DIY-API
+
+Most likely, there is no official API to pull courses and assignments from your school's homework portal. (There wasn't for my school's). So go and build one (I did). Node.js is exceptionally suited for the task of building a little HTML parsing-based HTTP session proxying interface. 
+
+If you've got the module built and plugged-in, Keeba takes care of the rest. And, thanks in no small part to Matthew Mueller's fantastic [cheerio](https://github.com/MatthewMueller/cheerio) library, I could build such an adapter in a mere 300 lines of CoffeeScript! See for yourself in `jbha.coffee`.
+
+## Why?
+
+Because most of the software schools have for letting kids check their homework at school is absolutely crap. It's like 1990's day whenever I have to log on and see what my teachers have posted for a given night.
+
+The problem is building an end-to-end replacement for such software can be a nightmare. You've got to re-train teachers, support it, and convince the school to get on board. So I just side stepped the whole issue and **built Keeba to run on top of my school's existing infrastructure**.
+
+## Who's using it?
+
+Well, I am :) Oh, and the majority of my school's student body. In fact the student body loves it so much that the school administration has actually agreed to cover the hosting costs and give it "official" sanction... not that I needed it ;)
+
+And you can too! Just fork it and make the changes neccessary to integrate it into your school's environment. It runs quite happily on a free Heroku instance.
 
 ## Get up and running
  1. Grab the source: `git clone git@github.com:aroman/keeba.git && cd keeba`

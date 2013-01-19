@@ -1,3 +1,5 @@
+# (C) 2013 Avi Romanoff <aviromanoff at gmail.com> 
+
 REPORTER = spec
 
 serve: build

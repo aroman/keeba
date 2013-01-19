@@ -1,7 +1,16 @@
+// Copyright (C) 2013 Avi Romanoff <aviromanoff at gmail.com>
+
+// Contains Handlebars helper functions,
+// date constants and date utility functions,
+// as well as other various utility functions
+// and constants.
+
+
 // Pre-compile dates.
 function compileDateConstants () {
-  // XXX: HACK! Fix this and grab a coffee.
-  // today = moment().utc().startOf('day');
+  // XXX: Hacky implementation of date generation
+  // Specifically, what's with UTC and local vs
+  // server timezones?
   _now = moment();
   today = moment.utc([_now.year(), _now.month(), _now.date()]);
   yesterday = moment(today).subtract('days', 1);
@@ -9,11 +18,13 @@ function compileDateConstants () {
   in_a_week = moment(today).add('weeks', 1);
   in_two_weeks = moment(today).add('weeks', 2);
   big_bang = moment(0).utc(); // Actually 1970
-  doomsday = moment(9999999999999).utc(); // Year 2286 lol
+  doomsday = moment(9999999999999).utc(); // Actually 2286 lol
 }
 
 compileDateConstants();
 
+// Returns the date which is the last day
+// of the current school week.
 function getEndOfWeek () {
   var wanted = _.indexOf(moment.weekdays, "Friday");
   for (var i = 1; i < 8; i++) {
@@ -24,6 +35,9 @@ function getEndOfWeek () {
   }
 }
 
+// Returns the date which is the first day
+// of the current school week, or of the upcoming
+// week if currently on a weekend.
 function getStartOfWeek () {
   var wanted = _.indexOf(moment.weekdays, "Monday");
   // It's a weekend (Friday, Saturday, Sunday)
@@ -42,6 +56,8 @@ function getStartOfWeek () {
   }
 }
 
+// Date range information which powers
+// the "Upcoming" sidebar
 UPCOMING_DATES = [
   {
     name: "Overdue",
@@ -83,25 +99,34 @@ UPCOMING_DATES = [
 
 DATE_MAP = {}
 
+// Generates DATE_MAP object from UPCOMING_DATES array.
 _.map(UPCOMING_DATES, function (date) {
   DATE_MAP[date.link] = _.pick(date, ['name', 'start', 'end']);
 });
 
-// Cache TTL in ms
+// Number of ms that represents
+// the maximum time difference for 
+// issuing a refresh command to the server
+// That is, if the current time is greater
+// than CACHE_TTL ms away from the previous
+// refresh time, a refresh is requested.
 // 3600000 ms = 1 hour
 CACHE_TTL = 2 * 3600000;
 
-// = formatting
+// Moment-style date formats used for rendering
+// dates in templates.
 var DATE_FORMAT = "dddd MMM D";
 var DATE_RANGE_FORMAT = "dddd, MMMM Do YYYY";
 var DATE_EDIT_FORMAT = "M/D/YY";
 
-var exclamations = ["Woo-hoo", "Rock on", "Sweet", "Right on", "Nice", "Congrats"];
-
+// Returns copy of string 'body' with all instances
+// of %n replaced with the user's nickname.
 Handlebars.registerHelper('personalize', function (body) {
   return body.replace("%n", settings.get('nickname'));
 });
 
+// Identifies quiz/test keywords in string title
+// and creates labels for the appropriate assessment type.
 Handlebars.registerHelper('keyword', function (title) {
   if (title.search(/quiz/i) !== -1) {
     return new Handlebars.SafeString('<span class="label label-warning">Quiz</span>');
@@ -111,12 +136,17 @@ Handlebars.registerHelper('keyword', function (title) {
   }
 });
 
+var exclamations = ["Woo-hoo", "Rock on", "Sweet", "Right on", "Nice", "Congrats"];
 var rando = Math.floor(Math.random() * exclamations.length);
 
+// Returns a random exclamation string. Used for empty
+// DatesView/SectionView templates.
 Handlebars.registerHelper('exclamation', function () {
   return exclamations[rando] + "!";
 });
 
+// Returns the # of assignments which are not 'done'
+// accross all courses between the dates 'start' and 'end'.
 Handlebars.registerHelper('remaining', function (start, end) {
   var num = courses.get_assignments(start, end, "only undone").length;
   var badge = '';
@@ -126,11 +156,11 @@ Handlebars.registerHelper('remaining', function (start, end) {
   return new Handlebars.SafeString('<span class="badge ' + badge + '">' + num + '</span>');
 });
 
+// Returns a string representation of a given date.
+// For use in AssignmentView templates.
 Handlebars.registerHelper('format_date', function (epoch) {
   var date = moment.utc(epoch);
   var str = "";
-
-  // console.log(date.format('LLLL ZZ  ') + date.valueOf());
 
   if (date.valueOf() < yesterday.valueOf()) {
     str = '<span class="overdue">' + date.format(DATE_FORMAT) + '</span>';
@@ -151,6 +181,8 @@ Handlebars.registerHelper('format_date', function (epoch) {
   return str;
 });
 
+// Returns a properly formatted string representation
+// of a date for use with bootstrap-datepicker. 
 Handlebars.registerHelper('editable_date', function (epoch) {
   // If it's a blank value, don't try to format it.
   if (epoch === '') {
@@ -160,6 +192,9 @@ Handlebars.registerHelper('editable_date', function (epoch) {
   return moment.utc(epoch).format(DATE_EDIT_FORMAT);
 });
 
+// Returns a string representation of the range of
+// dates, with special cases for edge dates and overlapping
+// ranges (ranges.start == ranges.end)
 Handlebars.registerHelper('range_date', function (ranges) {
   var start = ranges.start;
   var end = ranges.end;
@@ -189,6 +224,10 @@ Handlebars.registerHelper('range_date', function (ranges) {
   return str;
 });
 
+// Used to generate the HTML dropdown menu
+// containing all possible options for an assignment's
+// date. Used in AddAssignmentView and EditAssignmentView
+// templates.
 Handlebars.registerHelper('course_options', function (course_id) {
   str = "";
 

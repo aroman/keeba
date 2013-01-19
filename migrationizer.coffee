@@ -1,5 +1,9 @@
 # (C) 2012 Avi Romanoff <aviromanoff at gmail.com> 
 
+# Command that marks all accounts last updated before
+# a given date as needing to migrate by setting the
+# `migrate` field to true on each affected Account.
+
 sys      = require "sys"
 colors   = require "colors"
 mongoose = require "mongoose"

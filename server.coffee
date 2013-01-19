@@ -1,10 +1,11 @@
 # Copyright (C) 2013 Avi Romanoff <aviromanoff at gmail.com>
 
-# Node modules
+# Contains the HTTP/WebSocket
+# server. Uses express & socket.io.
+
 cp         = require "child_process"
 http       = require "http"
 
-# 3rd party modules
 _          = require "underscore"
 email      = require "emailjs"
 colors     = require "colors"
@@ -15,7 +16,6 @@ socketio   = require "socket.io"
 mongoose   = require "mongoose"
 MongoStore = require("connect-mongo")(express)
 
-# Internal modules
 config     = require "./config"
 jbha       = require "./jbha"
 dal        = require "./dal"
@@ -113,13 +113,19 @@ browserCheck = (req, res, next) ->
       return res.redirect "/unsupported"
   next()
 
+# Ensures the request's session contains
+# 'token', else redirects them to the root.
 ensureSession = (req, res, next) ->
   if not req.session.token
     res.redirect "/?whence=#{req.url}"
   else
     next()
 
-hydrateSettings = (req, res, next) ->
+# Ensures the request's session contains
+# 'settings' (the user's Account model), else
+# destroys the session and redirects them to
+# the root.
+ensureSettings = (req, res, next) ->
   dal.read_settings req.session.token.username, (err, settings) ->
     req.settings = settings
     if not settings
@@ -135,6 +141,7 @@ app.get "/", browserCheck, (req, res) ->
       failed: false
       email: null
 
+# Process authentication requests
 app.post "/", (req, res) ->
   email = req.body.email
   password = req.body.password
@@ -155,7 +162,9 @@ app.post "/", (req, res) ->
           res.redirect whence
         else
           res.redirect "/app"
- 
+
+# Users are never redirected here -- this
+# route is only for testing the 500 template.
 app.get "/500", (req, res) ->
   res.status(500).render "500", layout: false
 
@@ -165,6 +174,7 @@ app.get "/about", (req, res) ->
 app.get "/help", (req, res) ->
   res.render "help"
 
+# Users are redirected here from browserCheck.
 app.get "/unsupported", (req, res) ->
   res.render "unsupported"
 
@@ -172,28 +182,28 @@ app.get "/logout", (req, res) ->
   req.session.destroy()
   res.redirect "/"
 
-app.get "/migrate", ensureSession, hydrateSettings, (req, res) ->
+app.get "/migrate", ensureSession, ensureSettings, (req, res) ->
   if !req.settings.migrate
     res.redirect "/"
   else
     res.render "migrate"
       nickname: req.settings.nickname
 
-app.post "/migrate", ensureSession, hydrateSettings, (req, res) ->
+app.post "/migrate", ensureSession, ensureSettings, (req, res) ->
   if !req.settings.migrate
     res.redirect "/app"
   else
     dal.migrate req.session.token.username, req.query.nuke, () ->
       res.redirect "/app"
 
-app.get "/setup", ensureSession, hydrateSettings, (req, res) ->
+app.get "/setup", ensureSession, ensureSettings, (req, res) ->
   if req.settings.is_new
     res.render "setup"
       settings: JSON.stringify req.settings
   else
     res.redirect "/"
 
-app.post "/setup", ensureSession, hydrateSettings, (req, res) ->
+app.post "/setup", ensureSession, ensureSettings, (req, res) ->
   settings = req.settings
   settings.firstrun = true
 
@@ -202,7 +212,9 @@ app.post "/setup", ensureSession, hydrateSettings, (req, res) ->
   dal.update_settings req.session.token.username, settings, ->
     res.redirect "/app"
 
-app.get "/app*", ensureSession, hydrateSettings, (req, res) ->
+# Wildcard needed to pass HTML5 pushState-generated
+# URLs to be managed by the client.
+app.get "/app*", ensureSession, ensureSettings, (req, res) ->
   dal.by_course req.session.token.username, (err, courses) ->
     if !req.settings || req.settings.is_new
       res.redirect "/setup"
@@ -215,6 +227,9 @@ app.get "/app*", ensureSession, hydrateSettings, (req, res) ->
         nickname: req.settings.nickname
         settings: JSON.stringify req.settings
 
+# Keep track of active child processes,
+# which are used to run jbha.refresh via
+# the './worker' module.
 workers = {}
 
 ss.on "connection", (err, socket, session) ->
@@ -225,6 +240,7 @@ ss.on "connection", (err, socket, session) ->
   token = session.token
   socket.join token.username
 
+  # Forces the current session to be saved to the database.
   saveSession = (cb) ->
     sessionStore.set socket.handshake.signedCookies['connect.sid'], session, cb
 
@@ -347,6 +363,7 @@ ss.on "connection", (err, socket, session) ->
       sync "assignments", "delete", data
       cb null
 
+  # Debug function used to "delete/account"
   socket.on "d/a", (account, cb) ->
     return unless _.isFunction cb
     return cb null unless token.username is "avi.romanoff"

@@ -1,3 +1,10 @@
+// Copyright (C) 2013 Avi Romanoff <aviromanoff at gmail.com>
+
+// Contains the models used for both the actual
+// app itself as well as the setup page.
+
+// Represents a specific assignment which is part
+// of a CourseModel (is part of an AssignmentCollection).
 CourseAssignment = Backbone.RelationalModel.extend({
 
   idAttribute: "_id",
@@ -65,6 +72,8 @@ CourseAssignment = Backbone.RelationalModel.extend({
 
 });
 
+// Collection of CourseAssignments
+// Used in CourseModel to collect a course's assignments.
 AssignmentCollection = Backbone.QueryCollection.extend({
 
   comparator: function (assignment) {
@@ -73,6 +82,10 @@ AssignmentCollection = Backbone.QueryCollection.extend({
 
 });
 
+// Collection of CourseAssignments (collected via
+// a single AssignmentCollection)
+// Represents a specific course and contains the
+// assignments for that course.
 CourseModel = Backbone.RelationalModel.extend({
 
   idAttribute: "_id",
@@ -165,6 +178,9 @@ CourseModel = Backbone.RelationalModel.extend({
 
 });
 
+// Collection of CourseModels
+// Represents the collection of all the courses
+// which the user is a part of.
 CourseCollection = Backbone.QueryCollection.extend({
 
   model: CourseModel,
@@ -191,6 +207,8 @@ CourseCollection = Backbone.QueryCollection.extend({
 
 });
 
+// Represents the data which is displayed in the banner
+// at the top of the app and setup pages.
 Status = Backbone.Model.extend({
 
   defaults: function () {
@@ -204,6 +222,9 @@ Status = Backbone.Model.extend({
 
 });
 
+// Represents a user's account details and settings
+// This model is a singleton -- there should be only
+// one instance of it per account.
 Settings = Backbone.Model.extend({
 
   urlRoot: 'settings',

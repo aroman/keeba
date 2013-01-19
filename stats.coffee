@@ -1,5 +1,9 @@
 # (C) 2013 Avi Romanoff <aviromanoff at gmail.com> 
 
+# Purely vanity module which displays
+# the last `n` number of active accounts
+# as based on Account.updated.
+
 colors   = require "colors"
 mongoose = require "mongoose"
 moment   = require "moment"

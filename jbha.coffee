@@ -1,5 +1,11 @@
 # Copyright (C) 2013 Avi Romanoff <aviromanoff at gmail.com>
 
+# Contains API to interface with the jbha.org/students
+# homework portal, providing authentication and parsing.
+# Automatically re-authenicates sessions if expired,
+# hence the need for storing the user's password
+# in his temporary session.
+
 _            = require "underscore"
 http         = require "http"
 async        = require "async"
@@ -23,9 +29,15 @@ L = (prefix, message, urgency="debug") ->
 
 module.exports = 
 
-  # Logs a user into the homework website.
-  # Returns ``true`` to ``cb`` if authentication was successful.
-  # Returns ``false`` to ``cb`` if authentication failed.
+  # Authenticates a user to the jbha.org homework
+  # website, and returns their existing Keeba account
+  # or creates a new one this is their first log-in
+  # via Keeba.
+  # Generates 'token' objects, which contain
+  # all the neccessary information for making
+  # authenticated requests via this API.
+  # Contains a user's username, password, and PHP
+  # session cookie for the remote session.
   authenticate: (username, password, cb) ->
     username = username.toLowerCase()
 
@@ -80,6 +92,8 @@ module.exports =
     req.write post_data
     req.end()
 
+  # Performs a full pull of the latest homework data
+  # from the school website.
   refresh: (token, options, cb) ->
 
     @_parse_courses token, (new_token, courses) =>
@@ -228,6 +242,7 @@ module.exports =
           (err) ->
             cb err, token, new_assignments: new_assignments
 
+  # Internal function -- used by refresh.
   _parse_courses: (token, cb) ->
     @_authenticated_request token, "homework.php", (err, new_token, $) ->
       token = new_token
@@ -248,6 +263,7 @@ module.exports =
       async.forEach $('a[href*="?course_id="]'), parse_course, (err) ->
         cb token, courses
 
+  # Internal function -- used by refresh & _parse_courses.
   _authenticated_request: (token, resource, cb) ->
 
     cookie = token.cookie

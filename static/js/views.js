@@ -1,3 +1,11 @@
+// Copyright (C) 2013 Avi Romanoff <aviromanoff at gmail.com>
+
+// Contains Backbone views for the app itself
+// as well as the setup page.
+
+// Represents the banner at the top of the
+// page which indicates the current status
+// of the app to the user.
 StatusView = Backbone.View.extend({
 
   el: "#status",
@@ -48,6 +56,8 @@ StatusView = Backbone.View.extend({
 
 });
 
+// Represents the modal which allows the user
+// to edit their account settings.
 SettingsView = Backbone.View.extend({
 
   el: $("#settings-modal"),
@@ -101,6 +111,9 @@ SettingsView = Backbone.View.extend({
 
 });
 
+// Represents the modal which allows the user
+// to add a new assignment. Used for both
+// SectionViews and DatesViews.
 AddAssignmentView = Backbone.View.extend({
 
   el: $("#add-assignment-modal"),
@@ -127,7 +140,7 @@ AddAssignmentView = Backbone.View.extend({
   },
 
   add: function () {
-    var that = this;
+    var which = this;
 
     // Disable all form elements to prevent
     // double-submissions.
@@ -150,7 +163,7 @@ AddAssignmentView = Backbone.View.extend({
     },
     {
       error: function (model, errors) {
-        that.$(".error").removeClass('error');
+        which.$(".error").removeClass('error');
         that.$('.help-inline').text('');
         _.each(errors, function (error) {
           var control_group = that.$("#" + error.attr).parents(".control-group");
@@ -180,6 +193,8 @@ AddAssignmentView = Backbone.View.extend({
 
 });
 
+// Represnts the modal which allows the user 
+// to edit a specific assignment.
 EditAssignmentView = Backbone.View.extend({
 
   el: $("#edit-assignment-modal"),
@@ -263,6 +278,8 @@ EditAssignmentView = Backbone.View.extend({
 
 });
 
+// Represnts the modal which allows the user 
+// to add a new course to their account.
 AddCourseView = Backbone.View.extend({
   el: $("#add-course-modal"),
   template: Handlebars.templates.edit_course,
@@ -326,6 +343,9 @@ AddCourseView = Backbone.View.extend({
 
 });
 
+// Represnts the modal which allows the user 
+// to edit a specific course (not individual 
+// assignments therein).
 EditCourseView = Backbone.View.extend({
 
   el: $("#edit-course-modal"),
@@ -404,6 +424,9 @@ EditCourseView = Backbone.View.extend({
 
 });
 
+// Represents a table row containing one assignment
+// which is part of the table inside a DatesView or
+// a SectionView.
 AssignmentView = Backbone.View.extend({
 
   tagName: 'tr',
@@ -505,6 +528,11 @@ AssignmentView = Backbone.View.extend({
 
 });
 
+// Represents a given range of dates, and 
+// contains the controls for managing assignments
+// within that date range as well the AssignmentViews
+// of the dates in the specified range which are its
+// children.
 DatesView = Backbone.View.extend({
 
   template: undefined,
@@ -665,6 +693,9 @@ DatesView = Backbone.View.extend({
 
 });
 
+// Represents a given course, and contains
+// the course-level controls as well as the AssignmentViews
+// which are its children.
 SectionView = Backbone.View.extend({
 
   template: Handlebars.templates.course,
@@ -774,6 +805,8 @@ SectionView = Backbone.View.extend({
 
   addAssignment: function (assignment, course) {
     // XXX: https://github.com/PaulUithol/Backbone-relational/issues/48
+    // See my comment there -- storing the model IDs in the DOM is part
+    // of the workaround.
     var assignment_with_id = this.$("div[data-id='" + assignment.get('_id') + "']");
     if (assignment_with_id.length === 0) {
       // If there is no `tbody` element to prepend,
@@ -839,6 +872,7 @@ SectionView = Backbone.View.extend({
 
 });
 
+// Main view for app itself
 AppView = Backbone.View.extend({
 
   el: $("body"),
@@ -879,8 +913,7 @@ AppView = Backbone.View.extend({
       else if ((moment().utc() - settings.getUpdatedAt()) > CACHE_TTL) {
         // XXX: This hack needed because the server won't see our event
         // otherwise...
-        _.delay(that.refresh, 1000)
-        // that.refresh();
+        _.delay(that.refresh, 1000);
       } else {
         that.updateUpdatedAt();
       }
@@ -894,8 +927,11 @@ AppView = Backbone.View.extend({
 
     socket.on('reconnecting', function (delay, attempts) {
       // XXX: Hack to disable finite exponential back-off
+      // We reset the # of reconnection attempts
+      // and the delay between attempts to something constant
+      // on every reconnection attempt.
       socket.socket.reconnectionAttempts = 1
-      socket.socket.reconnectionDelay = 1500 // (This is doubled in reality)
+      socket.socket.reconnectionDelay = 1500 // (This value gets doubled)
 
       // This gets called every time we try to reconnect,
       // so only change to an offline state if we weren't 
@@ -1170,6 +1206,7 @@ AppView = Backbone.View.extend({
 
 });
 
+// Main view for setup page
 SetupView = Backbone.View.extend({
 
   el: $("body"),

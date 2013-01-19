@@ -1,5 +1,10 @@
 # Copyright (C) 2013 Avi Romanoff <aviromanoff at gmail.com>
 
+# Contains the Mongoose models used server-side
+# for the app. Note that these models are NOT
+# identical to the Backbone models used on the 
+# client, though there is a great deal of overlap.
+
 mongoose = require 'mongoose'
 
 AccountSchema = new mongoose.Schema

@@ -1,3 +1,8 @@
+// Copyright (C) 2013 Avi Romanoff <aviromanoff at gmail.com>
+
+// Contains the router which is used ONLY
+// on the app page itself.
+
 var KeebaRouter = Backbone.Router.extend({
 
   current_view: null,

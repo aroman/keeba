@@ -1,5 +1,8 @@
 # Copyright (C) 2013 Avi Romanoff <aviromanoff at gmail.com>
 
+# Provides a data access layer for common
+# database operations and queries.
+
 async        = require "async"
 colors       = require "colors"
 moment       = require "moment"

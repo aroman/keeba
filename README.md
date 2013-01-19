@@ -7,7 +7,7 @@ Therefore, it can easily integrate into an existing school system because it doe
 
 It is built with node.js/express on the backend, and Backbone/Bootstrap on the frontend. It uses MongoDB (via Mongoose) for persistence.
 
-## DIY-API
+### DIY-API
 
 Most likely, there is no official API to pull courses and assignments from your school's homework portal. (There wasn't for my school's). So go and build one (I did). Node.js is exceptionally suited for the task of building a little HTML parsing-based HTTP session proxying interface. 
 
@@ -37,10 +37,14 @@ Note that just running `coffee server` is probably not what you want,
 as it skips `make build` which compiles the CoffeeScript and Handlebars
 templates.
 
-## Configuration
+### Configuration
 Keeba is configured through environment variables (it is designed to run on Heroku) and config.coffee.
 
 See config.coffee for rules about the precedence of env vs config files.
+
+## Documentation
+You can view documentation via Jeremy Askenas's excellent [docco](https://github.com/jashkenas/docco) by
+running `make docs` and viewing the created `docs` folder with your favorite web browser.
 
 ## Coding style
  - 2-space soft tab indents 

@@ -8,8 +8,8 @@
 
 mongoose = require "mongoose"
 
-jbha   = require "./jbha"
-config = require "./config"
+jbha     = require "./jbha"
+config   = require "./config"
 
 mongoose.connect config.MONGO_URI
 

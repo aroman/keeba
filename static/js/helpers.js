@@ -3,7 +3,7 @@
 // Contains Handlebars helper functions,
 // date constants and date utility functions,
 // as well as other various utility functions
-// and constants.
+// and constants. 
 
 
 // Pre-compile dates.

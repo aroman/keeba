@@ -138,7 +138,10 @@ module.exports =
           $pull: {assignments: assignment._id}
         },
         {},
-        wf_callback
+        (err, numAffected, raw) ->
+          # We don't want any of the other args
+          # passed through the waterfall
+          wf_callback err
 
       (wf_callback) ->
         Course

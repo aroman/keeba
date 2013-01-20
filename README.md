@@ -69,3 +69,8 @@ running `make docs` and viewing the created `docs` folder with your favorite web
     Custom stylesheets  CSS             200
     
                         Total:          4506
+                        
+## License
+
+Keeba is licensed under the terms of the GNU GPL Version 3.
+You can find the full text of the license here: http://www.gnu.org/licenses/gpl.txt

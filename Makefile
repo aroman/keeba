@@ -24,11 +24,11 @@ clean:
 	@rm *.js
 
 deploy-staging: build test
-	@git push staging
+	@git push staging jbha-config:master
 	@heroku config:set GIT_REV=`git rev-parse --short HEAD` --app keeba-staging
 
 deploy-production: build test
-	@git push production
+	@git push production jbha-config:master
 	@heroku config:set GIT_REV=`git rev-parse --short HEAD` --app keeba
 
 .PHONY: build clean serve test docs clean-docs

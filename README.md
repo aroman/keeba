@@ -23,7 +23,7 @@ The problem is building an end-to-end replacement for such software can be a nig
 
 Well, I am :) Oh, and the majority of my school's student body. In fact the student body loves it so much that the school administration has actually agreed to cover the hosting costs and give it "official" sanction... not that I needed it ;)
 
-And you can too! Just fork it and make the changes neccessary to integrate it into your school's environment. It runs quite happily on a free Heroku instance.
+And you/your school can too! Just fork it and make the changes neccessary to integrate it into your school's environment. It runs quite happily on a free Heroku instance.
 
 ## Get up and running
  1. Grab the source: `git clone git@github.com:aroman/keeba.git && cd keeba`

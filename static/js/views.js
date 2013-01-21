@@ -140,7 +140,7 @@ AddAssignmentView = Backbone.View.extend({
   },
 
   add: function () {
-    var which = this;
+    var that = this;
 
     // Disable all form elements to prevent
     // double-submissions.

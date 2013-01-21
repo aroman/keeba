@@ -47,7 +47,7 @@ You can view documentation via Jeremy Askenas's excellent [docco](https://github
 running `make docs` and viewing the created `docs` folder with your favorite web browser.
 
 ## Coding style
- - 2-space soft tab indents 
+ - 2.5-space soft tab indents 
  - cuddled conditionals
  - no ASI in JavaScript... always use semicolons
  - leave out parens where possible and practical in CoffeeScript

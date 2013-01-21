@@ -73,4 +73,4 @@ running `make docs` and viewing the created `docs` folder with your favorite web
 ## License
 
 Keeba is licensed under the terms of the GNU GPL Version 3.
-You can find the full text of the license here: http://www.gnu.org/licenses/gpl.txt
+You can find the full text of the license in the file "COPYING" at the root of this project.

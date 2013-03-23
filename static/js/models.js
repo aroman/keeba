@@ -222,7 +222,7 @@ Status = Backbone.Model.extend({
 
 });
 
-// Represents a user's account details and settings
+// Represents a user's account settings
 // This model is a singleton -- there should be only
 // one instance of it per account.
 Settings = Backbone.Model.extend({

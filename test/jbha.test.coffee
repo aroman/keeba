@@ -39,7 +39,6 @@ describe "dal", ->
     _id: String(Math.random())
     nickname: "Dr. " + Math.random()
     firstrun: false
-    details: true
 
   describe "create", ->
     it 'should create without error', (done) ->
@@ -65,7 +64,6 @@ describe "dal", ->
         should.not.exist err
         settings.nickname.should.equal mock_settings.nickname
         settings.firstrun.should.equal mock_settings.firstrun
-        settings.details.should.equal mock_settings.details
         settings.is_new.should.equal true
         done()
 

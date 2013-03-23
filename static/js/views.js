@@ -82,7 +82,6 @@ SettingsView = Backbone.View.extend({
     var that = this;
     this.model.save({
       nickname: this.$("#nickname").val(),
-      details: this.$("#details").is(':checked')
     },
     {
       error: function (model, errors) {
@@ -102,7 +101,6 @@ SettingsView = Backbone.View.extend({
 
   render: function () {
     var context = {
-      details: this.model.get('details'),
       nickname: this.model.get('nickname')
     };
     this.$(".modal-body").html(this.template(context));
@@ -475,11 +473,12 @@ AssignmentView = Backbone.View.extend({
     }
 
     // Only show details if we should be
+    // TODO: Recheck this logic
     if (this.showing_details !== null) {
       if (this.showing_details === true) {
         this.showDetails();
       }
-    } else if (settings.get('details') || app.showing_details) {
+    } else if (app.showing_details) {
         this.showDetails();
     }
 

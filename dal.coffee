@@ -39,13 +39,12 @@ module.exports =
     Account
       .findOne()
       .where('_id', username)
-      .select('nickname details is_new firstrun updated migrate')
+      .select('nickname is_new firstrun updated migrate')
       .exec cb
 
   update_settings: (username, settings, cb) ->
     Account.update _id: username,
       nickname: settings.nickname
-      details: settings.details
       firstrun: settings.firstrun
       migrate: settings.migrate,
       cb

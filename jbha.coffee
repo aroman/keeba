@@ -51,7 +51,7 @@ module.exports =
       Action: "login"
 
     options =
-      host: "www.jbha.org"
+      hostname: "www.jbha.org"
       path: "/students/index.php"
       method: 'POST'
       headers:
@@ -59,6 +59,8 @@ module.exports =
         'Content-Length': post_data.length
 
     req = http.request options, (res) ->
+      res.resume()
+
       res.on 'end', ->
         if res.headers.location is "/students/homework.php"
           L username, "Remote authentication succeeded", "info"
@@ -281,6 +283,7 @@ module.exports =
       body = null
       res.on 'data', (chunk) ->
         body += chunk
+      res.resume()
       res.on 'end', =>
         $ = cheerio.load(body)
         # Handle re-authing if we've been logged out

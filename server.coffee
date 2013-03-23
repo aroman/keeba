@@ -9,7 +9,6 @@ http       = require "http"
 _          = require "underscore"
 email      = require "emailjs"
 colors     = require "colors"
-connect    = require "connect"
 express    = require "express"
 ssockets   = require "session.socket.io"
 socketio   = require "socket.io"
@@ -137,7 +136,7 @@ app.get "/", browserCheck, (req, res) ->
   if req.session.token
     res.redirect "/app"
   else
-    res.render "index"
+    res.render "index",
       failed: false
       email: null
 
@@ -148,7 +147,7 @@ app.post "/", (req, res) ->
   whence = req.query.whence
   jbha.authenticate email, password, (err, account, token) ->
     if err
-      res.render "index"
+      res.render "index",
         failed: true
         email: email
     else
@@ -186,7 +185,7 @@ app.get "/migrate", ensureSession, ensureSettings, (req, res) ->
   if !req.settings.migrate
     res.redirect "/"
   else
-    res.render "migrate"
+    res.render "migrate",
       nickname: req.settings.nickname
 
 app.post "/migrate", ensureSession, ensureSettings, (req, res) ->
@@ -198,7 +197,7 @@ app.post "/migrate", ensureSession, ensureSettings, (req, res) ->
 
 app.get "/setup", ensureSession, ensureSettings, (req, res) ->
   if req.settings.is_new
-    res.render "setup"
+    res.render "setup",
       settings: JSON.stringify req.settings
   else
     res.redirect "/"
@@ -221,7 +220,7 @@ app.get "/app*", ensureSession, ensureSettings, (req, res) ->
     else if req.settings.migrate
       res.redirect "/migrate"
     else
-      res.render "app"
+      res.render "app",
         courses: JSON.stringify courses
         firstrun: req.settings.firstrun
         nickname: req.settings.nickname

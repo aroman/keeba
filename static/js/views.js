@@ -57,11 +57,11 @@ StatusView = Backbone.View.extend({
 });
 
 // Represents the modal which allows the user
-// to edit their account settings.
-SettingsView = Backbone.View.extend({
+// to edit their nickname
+NicknameModalView = Backbone.View.extend({
 
-  el: $("#settings-modal"),
-  template: Handlebars.templates.settings,
+  el: $("#nickname-modal"),
+  template: Handlebars.templates.nickname,
 
   events: {
     "click button#save": "save"
@@ -883,7 +883,7 @@ AppView = Backbone.View.extend({
   events: {
     "click #toggle-details": "toggleDetails",
     "click #toggle-archived": "toggleArchived",
-    "click #settings": "showSettings",
+    "click #nickname": "showNicknameModal",
     "click #shortcuts": "showShortcuts",
     "click #add-course": "addCourse",
     "click #force-refresh": "forceRefresh",
@@ -894,7 +894,7 @@ AppView = Backbone.View.extend({
     var that = this;
     // Create models & collections
     window.settings = new Settings;
-    window.settings_view = new SettingsView({model: settings});
+    window.nickname_modal_view = new NicknameModalView({model: settings});
     window.app_status = new Status;
     window.status_view = new StatusView({model: app_status});
 
@@ -964,7 +964,7 @@ AppView = Backbone.View.extend({
     _.defer(function () {
       $(".btn, input[type='checkbox']").not('.details-show').prop('disabled', true);
     });
-    $("#force-refresh, #settings, #logout").addClass('disabled-dropdown-item');
+    $("#force-refresh, #nickname, #logout").addClass('disabled-dropdown-item');
   },
 
   enableControls: function () {
@@ -973,7 +973,7 @@ AppView = Backbone.View.extend({
     _.defer(function () {
       $(".btn, input[type='checkbox']").not('.details-show').prop('disabled', false);
     });
-    $("#force-refresh, #settings, #logout").removeClass('disabled-dropdown-item');
+    $("#force-refresh, #nickname, #logout").removeClass('disabled-dropdown-item');
   },
 
   refresh: function () {
@@ -1142,8 +1142,8 @@ AppView = Backbone.View.extend({
     return false;
   },
 
-  showSettings: function () {
-    window.settings_view.show();
+  showNicknameModal: function () {
+    window.nickname_modal_view.show();
     $('.dropdown-toggle').dropdown();
     return false;
   },

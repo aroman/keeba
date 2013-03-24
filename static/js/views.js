@@ -1099,7 +1099,7 @@ AppView = Backbone.View.extend({
         heading: "Refresh failed!",
         message: 'Shoot, something went wrong. Try again (' +
           '<span class="status-lightbold">Options</span> > ' +
-          '<span class="status-lightbold">Refresh</span>) or nag Avi',
+          '<span class="status-lightbold">Refresh</span>) or nag Avi.',
         kind: "error"
       });
       status_view.alert();

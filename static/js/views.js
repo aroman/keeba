@@ -970,7 +970,7 @@ AppView = Backbone.View.extend({
     _.defer(function () {
       $(".btn, input[type='checkbox']").not('.details-show').prop('disabled', true);
     });
-    $("#force-refresh, #nickname, #logout").addClass('disabled-dropdown-item');
+    $("#force-refresh, #nickname, #logout").parent().addClass('disabled');
   },
 
   enableControls: function () {
@@ -979,7 +979,7 @@ AppView = Backbone.View.extend({
     _.defer(function () {
       $(".btn, input[type='checkbox']").not('.details-show').prop('disabled', false);
     });
-    $("#force-refresh, #nickname, #logout").removeClass('disabled-dropdown-item');
+    $("#force-refresh, #nickname, #logout").parent().removeClass('disabled');
   },
 
   refresh: function () {

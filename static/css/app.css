@@ -196,18 +196,11 @@ select.input-xlarge {
   font-size: 12px;
 }
 
-/* 
-  Styling for disabled drop-drop menu item
-  Adapted from: http://stackoverflow.com/questions/9682082
-*/
-a.disabled-dropdown-item {
-    color:#aaa !important;
-    background-color: white !important;
-    background-image: none !important;
-    pointer-events: none;
-    cursor: default;
+/* Patch bootstrap's dropdown disabled style to grey out icons */
+li.disabled {
+  pointer-events: none;
 }
 
-a.disabled-dropdown-item > i {
+li.disabled i {
   opacity: 0.4;
 }

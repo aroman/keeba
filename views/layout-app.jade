@@ -3,25 +3,25 @@ extends layout-base
 block navbar
   ul.nav.pull-right
     li.dropdown(data-dropdown='dropdown')
-      a#sort-dropdown.dropdown-toggle(target='_self', data-toggle="dropdown", data-bypass, href='#')
+      a#sort-dropdown.dropdown-toggle(href='#', target='_self', data-toggle="dropdown")
         | Options
         b.caret
       ul.dropdown-menu
         li
-          a#toggle-archived(target='_self', href="") Show archived
+          a#toggle-archived(href="#", target='_self') Show archived
         li
-          a#toggle-details(target='_self', href="") Show details
+          a#toggle-details(href="#", target='_self') Show details
         li.divider
         li
-          a#nickname(href="nickname", data-bypass) 
+          a#nickname(href="#", target='_self')
             i.icon-user
             |  Nickname
         li
-          a#shortcuts(href="shortcuts", data-bypass) 
+          a#shortcuts(href="#", target='_self')
             i.icon-list-alt
             |  Shortcuts
         li
-          a#force-refresh(target='_self', href="", data-bypass)
+          a#force-refresh(href="#", target='_self')
             i.icon-refresh
             |  Refresh
         li.divider

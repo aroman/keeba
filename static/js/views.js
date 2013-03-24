@@ -161,7 +161,7 @@ AddAssignmentView = Backbone.View.extend({
     },
     {
       error: function (model, errors) {
-        which.$(".error").removeClass('error');
+        that.$(".error").removeClass('error');
         that.$('.help-inline').text('');
         _.each(errors, function (error) {
           var control_group = that.$("#" + error.attr).parents(".control-group");
@@ -1001,19 +1001,13 @@ AppView = Backbone.View.extend({
     });
 
     // Toggle archived
-    key('shift + a', function () {
-      that.toggleArchived({silent: true});
-    });
+    key('shift + a', that.toggleArchived);
 
     // Toggle details
-    key('shift + d', function () {
-      that.toggleDetails({silent: true});
-    });
+    key('shift + d', that.toggleDetails);
 
     // Force refresh
-    key('shift + r', function () {
-      that.forceRefresh({silent: true});
-    });
+    key('shift + r', that.forceRefresh);
   },
 
   updateUpdatedAt: function () {
@@ -1024,28 +1018,22 @@ AppView = Backbone.View.extend({
     });
   },
 
-  toggleDetails: function (options) {
+  toggleDetails: function (event) {
     if (app.showing_details) {
-      this.hideDetails();
+      app.hideDetails();
     } else {
-      this.showDetails();
+      app.showDetails();
     }
-    if (!options.silent) {
-      $('.dropdown-toggle').dropdown();
-    }
-    return false;
+    event.preventDefault();
   },
 
-  toggleArchived: function (options) {
-    if (this.showing_archived) {
-      this.hideArchived();
+  toggleArchived: function (event) {
+    if (app.showing_archived) {
+      app.hideArchived();
     } else {
-      this.showArchived();
+      app.showArchived();
     }
-    if (!options.silent) {
-      $('.dropdown-toggle').dropdown('toggle');
-    }
-    return false;
+    event.preventDefault();
   },
 
   handleLink: function (event) {
@@ -1063,7 +1051,7 @@ AppView = Backbone.View.extend({
 
     // Ensure the protocol is not part of URL, meaning its relative.
     if (href && href.slice(0, protocol.length) !== protocol &&
-        href.indexOf("javascript:") !== 0) {
+        href.indexOf("javascript:") !== 0 && href !== "#") {
       // Stop the default event to ensure the link will not cause a page
       // refresh.
       event.preventDefault();
@@ -1134,24 +1122,19 @@ AppView = Backbone.View.extend({
     window.settings.fetch();
   },
 
-  forceRefresh: function (options) {
-    this.refresh();
-    if (!options.silent) {
-      $('.dropdown-toggle').dropdown();
-    }
-    return false;
+  forceRefresh: function (event) {
+    app.refresh();
+    event.preventDefault();
   },
 
   showNicknameModal: function () {
     window.nickname_modal_view.show();
-    $('.dropdown-toggle').dropdown();
-    return false;
+    event.preventDefault();
   },
 
   showShortcuts: function () {
     $("#shortcuts-modal").modal();
-    $('.dropdown-toggle').dropdown();
-    return false;
+    event.preventDefault();
   },
 
   updateUpcoming: _.throttle(function () {

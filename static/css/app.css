@@ -125,6 +125,7 @@ td.done-toggle {
 /* Make the text color of inline form help darker */
 .help-inline {
   color: #8C8C8C;
+  font-size: 13px;
 }
 
 h4.control-label {

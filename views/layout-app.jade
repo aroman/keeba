@@ -1,34 +1,34 @@
 extends layout-base
 
 block navbar
-    ul.nav.pull-right
-      li.dropdown(data-dropdown='dropdown')
-        a#sort-dropdown.dropdown-toggle(href='#', target='_self', data-toggle="dropdown")
-          | Options
-          b.caret
-        ul.dropdown-menu
-          li
-            a#toggle-archived(href="#", target='_self') Show archived
-          li
-            a#toggle-details(href="#", target='_self') Show details
-          li.divider
-          li
-            a#nickname(href="#", target='_self')
-              i.icon-user
-              |  Nickname
-          li
-            a#shortcuts(href="#", target='_self')
-              i.icon-list-alt
-              |  Shortcuts
-          li
-            a#force-refresh(href="#", target='_self')
-              i.icon-refresh
-              |  Refresh
-          li.divider
-          li
-            a#logout(target='_self', href='/logout', data-bypass)
-              i.icon-off
-              |  Log out
+  ul.nav.pull-right
+    li.dropdown(data-dropdown='dropdown')
+      a#sort-dropdown.dropdown-toggle(href='#', target='_self', data-toggle="dropdown")
+        | Options
+        b.caret
+      ul.dropdown-menu
+        li
+          a#toggle-archived(href="#", target='_self') Show archived
+        li
+          a#toggle-details(href="#", target='_self') Show details
+        li.divider
+        li
+          a#nickname(href="#", target='_self')
+            i.icon-user
+            |  Nickname
+        li
+          a#shortcuts(href="#", target='_self')
+            i.icon-list-alt
+            |  Shortcuts
+        li
+          a#force-refresh(href="#", target='_self')
+            i.icon-refresh
+            |  Refresh
+        li.divider
+        li
+          a#logout(target='_self', href='/logout', data-bypass)
+            i.icon-off
+            |  Log out
 
 block scripts
   // Rather than changing all of the homework HTML links to 

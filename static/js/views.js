@@ -436,6 +436,7 @@ AssignmentView = Backbone.View.extend({
     "click td.done-toggle": "toggleDone",
     "click .details-show": "showDetails",
     "click .details-hide": "hideDetails",
+    "click .details-expand": "expandDetails",
     "click button.button-edit": "edit"
   },
 
@@ -509,6 +510,11 @@ AssignmentView = Backbone.View.extend({
       .text("Show details");
     this.$(".details-content").hide();
     this.showing_details = false;
+  },
+
+  expandDetails: function (event) {
+    $("#details-modal").html(Handlebars.templates.details_modal(this.model.toJSON()));
+    $("#details-modal").modal({backdrop: 'static'});
   },
 
   toggleDone: function (event) {

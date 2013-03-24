@@ -16,6 +16,10 @@
 <td class="details">
   {{#if details}}
     <button class="btn btn-link details-show">Show details</button>
+  <!--   <button class="btn btn-link details-expand details-content pull-right" style="display:none">Fullscreen</button> -->
+      <button class="btn btn-mini btn-inverse details-expand details-content pull-right" style="display:none" title="Fullscreen">
+        <i class="icon-resize-full icon-white"></i>
+      </button>
     <div class="details-content" style="display:none"> {{{details}} </div>
   {{else}}
     <i>No additional information</i>

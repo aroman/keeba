@@ -46,6 +46,11 @@ body {
   padding-bottom: 40px;
 }
 
+.modal-wide {
+  width: 80%;
+  margin-left: -40%;
+}
+
 .centex {
   text-align: center;
 }

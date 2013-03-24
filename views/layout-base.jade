@@ -31,13 +31,13 @@ html(lang='en')
     .navbar.navbar-fixed-top.navbar-inverse
       .navbar-inner
         .container-fluid
-          a.btn.btn-navbar(data-toggle="collapse", data-target=".nav-collapse")
+          button.btn.btn-navbar(type="button", data-toggle="collapse", data-target=".nav-collapse")
             span.icon-bar
             span.icon-bar
             span.icon-bar
           img.block-icon(src="/img/glyph/zap-white.png")
           a.brand.brand-bright(target="_self", href="/", data-bypass) Keeba
-          .nav-collapse
+          .nav-collapse.collapse
             l.nav.pull-left
               li.nav-link
                 a(target="_self", href="/", data-bypass) Home

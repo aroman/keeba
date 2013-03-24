@@ -190,6 +190,12 @@ select.input-xlarge {
   padding: 0;
 }
 
+.status-lightbold {
+  font-weight: bold;
+  font-style: italic;
+  font-size: 12px;
+}
+
 /* 
   Styling for disabled drop-drop menu item
   Adapted from: http://stackoverflow.com/questions/9682082

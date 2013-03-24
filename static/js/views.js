@@ -1097,7 +1097,9 @@ AppView = Backbone.View.extend({
     if (err) {
       app_status.set({
         heading: "Refresh failed!",
-        message: "Shoot, something went wrong. Try again or nag Avi.",
+        message: 'Shoot, something went wrong. Try again (' +
+          '<span class="status-lightbold">Options</span> > ' +
+          '<span class="status-lightbold">Refresh</span>) or nag Avi',
         kind: "error"
       });
       status_view.alert();
@@ -1247,7 +1249,7 @@ SetupView = Backbone.View.extend({
 
     if (err) {
       app_status.set({
-        heading: "Uh oh",
+        heading: "Uh-oh",
         message: "Something went wrong setting up your account. Refresh to try again.",
         kind: "error"
       });

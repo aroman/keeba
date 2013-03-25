@@ -190,6 +190,10 @@ select.input-xlarge {
   padding: 0;
 }
 
+.details-expand {
+  margin-top: 1px;
+}
+
 .status-lightbold {
   font-weight: bold;
   font-style: italic;
@@ -236,38 +240,6 @@ li.disabled i {
       -moz-transform:translate(0px) rotate(0deg);
       -o-transform:translate(0px) rotate(0deg);
     }
-}
-
-@-webkit-keyframes fadein {
-    33% {
-      opacity: 1;
-      transition: opacity;
-      -webkit-transition: opacity;
-      -moz-transition: opacity;
-      -o-transition: opacity;
-    }
-    66% {
-      opacity: 0;
-      transition: opacity;
-      -webkit-transition: opacity;
-      -moz-transition: opacity;
-      -o-transition: opacity;
-    }
-    100% {
-      opacity: 1;
-      transition: opacity;
-      -webkit-transition: opacity;
-      -moz-transition: opacity;
-      -o-transition: opacity;
-    }
-}
-
-.label.fadein {
-    opacity: 0;
-    animation: fadein 1.5s 3s forwards;
-    -webkit-animation: fadein 1.5s 3s forwards;
-    -moz-animation: fadein 1.5s 3s forwards;
-    -o-animation: fadein 1.5s 3s forwards;
 }
 
 .label.wiggle {

@@ -239,24 +239,35 @@ li.disabled i {
 }
 
 @-webkit-keyframes fadein {
-    from {
+    33% {
+      opacity: 1;
+      transition: opacity;
+      -webkit-transition: opacity;
+      -moz-transition: opacity;
+      -o-transition: opacity;
+    }
+    66% {
       opacity: 0;
       transition: opacity;
       -webkit-transition: opacity;
       -moz-transition: opacity;
       -o-transition: opacity;
     }
-    to {
+    100% {
       opacity: 1;
+      transition: opacity;
+      -webkit-transition: opacity;
+      -moz-transition: opacity;
+      -o-transition: opacity;
     }
 }
 
 .label.fadein {
     opacity: 0;
-    animation: fadein 1s ease-in 3s forwards;
-    -webkit-animation: fadein 1s ease-in 3s forwards;
-    -moz-animation: fadein 1s ease-in 3s forwards;
-    -o-animation: fadein 1s ease-in 3s forwards;
+    animation: fadein 1.5s 3s forwards;
+    -webkit-animation: fadein 1.5s 3s forwards;
+    -moz-animation: fadein 1.5s 3s forwards;
+    -o-animation: fadein 1.5s 3s forwards;
 }
 
 .label.wiggle {

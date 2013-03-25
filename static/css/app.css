@@ -207,22 +207,22 @@ li.disabled i {
 
 @-webkit-keyframes wiggle {
     33% {
-      transform:translate(6px) rotate(15deg);
-      -webkit-transform:translate(6px) rotate(15deg);
-      -moz-transform:translate(6px) rotate(15deg);
-      -o-transform:translate(6px) rotate(15deg);
+      transform: rotate(15deg);
+      -webkit-transform: rotate(15deg);
+      -moz-transform: rotate(15deg);
+      -o-transform: rotate(15deg);
     }
     66% {
-      transform:translate(6px) rotate(-15deg);
-      -webkit-transform:translate(6px) rotate(-15deg);
-      -moz-transform:translate(6px) rotate(-15deg);
-      -o-transform:translate(6px) rotate(-15deg);
+      transform: rotate(-15deg);
+      -webkit-transform: rotate(-15deg);
+      -moz-transform: rotate(-15deg);
+      -o-transform: rotate(-15deg);
     }
     100% {
-      transform:translate(0px) rotate(0deg);
-      -webkit-transform:translate(0px) rotate(0deg);
-      -moz-transform:translate(0px) rotate(0deg);
-      -o-transform:translate(0px) rotate(0deg);
+      transform: rotate(0deg);
+      -webkit-transform: rotate(0deg);
+      -moz-transform: rotate(0deg);
+      -o-transform: rotate(0deg);
     }
 }
 
@@ -248,8 +248,8 @@ li.disabled i {
 }
 
 .label.fadein {
-  animation: wiggle 1.5s ease-in 2s;
-  -webkit-animation: wiggle 1.5s ease-in 2s;
-  -moz-animation: wiggle 1.5s ease-in 2s;
-  -o-animation: wiggle 1.5s ease-in 2s;
+  animation: wiggle 0.7s ease-in 2s;
+  -webkit-animation: wiggle 0.7s ease-in 2s;
+  -moz-animation: wiggle 0.7s ease-in 2s;
+  -o-animation: wiggle 0.7s ease-in 2s;
 }

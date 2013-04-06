@@ -270,7 +270,11 @@ EditAssignmentView = Backbone.View.extend({
   render: function () {
     this.$(".modal-body").html(this.template(this.model.toJSON()));
     this.$("#date").datepicker();
-    this.$('[rel=tooltip]').tooltip();
+    // FIXME: The 'manual' trigger option effectively DISABLES
+    // this tooltip. We need to do this because tooltips inside
+    // modals are broken as of Bootstrap 2.3.1.
+    // See: https://github.com/twitter/bootstrap/issues/6942
+    this.$('[rel=tooltip]').tooltip({trigger: "manual"});
     return this;
   }
 
@@ -402,7 +406,6 @@ EditCourseView = Backbone.View.extend({
     this.model.destroy({
       wait: true,
       success: function () {
-        this.$(".tooltip").remove();
         that.$el.modal('hide');
         router.navigate('', true);
       }
@@ -416,7 +419,6 @@ EditCourseView = Backbone.View.extend({
       date: ''
     }));
     this.$(".modal-body").html(this.template(this.model.toJSON()));
-    this.$('[rel=tooltip]').tooltip();
     return this;
   }
 

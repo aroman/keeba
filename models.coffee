@@ -25,7 +25,6 @@ AccountSchema = new mongoose.Schema
   updated: 
     type: Date
     default: new Date 0 # Start off at the beginning of UNIX time so it's initially stale.
-  {strict: true}
 
 CourseSchema = new mongoose.Schema
   owner: String

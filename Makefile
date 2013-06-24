@@ -3,7 +3,7 @@
 REPORTER = spec
 
 serve: build
-	@foreman start
+	@node server.js
 
 docs: clean-docs
 	@./node_modules/docco/bin/docco *.coffee

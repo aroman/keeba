@@ -288,7 +288,7 @@ module.exports =
         $ = cheerio.load(body)
         # Handle re-authing if we've been logged out
         if $('a[href="/students/?Action=logout"]').length is 0
-          L token.username, "Session expired; re-authenticating", "warn"
+          L token.username, "Session expired; re-authenticating", "info"
           @authenticate token.username, token.password, (err, account, token) =>
             if err
               return cb err

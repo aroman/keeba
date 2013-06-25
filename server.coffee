@@ -365,6 +365,5 @@ ss.on "connection", (err, socket, session) ->
   # Debug function used to "delete/account"
   socket.on "d/a", (account, cb) ->
     return unless _.isFunction cb
-    return cb null unless token.username is "avi.romanoff"
     dal._delete_account token.username, account, (err) ->
       cb null

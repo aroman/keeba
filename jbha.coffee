@@ -41,10 +41,6 @@ module.exports =
   authenticate: (username, password, cb) ->
     username = username.toLowerCase()
 
-    # Don't let Acquire log in...
-    if username is "acquire"
-      return cb new Error "Invalid login"
-
     post_data = querystring.stringify
       Email: "#{username}@jbha.org"
       Passwd: password
@@ -146,10 +142,6 @@ module.exports =
 
                   splits = text_blob.split ":"
                   assignment_title = splits.slice(1).join(":").trim()
-                  # DEPRECATE: Silently update assignment titles
-                  # that were created under the old (wrong) parsing
-                  # scheme if they differ.
-                  assignment_title_old_algo = splits.slice(1)[0].trim()
                   # Parse the date and store it as a UTC UNIX timestamp
                   assignment_date = moment.utc(splits.slice(0, 1)[0], "[Due] MMM DD, YYYY").valueOf()
                   # Parse the details of the assignment as HTML -- **not** as text.
@@ -183,17 +175,21 @@ module.exports =
                   if assignment_from_db
                     # Heuristic for assuming that an assignment has been "created-by-move".
                     # See #25 on GitHub
-                    moved = assignment_from_db.date.valueOf() isnt assignment_date and
-                        assignment_from_db.title isnt assignment_title
-                    if not moved
-                      # DEPRECATE: Silently bump parsing mistakes if needed
-                      if assignment_from_db.title == assignment_title_old_algo &&
-                        assignment_title_old_algo != assignment_title
-                          assignment_from_db.title = assignment_title
-                          return assignment_from_db.save (err) ->
-                            L token.username, "Fixed bum parse job on title: " + assignment_title, 'warn'
-                            assignment_callback err
+                    created_by_move = assignment_from_db.date.valueOf() isnt assignment_date and
+                      assignment_from_db.title isnt assignment_title
+                    # ANY of the assignment's data were changed. (i.e fetched date/title/details
+                    # aren't the same as previously stored date/title/details)
+                    updated = assignment_from_db.date.valueOf() isnt assignment_date or
+                      assignment_from_db.title isnt assignment_title or
+                      assignment_from_db.details isnt assignment_details
+                    if not created_by_move
+                      # We know we don't need to create a new assignment,
+                      # but do we need to update an existing one?
+                      if updated
+                        L token.username, "Assignment updated!", "warn"
                       else
+                        # We neither need to create an new assignment or update 
+                        # an existing one, so move onto the next assignment.
                         return assignment_callback null
 
                   assignment = new Assignment()
@@ -217,9 +213,9 @@ module.exports =
                       assignment.done = true
                       assignment.archived = true
                   assignment.save (err) ->
-                    # If we identified a moved assignment, rename the old jbha_id
+                    # If we identified a create-by-move assignment, rename the old jbha_id
                     # to indicate that it's no longer valid -- that it's been replaced.
-                    if moved
+                    if created_by_move
                       L token.username, "Create-by-move detected on assignment with jbha_id #{assignment_id}!", 'warn'
                       assignment_from_db.jbha_id += "-#{assignment_from_db._id}"
                       assignment_from_db.save (err) ->

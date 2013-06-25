@@ -1108,10 +1108,10 @@ AppView = Backbone.View.extend({
     } else {
       var num_new = res.new_assignments + app.num_new;
       if (num_new === 1) {
-        var message = "There was <b>1</b> new assignment added by your teachers.";
+        var message = "There was <b>1</b> new assignment added or updated by your teachers.";
         var link_text = "Click here to add it."
       } else {
-        var message = "There were <b>" + num_new + "</b> new assignments added by your teachers.";
+        var message = "There were <b>" + num_new + "</b> new assignments added or updated by your teachers.";
         var link_text = "Click here to add them."
       }
       if (num_new === 0) {

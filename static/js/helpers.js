@@ -119,6 +119,11 @@ var DATE_FORMAT = "dddd MMM D";
 var DATE_RANGE_FORMAT = "dddd, MMMM Do YYYY";
 var DATE_EDIT_FORMAT = "M/D/YY";
 
+// From: http://stackoverflow.com/q/14854491
+Handlebars.registerHelper('setIndex', function (value) {
+    this.index = Number(value);
+});
+
 // Returns copy of string 'body' with all instances
 // of %n replaced with the user's nickname.
 Handlebars.registerHelper('personalize', function (body) {

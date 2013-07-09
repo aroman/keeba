@@ -17,8 +17,33 @@
       <i class="icon-plus icon-white"></i>
       <span> Add Assignment </span>
     </button>
+    <button class="btn btn-mini side-button show-info-button" data-toggle="collapse" data-target="#info">
+      <i class="icon-chevron-down"></i>
+      <span> Show Info </span>
+    </button>
   {{/if}}
 </h3>
+  <div id="info" class="collapse">
+    {{#each info_tabs}}
+      {{setIndex @index}}
+      <h4 style="margin-bottom: -10px; margin-top: 10px; font-size: 16px">{{title}}</h4>
+      <br>
+      <div class="accordion collapsed" id="accordion{{../index}}-{{@index}}">
+        {{#each items}}
+          <div class="accordion-group">
+            <div class="accordion-heading">
+              <a class="accordion-toggle collapsed" data-toggle="collapse" data-parent="#accordion{{../index}}-{{@index}}" data-bypass href="#collapse{{../index}}-{{@index}}">{{title}}</a>
+            </div>
+            <div id="collapse{{../index}}-{{@index}}" class="accordion-body collapse">
+              <div class="accordion-inner">
+              {{{content}}}
+              </div>
+            </div>
+          </div>
+        {{/each}}
+      </div>
+    {{/each}}
+  </div>
   {{#if empty}}
     <div class="alert alert-success">
       <h2 class="alert-heading">{{exclamation}} No work to do here!</h2>

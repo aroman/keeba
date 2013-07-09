@@ -149,7 +149,7 @@ h4.control-label {
           box-shadow: 0 0px 3px rgba(0,0,0,.25);
 }
 
-.archive-button, .edit-button {
+.add-button, .archive-button, .edit-button {
   margin-left: 5px;
 }
 
@@ -207,6 +207,17 @@ li.disabled {
 
 li.disabled i {
   opacity: 0.4;
+}
+
+a.accordion-toggle:before {
+  float: left;
+  font-size: 13px;
+  margin-right: 5px;
+  content: "\25BC";
+}
+
+a.accordion-toggle.collapsed:before {
+  content: "\25BA";
 }
 
 @-webkit-keyframes wiggle {

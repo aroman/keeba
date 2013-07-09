@@ -235,29 +235,32 @@ module.exports =
                   info_item_tab = $("a[href='#" + item_content.parent().attr('id') + "']").text()
 
                   # Details can be full HTML, so use the target content as such
-                  info_item_content = item_content.html()
+                  info_item_content = item_content.html().trim()
 
                   # Make jbha.org relative links absolute.
                   info_item_content = info_item_content.replace /href="\/(.*?)"/, 'href="http://www.jbha.org/$1"'
 
-                  # console.log course.title + ": " + info_item_tab + ": " + info_item_title
-
                   # Get the tab with the jbha_id we're currently parsing,
                   # if one exists, or return ``undefined``.
                   info_item_from_db = _.find course.info_items, (info_item) ->
-                    true if info_item_tab is info_item.tab and info_item_title is info_item_title
+                    true if info_item_tab is info_item.tab and info_item_title is info_item.title
 
                   # If the info item was already downloaded (at some point)
                   # to this account.
                   if info_item_from_db
-                    return item_callback null
-                  else
-                    course.info_items.addToSet
-                      tab: info_item_tab
-                      title: info_item_title
-                      content: info_item_content
-                    course.save (err) ->
-                        item_callback err
+                    if info_item_from_db.content is info_item_content
+                      return item_callback null
+                    # Info item content is different, so remove the existing one
+                    # from the db before adding the new one.
+                    else
+                      course.info_items.pull info_item_from_db
+
+                  course.info_items.push
+                    tab: info_item_tab
+                    title: info_item_title
+                    content: info_item_content
+                  course.save (err) ->
+                      item_callback err
 
               async.forEach $('a[href^="javascript:arrow_down_right"]:not([class])'), parse_item, (err) =>
                 wf_callback err, course

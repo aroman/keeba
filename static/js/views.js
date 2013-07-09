@@ -709,6 +709,8 @@ SectionView = Backbone.View.extend({
   _children: [],
 
   events: {
+    "show #info": "onShowInfo",
+    "hide #info": "onHideInfo",
     "click button.add-button": "createAssignment",
     "click button.edit-button": "edit",
     "click button.archive-button": "archiveDone"
@@ -753,10 +755,19 @@ SectionView = Backbone.View.extend({
       return assignment.get('archived');
     });
 
+    var info_tabs = [];
+    _.each(_.groupBy(this.model.get('info_items'), "tab"), function (value, key) {
+      info_tabs.push({
+        title: key,
+        items: value
+      });
+    });
+    
     var empty = unarchived.length === 0 && !app.showing_archived;
     this.$el.html(this.template({
       title: this.model.get('title'),
       teacher: this.model.get('teacher'),
+      info_tabs: info_tabs,
       archived: num_archived,
       show_archive_button: !app.showing_archived,
       empty: empty
@@ -793,6 +804,24 @@ SectionView = Backbone.View.extend({
 
     return this;
   }, 100),
+
+  onShowInfo: function (e) {
+    // Hack to prevent this function from triggering when *any*
+    // accordion is toggled.
+    if ($(e.target).hasClass("accordion-body")) return;
+    this.$(".show-info-button > i").removeClass('icon-chevron-down');
+    this.$(".show-info-button > i").addClass('icon-chevron-up');
+    this.$(".show-info-button > span").text(" Hide Info ");
+  },
+
+  onHideInfo: function (e) {
+    // Hack to prevent this function from triggering when *any*
+    // accordion is toggled.
+    if ($(e.target).hasClass("accordion-body")) return;
+    this.$(".show-info-button > i").removeClass('icon-chevron-up');
+    this.$(".show-info-button > i").addClass('icon-chevron-down');
+    this.$(".show-info-button > span").text(" Show Info ");
+  },
 
   edit: function () {
     var edit_dialog = new EditCourseView({

@@ -128,28 +128,32 @@ module.exports =
                 course = course_from_db
               wf_callback null, course
 
-            # Iterate over the DOM and parse the assignments, saving
-            # them to the database if needed.
+            # Iterate over the DOM and parse the headings (e.g individual links
+            # and assignments), saving them to the database if needed.
             (course, wf_callback) ->
-              parse_assignment = (element, assignment_callback) ->
-                # Looks like: ``Due May 08, 2012: Test: Macbeth``
-                text_blob = $(element).text()
-                # Skips over extraneous and unwanted matched objects,
-                # like course policies and stuff.
-                if text_blob.match /Due \w{3} \d{1,2}\, \d{4}:/
-                  # Parse _their_ assignment id
-                  assignment_id = $(element).attr('href').match(/\d+/)[0]
+              parse_item = (element, item_callback) ->
+                # Looks like: ``Syllabus`` or ``Due May 08, 2012: Test: Macbeth``
+                item_title = $(element).text()
 
-                  splits = text_blob.split ":"
+                # The name of the div which this heading links to
+                # e.g ``toggle-cont-28066`` or ``toggle-dept-cont-27``
+                # (The raw href looks like ``javascript:arrow_down_right('toggle-cont-26199'``)
+                item_content = $("#" + element.attribs.href.match(/'(.*)'/)[1])
+
+                if item_title.match /Due \w{3} \d{1,2}\, \d{4}:/ # It's an assignment
+                  # Grab _their_ assignment id
+                  assignment_id = element.attribs.href.match(/\d+/)[0]
+
+                  splits = item_title.split ":"
                   assignment_title = splits.slice(1).join(":").trim()
                   # Parse the date and store it as a UTC UNIX timestamp
                   assignment_date = moment.utc(splits.slice(0, 1)[0], "[Due] MMM DD, YYYY").valueOf()
-                  # Parse the details of the assignment as HTML -- **not** as text.
-                  assignment_details = $("#toggle-cont-#{assignment_id}").html()
+                  # Details can be full HTML, so use the target content as such
+                  assignment_details = item_content.html()
 
                   # If there is some text content -- not just empty tags, we assume
                   # there are relevant assignment details and sanitize them.
-                  if $("#toggle-cont-#{assignment_id}").text()
+                  if item_content.text()
                     # Crudely sanitize details to prevent common rendering screwups
                     regexes = [
                       /\<h\d{1}\>/gi, # Remove instances of "<h>"
@@ -190,7 +194,7 @@ module.exports =
                       else
                         # We neither need to create an new assignment or update 
                         # an existing one, so move onto the next assignment.
-                        return assignment_callback null
+                        return item_callback null
 
                   assignment = new Assignment()
                   assignment.owner = token.username
@@ -219,18 +223,48 @@ module.exports =
                       L token.username, "Create-by-move detected on assignment with jbha_id #{assignment_id}!", 'warn'
                       assignment_from_db.jbha_id += "-#{assignment_from_db._id}"
                       assignment_from_db.save (err) ->
-                        assignment_callback err
+                        item_callback err
                     else
-                      assignment_callback err
-                else
-                  assignment_callback err
+                      item_callback err
+                else # It's a link/syllabus/something-like-that
+                  # If there's no item content, we don't care about this info item.
+                  if not item_content.text()
+                    return item_callback null
 
-              async.forEach $('a[href^="javascript:arrow_down_right"]'), parse_assignment, (err) =>
+                  info_item_title = item_title.trim()
+                  info_item_tab = $("a[href='#" + item_content.parent().attr('id') + "']").text()
+
+                  # Details can be full HTML, so use the target content as such
+                  info_item_content = item_content.html()
+
+                  # Make jbha.org relative links absolute.
+                  info_item_content = info_item_content.replace /href="\/(.*?)"/, 'href="http://www.jbha.org/$1"'
+
+                  # console.log course.title + ": " + info_item_tab + ": " + info_item_title
+
+                  # Get the tab with the jbha_id we're currently parsing,
+                  # if one exists, or return ``undefined``.
+                  info_item_from_db = _.find course.info_items, (info_item) ->
+                    true if info_item_tab is info_item.tab and info_item_title is info_item_title
+
+                  # If the info item was already downloaded (at some point)
+                  # to this account.
+                  if info_item_from_db
+                    return item_callback null
+                  else
+                    course.info_items.addToSet
+                      tab: info_item_tab
+                      title: info_item_title
+                      content: info_item_content
+                    course.save (err) ->
+                        item_callback err
+
+              async.forEach $('a[href^="javascript:arrow_down_right"]:not([class])'), parse_item, (err) =>
                 wf_callback err, course
 
           ], (err, course) ->
             course.save (err) ->
-              L token.username, "Parsed course [#{course.title}]"
+              L token.username, "Synchronized course [#{course.title}]"
               course_callback err
 
       async.forEach courses, parse_course, (err) ->
@@ -298,6 +332,6 @@ module.exports =
 
     req.end()
 
-  # Used in testing to suppress log output.
+  # Used in test suite to suppress log output.
   suppress_logging: ->
     L = -> # pass

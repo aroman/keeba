@@ -35,6 +35,7 @@ CourseSchema = new mongoose.Schema
     index:
       unique: false
       sparse: true
+  info_items: [{tab: String, title: String, content: String}] # Non-homework tab items, e.g department info & course overview
   assignments: [{ type: mongoose.Schema.ObjectId, ref: 'assignment' }]
 
 AssignmentSchema = new mongoose.Schema

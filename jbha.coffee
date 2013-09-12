@@ -190,7 +190,13 @@ module.exports =
                       # We know we don't need to create a new assignment,
                       # but do we need to update an existing one?
                       if updated
+                        assignment_from_db.date = assignment_date
+                        assignment_from_db.title = assignment_title
+                        assignment_from_db.details = assignment_details
                         L token.username, "Assignment updated!", "warn"
+                        assignment_from_db.save (err) ->
+                          item_callback err
+                        return 
                       else
                         # We neither need to create an new assignment or update 
                         # an existing one, so move onto the next assignment.

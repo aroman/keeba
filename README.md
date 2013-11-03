@@ -3,7 +3,7 @@
 ## What is this?
 This is a homework management web app for students that can sync 1-directionally with an existing homework portal, such as a school's official one.
 
-Therefore, it can easily integrate into an existing school system because it does not require the replacement of existing homework management software. All you one need do is build a custom adapter module for their school website (see `jbha.coffee`), add water, and *viola* -- your school's crappy custom/PowerSchool/whatever enterprise homework portal is souped up with the latest web goodness.
+Therefore, it can easily integrate into an existing school system because it does not require the replacement of existing homework management software. All you one need do is build a custom adapter module for their school website (see `jbha.coffee`), add water, and *voilà* -- your school's crappy custom/PowerSchool/whatever enterprise homework portal is souped up with the latest web goodness.
 
 It is built with node.js/express on the backend, and Backbone/Bootstrap on the frontend. It uses MongoDB (via Mongoose) for persistence.
 

@@ -1,4 +1,4 @@
-# (C) 2013 Avi Romanoff <aviromanoff at gmail.com> 
+# (C) 2013 Avi Romanoff <avi at romanoff dot me> 
 
 REPORTER = spec
 

@@ -7,7 +7,7 @@
 # in his temporary session.
 
 _            = require "underscore"
-http         = require "http"
+http         = require "https"
 async        = require "async"
 colors       = require "colors"
 moment       = require "moment"
